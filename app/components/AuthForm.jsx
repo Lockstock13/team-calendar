@@ -1,0 +1,109 @@
+'use client'
+
+import { useState } from 'react'
+import { Calendar } from 'lucide-react'
+
+export default function AuthForm({ onAuth, loading, error }) {
+  const [mode, setMode] = useState('login')
+  const [data, setData] = useState({ email: '', password: '', full_name: '' })
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+      <div className="w-full max-w-sm space-y-6">
+
+        {/* Logo */}
+        <div className="text-center">
+          <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <Calendar className="w-7 h-7 text-primary-foreground" />
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">Still Photo Team</h1>
+          <p className="text-muted-foreground text-sm mt-1">Jadwal Fotografer</p>
+        </div>
+
+        {/* Card */}
+        <div className="bg-background border rounded-2xl p-6 shadow-sm space-y-4">
+
+          {/* Tab toggle */}
+          <div className="flex gap-1 p-1 bg-muted rounded-xl">
+            {[
+              { id: 'login', label: 'Masuk' },
+              { id: 'register', label: 'Daftar' },
+            ].map(({ id, label }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setMode(id)}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                  mode === id
+                    ? 'bg-background shadow-sm text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Form */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              onAuth(mode, data)
+            }}
+            className="space-y-3"
+          >
+            {mode === 'register' && (
+              <div>
+                <input
+                  type="text"
+                  placeholder="Nama Lengkap"
+                  value={data.full_name}
+                  onChange={(e) => setData({ ...data, full_name: e.target.value })}
+                  className="w-full px-3 py-2.5 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                  required
+                />
+              </div>
+            )}
+
+            <input
+              type="email"
+              placeholder="Email"
+              value={data.email}
+              onChange={(e) => setData({ ...data, email: e.target.value })}
+              className="w-full px-3 py-2.5 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+              required
+            />
+
+            <input
+              type="password"
+              placeholder="Password (min. 6 karakter)"
+              value={data.password}
+              onChange={(e) => setData({ ...data, password: e.target.value })}
+              className="w-full px-3 py-2.5 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+              required
+              minLength={6}
+            />
+
+            {error && (
+              <div className="p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl font-medium text-sm disabled:opacity-50 transition-all hover:opacity-90 mt-1"
+            >
+              {loading ? 'Loading...' : mode === 'login' ? 'Masuk' : 'Daftar Akun'}
+            </button>
+          </form>
+        </div>
+
+        <p className="text-center text-xs text-muted-foreground">
+          Still Photo Team &copy; {new Date().getFullYear()}
+        </p>
+      </div>
+    </div>
+  )
+}

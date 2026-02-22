@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 222.2 84% 4.9%;
+        --border: 214.3 31.8% 91.4%;
+        --primary: 222.2 47.4% 11.2%;
+        --primary-foreground: 210 40% 98%;
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+    }
+    .dark {
+        --background: 222.2 84% 4.9%;
+        --foreground: 210 40% 98%;
+        --border: 217.2 32.6% 17.5%;
+        --primary: 210 40% 98%;
+        --primary-foreground: 222.2 47.4% 11.2%;
+        --muted: 217.2 32.6% 17.5%;
+        --muted-foreground: 215 20.2% 65.1%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground font-sans;
+    }
+}
+
+/* ─── FullCalendar overrides ────────────────────────────────────────────────── */
+
+/* Weekend cell background */
+.fc-weekend-cell {
+    background-color: hsl(var(--muted) / 0.5) !important;
+}
+
+/* Rounder events */
+.fc-event {
+    border-radius: 6px !important;
+    border: none !important;
+    font-size: 0.72rem !important;
+    cursor: pointer;
+}
+
+/* Remove default event padding so our custom content controls it */
+.fc-event-main {
+    padding: 0 !important;
+}
+
+/* Day number style */
+.fc-daygrid-day-number {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 6px 8px !important;
+    color: hsl(var(--muted-foreground));
+}
+
+/* Today highlight */
+.fc-day-today {
+    background-color: hsl(var(--primary) / 0.04) !important;
+}
+
+.fc-day-today .fc-daygrid-day-number {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+}
+
+/* Header (Mon, Tue, …) */
+.fc-col-header-cell {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 0 !important;
+    color: hsl(var(--muted-foreground));
+}
+
+.fc-col-header-cell-cushion {
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
+/* Nav buttons */
+.fc-button-primary {
+    background-color: hsl(var(--background)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    color: hsl(var(--foreground)) !important;
+    border-radius: 8px !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    padding: 5px 12px !important;
+    box-shadow: none !important;
+}
+
+.fc-button-primary:hover {
+    background-color: hsl(var(--muted)) !important;
+}
+
+.fc-button-primary:not(:disabled).fc-button-active,
+.fc-button-primary:not(:disabled):active {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+    border-color: hsl(var(--primary)) !important;
+}
+
+.fc-button-group {
+    gap: 4px;
+}
+
+.fc-toolbar-title {
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border-color: hsl(var(--border)) !important;
+}
+
+.fc-scrollgrid {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.fc-more-link {
+    font-size: 0.7rem !important;
+    color: hsl(var(--muted-foreground)) !important;
+}
+
+/* Notion-like scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+}
