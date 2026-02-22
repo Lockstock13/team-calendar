@@ -273,6 +273,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
       {/* Calendar */}
       <div className="bg-background border rounded-2xl p-4 calendar-wrap">
         <FullCalendar
+          key={calendarEvents.map((e) => e.id + e.start + e.end).join(",")}
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
           firstDay={1}
