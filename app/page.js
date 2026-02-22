@@ -78,7 +78,7 @@ export default function Home() {
 
     // Realtime: auto-refresh tasks ketika siapapun add/edit/delete
     const channel = supabase
-      .channel("tasks-changes")
+      .channel("tasks_changes")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tasks" },
