@@ -412,7 +412,7 @@ export default function Home() {
       {/* Toast notification */}
       {toast && (
         <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-lg text-sm font-medium text-white transition-all animate-in fade-in slide-in-from-bottom-4 ${
+          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-2xl shadow-xl text-sm font-medium text-white ${
             toast.type === "success" ? "bg-emerald-500" : "bg-red-500"
           }`}
         >

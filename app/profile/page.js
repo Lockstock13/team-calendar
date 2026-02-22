@@ -8,8 +8,6 @@ import {
   ArrowLeft,
   Check,
   Save,
-  Bell,
-  BellOff,
   MessageCircle,
   Mail,
   Smartphone,
@@ -230,7 +228,7 @@ export default function ProfilePage() {
 
     try {
       if (enable) {
-        // Ask permission
+        // Minta izin notifikasi
         const permission = await Notification.requestPermission();
         if (permission !== "granted") {
           setPushMsg(
@@ -240,44 +238,44 @@ export default function ProfilePage() {
           return;
         }
 
-        // Get service worker registration
+        // Ambil service worker
         const sw = await navigator.serviceWorker.ready;
 
-        // Subscribe
+        // Subscribe ke push
         const subscription = await sw.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
 
-        // Save to server
-        const res = await fetch("/api/push-subscribe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: session.user.id,
-            subscription: subscription.toJSON(),
-          }),
-        });
+        // Simpan langsung via Supabase client (pakai auth session → RLS lolos)
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            push_subscription: subscription.toJSON(),
+            notif_push: true,
+          })
+          .eq("id", session.user.id);
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || "Gagal menyimpan subscription");
-        }
+        if (error) throw new Error(error.message);
 
         setNotif((prev) => ({ ...prev, notif_push: true }));
         setPushMsg("✅ Push notification aktif!");
       } else {
-        // Unsubscribe from browser
+        // Unsubscribe dari browser
         const sw = await navigator.serviceWorker.ready;
         const sub = await sw.pushManager.getSubscription();
         if (sub) await sub.unsubscribe();
 
-        // Remove from server
-        await fetch("/api/push-subscribe", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: session.user.id }),
-        });
+        // Hapus dari DB langsung via Supabase client
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            push_subscription: null,
+            notif_push: false,
+          })
+          .eq("id", session.user.id);
+
+        if (error) throw new Error(error.message);
 
         setNotif((prev) => ({ ...prev, notif_push: false }));
         setPushMsg("");
