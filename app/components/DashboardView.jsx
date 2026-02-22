@@ -79,9 +79,6 @@ export default function DashboardView({ tasks, users }) {
   const tomorrowTasks = tasks.filter((t) => t.start_date === tomorrowStr);
   const weekTasks = tasks.filter((t) => t.start_date >= weekStart);
   const monthTasks = tasks.filter((t) => t.start_date >= monthStart);
-  const weekendTasks = monthTasks.filter(
-    (t) => t.is_weekend_task && !t.is_comday,
-  );
 
   const stats = [
     {
@@ -109,12 +106,14 @@ export default function DashboardView({ tasks, users }) {
       dot: "bg-indigo-400",
     },
     {
-      label: "Weekend/Bulan",
-      value: weekendTasks.length,
+      label: "Libur Pengganti",
+      value: monthTasks.filter(
+        (t) => t.is_comday || t.task_type === "libur_pengganti",
+      ).length,
       icon: Moon,
-      iconColor: "text-purple-500",
-      bg: "bg-purple-50",
-      dot: "bg-purple-400",
+      iconColor: "text-emerald-500",
+      bg: "bg-emerald-50",
+      dot: "bg-emerald-400",
     },
   ];
 

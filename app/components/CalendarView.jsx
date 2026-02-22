@@ -184,22 +184,27 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
         // Selalu pakai warna akun fotografer pertama
         const color = firstAssignee?.color || "#64748b";
 
-        const name = task.assigned_to_name?.split(",")[0] || "";
+        // Tampilkan semua nama assignee
+        const allNames = task.assigned_to_name || "";
 
-        // Badge tipe di depan judul
-        let prefix = "";
-        if (task.is_comday || task.task_type === "libur_pengganti")
-          prefix = "🏖️ ";
-        else if (task.is_weekend_task) prefix = "🌙 ";
+        // Badge tipe di depan judul (hapus weekend)
+        const prefix =
+          task.is_comday || task.task_type === "libur_pengganti" ? "🏖️ " : "";
 
         let title = prefix + task.title;
-        if (name) title += ` · ${name}`;
+        if (allNames) title += ` · ${allNames}`;
+
+        // FullCalendar end date exclusive — tambah 1 hari
+        const rawEnd = task.end_date || task.start_date;
+        const endDate = new Date(rawEnd + "T00:00:00");
+        endDate.setDate(endDate.getDate() + 1);
+        const endStr = endDate.toISOString().split("T")[0];
 
         return {
           id: task.id,
           title,
           start: task.start_date,
-          end: task.end_date || task.start_date,
+          end: endStr,
           backgroundColor: color,
           borderColor: color,
           textColor: "#fff",

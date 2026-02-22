@@ -220,9 +220,10 @@ export default function Home() {
       assignee_ids: assigneeIds,
       assigned_to_name: assigneeNames,
       status: editingTask?.status || "todo",
-      is_weekend_task: formData.task_type === "weekend",
+      is_weekend_task: false,
       is_comday: formData.task_type === "libur_pengganti",
       task_type: formData.task_type,
+      priority: "medium",
     };
 
     try {
