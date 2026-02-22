@@ -179,13 +179,18 @@ export default function TaskForm({ users, editingTask, onSubmit, onCancel }) {
                 <input
                   type="date"
                   value={data.start_date}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const newStart = e.target.value;
+                    const newEnd =
+                      data.end_date && data.end_date >= newStart
+                        ? data.end_date
+                        : newStart;
                     setData({
                       ...data,
-                      start_date: e.target.value,
-                      end_date: data.end_date || e.target.value,
-                    })
-                  }
+                      start_date: newStart,
+                      end_date: newEnd,
+                    });
+                  }}
                   className="w-full px-3 py-2.5 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                   required
                 />

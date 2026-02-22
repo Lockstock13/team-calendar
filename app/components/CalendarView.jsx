@@ -194,17 +194,22 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
         let title = prefix + task.title;
         if (allNames) title += ` · ${allNames}`;
 
-        // FullCalendar end date exclusive — tambah 1 hari
-        const rawEnd = task.end_date || task.start_date;
-        const endDate = new Date(rawEnd + "T00:00:00");
-        endDate.setDate(endDate.getDate() + 1);
-        const endStr = endDate.toISOString().split("T")[0];
+        // FullCalendar end date is EXCLUSIVE
+        // Contoh: start=20Feb end=21Feb → harus kirim end=22Feb agar tampil 2 hari
+        const rawEnd =
+          task.end_date && task.end_date >= task.start_date
+            ? task.end_date
+            : task.start_date;
+        const endDateObj = new Date(rawEnd + "T00:00:00");
+        endDateObj.setDate(endDateObj.getDate() + 1);
+        const endStr = endDateObj.toISOString().split("T")[0];
 
         return {
           id: task.id,
           title,
           start: task.start_date,
           end: endStr,
+          allDay: true,
           backgroundColor: color,
           borderColor: color,
           textColor: "#fff",
