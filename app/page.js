@@ -56,6 +56,7 @@ export default function Home() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [inactiveBlock, setInactiveBlock] = useState(false);
+  const [toast, setToast] = useState(null); // { msg, type }
 
   // ─── Auth ────────────────────────────────────────────────────────────────────
 
@@ -240,6 +241,15 @@ export default function Home() {
       if (error) throw error;
       await fetchTasks();
 
+      // Toast sukses
+      setToast({
+        msg: editingTask
+          ? "Jadwal berhasil diupdate ✓"
+          : "Jadwal berhasil ditambahkan ✓",
+        type: "success",
+      });
+      setTimeout(() => setToast(null), 3000);
+
       // Kirim notif Telegram (fire & forget, gak blokir UI)
       fetch("/api/notify", {
         method: "POST",
@@ -399,6 +409,17 @@ export default function Home() {
       </main>
 
       {/* Task Form Modal */}
+      {/* Toast notification */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-lg text-sm font-medium text-white transition-all animate-in fade-in slide-in-from-bottom-4 ${
+            toast.type === "success" ? "bg-emerald-500" : "bg-red-500"
+          }`}
+        >
+          {toast.msg}
+        </div>
+      )}
+
       {showForm && (
         <TaskForm
           users={users}

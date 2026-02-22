@@ -57,12 +57,18 @@ export async function POST(request) {
     );
 
     // Fetch all assignee profiles with notification prefs
-    const { data: assignees } = await supabase
+    const { data: assignees, error: assigneeError } = await supabase
       .from("profiles")
-      .select(
-        "id, full_name, email, telegram_chat_id, push_subscription, notif_telegram, notif_push, notif_email",
-      )
+      .select("*")
       .in("id", assigneeIds);
+
+    if (assigneeError) {
+      console.error("[notify] profiles fetch error:", assigneeError.message);
+      return NextResponse.json(
+        { error: assigneeError.message },
+        { status: 500 },
+      );
+    }
 
     if (!assignees?.length) {
       return NextResponse.json({ ok: true, sent: {} });
