@@ -411,12 +411,14 @@ export default function Home() {
       {/* Task Form Modal */}
       {/* Toast notification */}
       {toast && (
-        <div
-          className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] px-5 py-3 rounded-2xl shadow-xl text-sm font-medium text-white ${
-            toast.type === "success" ? "bg-emerald-500" : "bg-red-500"
-          }`}
-        >
-          {toast.msg}
+        <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none">
+          <div
+            className={`px-7 py-4 rounded-2xl shadow-2xl text-base font-semibold text-white text-center max-w-xs w-full mx-4 ${
+              toast.type === "success" ? "bg-emerald-500" : "bg-red-500"
+            }`}
+          >
+            {toast.msg}
+          </div>
         </div>
       )}
 
