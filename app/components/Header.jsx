@@ -1,29 +1,46 @@
-'use client'
+"use client";
 
-import { Calendar, LayoutDashboard, LayoutList, LogOut, Shield } from 'lucide-react'
-import Link from 'next/link'
+import {
+  Calendar,
+  LayoutDashboard,
+  LayoutList,
+  LogOut,
+  Shield,
+  FileText,
+} from "lucide-react";
+import Link from "next/link";
 
-export default function Header({ session, userProfile, viewMode, setViewMode, handleLogout }) {
-  const isAdmin = userProfile?.role === 'admin'
-  const initial = (userProfile?.full_name || session?.user?.email || '?').charAt(0).toUpperCase()
+export default function Header({
+  session,
+  userProfile,
+  viewMode,
+  setViewMode,
+  handleLogout,
+}) {
+  const isAdmin = userProfile?.role === "admin";
+  const initial = (userProfile?.full_name || session?.user?.email || "?")
+    .charAt(0)
+    .toUpperCase();
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'calendar', label: 'Kalender', icon: Calendar },
-    { id: 'list', label: 'List', icon: LayoutList },
-  ]
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "calendar", label: "Kalender", icon: Calendar },
+    { id: "list", label: "List", icon: LayoutList },
+    { id: "notes", label: "Notes", icon: FileText },
+  ];
 
   return (
     <header className="border-b bg-background/80 backdrop-blur sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-
         {/* Left: Logo + Nav */}
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
               <Calendar className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-bold tracking-tight text-sm hidden sm:inline">Still Photo</span>
+            <span className="font-bold tracking-tight text-sm hidden sm:inline">
+              Still Photo
+            </span>
           </div>
 
           <nav className="flex gap-0.5">
@@ -33,8 +50,8 @@ export default function Header({ session, userProfile, viewMode, setViewMode, ha
                 onClick={() => setViewMode(id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   viewMode === id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -62,12 +79,12 @@ export default function Header({ session, userProfile, viewMode, setViewMode, ha
           >
             <div
               className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-background"
-              style={{ backgroundColor: userProfile?.color || '#64748b' }}
+              style={{ backgroundColor: userProfile?.color || "#64748b" }}
             >
               {initial}
             </div>
             <span className="hidden md:inline text-foreground text-sm">
-              {userProfile?.full_name || 'Profil'}
+              {userProfile?.full_name || "Profil"}
             </span>
           </Link>
 
@@ -79,8 +96,7 @@ export default function Header({ session, userProfile, viewMode, setViewMode, ha
             <LogOut className="w-4 h-4" />
           </button>
         </div>
-
       </div>
     </header>
-  )
+  );
 }

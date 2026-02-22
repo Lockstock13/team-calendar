@@ -195,14 +195,15 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
         if (allNames) title += ` · ${allNames}`;
 
         // FullCalendar end date is EXCLUSIVE
-        // Contoh: start=20Feb end=21Feb → harus kirim end=22Feb agar tampil 2 hari
+        // Fix: pakai local timezone, JANGAN toISOString() karena convert ke UTC
+        // dan bisa mundur 1 hari untuk user di UTC+7 dst
         const rawEnd =
           task.end_date && task.end_date >= task.start_date
             ? task.end_date
             : task.start_date;
-        const endDateObj = new Date(rawEnd + "T00:00:00");
-        endDateObj.setDate(endDateObj.getDate() + 1);
-        const endStr = endDateObj.toISOString().split("T")[0];
+        const [ey, em, ed] = rawEnd.split("-").map(Number);
+        const next = new Date(ey, em - 1, ed + 1); // local time, aman dari timezone
+        const endStr = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
 
         return {
           id: task.id,

@@ -12,6 +12,7 @@ import DashboardView from "./components/DashboardView";
 import CalendarView from "./components/CalendarView";
 import ListView from "./components/ListView";
 import TaskForm from "./components/TaskForm";
+import NotesView from "./components/NotesView";
 
 // Generate warna fallback berdasarkan string
 const generateColor = (str) => {
@@ -386,6 +387,10 @@ export default function Home() {
             onUpdateStatus={handleUpdateStatus}
             filterUserId={filterUserId}
           />
+        )}
+
+        {viewMode === "notes" && (
+          <NotesView session={session} userProfile={userProfile} />
         )}
       </main>
 
