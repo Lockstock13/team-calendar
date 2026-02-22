@@ -11,6 +11,7 @@ import {
   UserX,
   UserCheck,
   Crown,
+  Trash2,
 } from "lucide-react";
 
 function Avatar({ user }) {
@@ -40,12 +41,79 @@ function Badge({ children, color }) {
   );
 }
 
+// ─── Delete Confirmation Modal ────────────────────────────────────────────────
+
+function DeleteConfirmModal({ member, onConfirm, onCancel, loading }) {
+  const name = member?.full_name || member?.email || "member ini";
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-background rounded-2xl border shadow-xl w-full max-w-sm p-6 space-y-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Icon */}
+        <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center mx-auto">
+          <Trash2 className="w-6 h-6 text-red-600" />
+        </div>
+
+        {/* Text */}
+        <div className="text-center space-y-1.5">
+          <h3 className="font-bold text-base">Hapus Member Permanen?</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Akun <span className="font-semibold text-foreground">{name}</span>{" "}
+            akan dihapus secara permanen. Data login mereka akan dihapus dan{" "}
+            <span className="font-semibold text-red-600">
+              tidak dapat dipulihkan.
+            </span>
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Jadwal yang sudah di-assign ke member ini tidak terpengaruh.
+          </p>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex gap-2 pt-1">
+          <button
+            onClick={onCancel}
+            disabled={loading}
+            className="flex-1 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors disabled:opacity-40"
+          >
+            Batal
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Trash2 className="w-4 h-4" />
+            )}
+            {loading ? "Menghapus..." : "Hapus Permanen"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
 export default function AdminPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
+
+  // Delete modal state
+  const [deleteTarget, setDeleteTarget] = useState(null); // member object
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -80,6 +148,8 @@ export default function AdminPage() {
     if (!error && data) setMembers(data);
   };
 
+  // ── Role / status actions ──────────────────────────────────────────────────
+
   const doAction = async (userId, action) => {
     setActionLoading(userId + action);
     try {
@@ -113,8 +183,42 @@ export default function AdminPage() {
     if (confirm(messages[action])) doAction(userId, action);
   };
 
+  // ── Permanent delete ───────────────────────────────────────────────────────
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget || !currentUser) return;
+    setDeleteLoading(true);
+    try {
+      const res = await fetch("/api/admin/delete-member", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: deleteTarget.id,
+          requesterId: currentUser.id,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.error || "Gagal menghapus member");
+      }
+
+      setDeleteTarget(null);
+      await fetchMembers();
+    } catch (err) {
+      alert("Gagal menghapus: " + err.message);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // ── Derived lists ──────────────────────────────────────────────────────────
+
   const activeMembers = members.filter((m) => m.is_active !== false);
   const inactiveMembers = members.filter((m) => m.is_active === false);
+
+  // ── Loading state ──────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -123,6 +227,8 @@ export default function AdminPage() {
       </div>
     );
   }
+
+  // ── Member row ─────────────────────────────────────────────────────────────
 
   function MemberRow({ member }) {
     const isMe = member.id === currentUser?.id;
@@ -155,7 +261,7 @@ export default function AdminPage() {
           <div className="flex items-center gap-1 flex-shrink-0">
             {isActive ? (
               <>
-                {/* Toggle admin */}
+                {/* Toggle admin role */}
                 {isAdmin ? (
                   <button
                     onClick={() =>
@@ -190,7 +296,7 @@ export default function AdminPage() {
                   </button>
                 )}
 
-                {/* Kick */}
+                {/* Kick (nonaktifkan) */}
                 <button
                   onClick={() =>
                     confirmAction(
@@ -208,28 +314,43 @@ export default function AdminPage() {
                 </button>
               </>
             ) : (
-              /* Activate */
-              <button
-                onClick={() =>
-                  confirmAction(
-                    member.id,
-                    "activate",
-                    member.full_name || member.email,
-                  )
-                }
-                disabled={busy}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-40"
-                title="Aktifkan kembali"
-              >
-                <UserCheck className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Aktifkan</span>
-              </button>
+              /* Inactive: Aktifkan + Hapus Permanen */
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() =>
+                    confirmAction(
+                      member.id,
+                      "activate",
+                      member.full_name || member.email,
+                    )
+                  }
+                  disabled={busy}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-40"
+                  title="Aktifkan kembali"
+                >
+                  <UserCheck className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Aktifkan</span>
+                </button>
+
+                {/* Hapus Permanen */}
+                <button
+                  onClick={() => setDeleteTarget(member)}
+                  disabled={busy}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40"
+                  title="Hapus permanen"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Hapus</span>
+                </button>
+              </div>
             )}
           </div>
         )}
       </div>
     );
   }
+
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <div className="min-h-screen bg-muted/20">
@@ -251,12 +372,16 @@ export default function AdminPage() {
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-5">
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div className="bg-background border rounded-2xl p-4 text-center">
-            <p className="text-3xl font-bold tabular-nums">
+            <p className="text-3xl font-bold tabular-nums">{members.length}</p>
+            <p className="text-xs text-muted-foreground mt-1">Total</p>
+          </div>
+          <div className="bg-background border rounded-2xl p-4 text-center">
+            <p className="text-3xl font-bold tabular-nums text-emerald-600">
               {activeMembers.length}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Member Aktif</p>
+            <p className="text-xs text-muted-foreground mt-1">Aktif</p>
           </div>
           <div className="bg-background border rounded-2xl p-4 text-center">
             <p className="text-3xl font-bold tabular-nums text-red-500">
@@ -303,16 +428,29 @@ export default function AdminPage() {
           <p className="font-semibold">📌 Catatan</p>
           <ul className="list-disc list-inside space-y-1 text-xs leading-relaxed">
             <li>
-              Member yang di-kick tidak bisa login, tapi akunnya masih
-              tersimpan.
+              Member yang di-<strong>Kick</strong> tidak bisa login, tapi
+              akunnya masih tersimpan dan bisa diaktifkan kembali.
             </li>
-            <li>Aktifkan kembali kapan saja dari daftar nonaktif di atas.</li>
+            <li>
+              Tombol <strong>Hapus</strong> muncul di akun nonaktif — menghapus
+              data login secara permanen dan tidak bisa dibatalkan.
+            </li>
             <li>
               Admin punya akses ke halaman ini dan bisa mengelola semua jadwal.
             </li>
           </ul>
         </div>
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <DeleteConfirmModal
+          member={deleteTarget}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => !deleteLoading && setDeleteTarget(null)}
+          loading={deleteLoading}
+        />
+      )}
     </div>
   );
 }

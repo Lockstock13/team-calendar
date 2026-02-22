@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev -p 3030",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "generate-icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.20",
@@ -18,9 +19,11 @@
     "fullcalendar": "^6.1.20",
     "lucide-react": "^0.344.0",
     "next": "14.x",
+    "nodemailer": "^8.0.1",
     "react": "18.x",
     "react-dom": "18.x",
-    "tailwind-merge": "^2.2.1"
+    "tailwind-merge": "^2.2.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.17",

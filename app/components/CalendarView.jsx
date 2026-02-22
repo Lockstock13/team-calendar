@@ -8,6 +8,8 @@ import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { X } from "lucide-react";
 
+// ─── Event Detail Modal ────────────────────────────────────────────────────────
+
 function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
   if (!task) return null;
 
@@ -27,6 +29,13 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
     high: "🔴 Tinggi",
   };
 
+  const accentColor =
+    task.is_comday || task.task_type === "libur_pengganti"
+      ? "#10b981"
+      : task.is_weekend_task
+        ? "#a855f7"
+        : assignees[0]?.color || "#64748b";
+
   return (
     <div
       className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
@@ -36,17 +45,10 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
         className="bg-background rounded-2xl border shadow-xl w-full max-w-md"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header stripe */}
+        {/* Colour stripe */}
         <div
           className="h-2 rounded-t-2xl"
-          style={{
-            backgroundColor:
-              task.is_comday || task.task_type === "libur_pengganti"
-                ? "#10b981"
-                : task.is_weekend_task
-                  ? "#a855f7"
-                  : assignees[0]?.color || "#64748b",
-          }}
+          style={{ backgroundColor: accentColor }}
         />
 
         <div className="p-5 space-y-4">
@@ -96,7 +98,11 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
                 )}
                 {task.end_date &&
                   task.end_date !== task.start_date &&
-                  ` – ${format(new Date(task.end_date + "T00:00:00"), "d MMMM yyyy", { locale: id })}`}
+                  ` – ${format(
+                    new Date(task.end_date + "T00:00:00"),
+                    "d MMMM yyyy",
+                    { locale: id },
+                  )}`}
               </span>
             </div>
 
@@ -121,17 +127,23 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
                 Tim
               </span>
               <div className="flex flex-wrap gap-2">
-                {assignees.map((u) => (
-                  <div key={u.id} className="flex items-center gap-1.5">
-                    <div
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                      style={{ backgroundColor: u.color || "#64748b" }}
-                    >
-                      {(u.full_name || u.email).charAt(0).toUpperCase()}
+                {assignees.length > 0 ? (
+                  assignees.map((u) => (
+                    <div key={u.id} className="flex items-center gap-1.5">
+                      <div
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                        style={{ backgroundColor: u.color || "#64748b" }}
+                      >
+                        {(u.full_name || u.email).charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-sm">{u.full_name || u.email}</span>
                     </div>
-                    <span className="text-sm">{u.full_name || u.email}</span>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    {task.assigned_to_name || "—"}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -163,9 +175,13 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
   );
 }
 
+// ─── Main CalendarView ─────────────────────────────────────────────────────────
+
 export default function CalendarView({ tasks, users, onEdit, onDelete }) {
   const [selectedTask, setSelectedTask] = useState(null);
   const [filterUserId, setFilterUserId] = useState("");
+
+  // ── Filtered tasks ──────────────────────────────────────────────────────────
 
   const filtered = useMemo(
     () =>
@@ -175,35 +191,38 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
     [tasks, filterUserId],
   );
 
+  // ── Build FullCalendar event objects ────────────────────────────────────────
+
   const calendarEvents = useMemo(
     () =>
       filtered.map((task) => {
         const assigneeIds = task.assignee_ids || [];
         const firstAssignee = users.find((u) => u.id === assigneeIds[0]);
 
-        // Selalu pakai warna akun fotografer pertama
+        // Use the first assignee's colour; fall back to a neutral grey
         const color = firstAssignee?.color || "#64748b";
 
-        // Tampilkan semua nama assignee
-        const allNames = task.assigned_to_name || "";
-
-        // Badge tipe di depan judul (hapus weekend)
         const prefix =
           task.is_comday || task.task_type === "libur_pengganti" ? "🏖️ " : "";
 
+        const allNames = task.assigned_to_name || "";
         let title = prefix + task.title;
         if (allNames) title += ` · ${allNames}`;
 
-        // FullCalendar end date is EXCLUSIVE
-        // Fix: pakai local timezone, JANGAN toISOString() karena convert ke UTC
-        // dan bisa mundur 1 hari untuk user di UTC+7 dst
+        // FullCalendar end date is EXCLUSIVE.
+        // Build it in local time to avoid UTC-offset issues (e.g. UTC+7 users
+        // seeing dates shift back by one day when using toISOString()).
         const rawEnd =
           task.end_date && task.end_date >= task.start_date
             ? task.end_date
             : task.start_date;
         const [ey, em, ed] = rawEnd.split("-").map(Number);
-        const next = new Date(ey, em - 1, ed + 1); // local time, aman dari timezone
-        const endStr = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, "0")}-${String(next.getDate()).padStart(2, "0")}`;
+        const next = new Date(ey, em - 1, ed + 1);
+        const endStr = [
+          next.getFullYear(),
+          String(next.getMonth() + 1).padStart(2, "0"),
+          String(next.getDate()).padStart(2, "0"),
+        ].join("-");
 
         return {
           id: task.id,
@@ -220,6 +239,22 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
     [filtered, users],
   );
 
+  // ── Render ──────────────────────────────────────────────────────────────────
+  //
+  // NO key prop on FullCalendar.
+  //
+  // Previously we used key={calendarEvents.map(...).join(",")} which forced a
+  // full unmount + remount on every task change, resetting the month view.
+  // Then we switched to key={filterUserId} which still caused a cascading
+  // month-drift bug: datesSet's info.startStr is the grid start (e.g. May 26
+  // for a June view), so each remount jumped back ~1 week, and repeated filter
+  // clicks kept drifting backward toward January.
+  //
+  // The correct fix: no key at all. FullCalendar v6's React wrapper is
+  // fully reactive — when the `events` prop array changes (due to a filter
+  // change or a new task), FullCalendar diffs and updates events in-place
+  // without resetting navigation state.
+
   return (
     <>
       {/* Filter bar */}
@@ -227,6 +262,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
         <span className="text-sm text-muted-foreground font-medium">
           Filter:
         </span>
+
         <button
           onClick={() => setFilterUserId("")}
           className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
@@ -237,6 +273,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
         >
           Semua
         </button>
+
         {users.map((u) => {
           const isActive = filterUserId === u.id;
           const color = u.color || "#64748b";
@@ -274,7 +311,6 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
       {/* Calendar */}
       <div className="bg-background border rounded-2xl p-4 calendar-wrap">
         <FullCalendar
-          key={calendarEvents.map((e) => e.id + e.start + e.end).join(",")}
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
           firstDay={1}
@@ -293,7 +329,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
           height="auto"
           dayCellClassNames={(arg) => {
             const day = arg.date.getDay();
-            return day === 0 || day === 6 ? "fc-weekend-cell" : "";
+            return day === 0 || day === 6 ? ["fc-weekend-cell"] : [];
           }}
           eventContent={(arg) => (
             <div className="px-1.5 py-0.5 text-xs font-medium truncate leading-relaxed">

@@ -13,6 +13,7 @@ import CalendarView from "./components/CalendarView";
 import ListView from "./components/ListView";
 import TaskForm from "./components/TaskForm";
 import NotesView from "./components/NotesView";
+import ReportView from "./components/ReportView";
 
 // Generate warna fallback berdasarkan string
 const generateColor = (str) => {
@@ -216,7 +217,7 @@ export default function Home() {
       description: formData.description,
       start_date: formData.start_date,
       end_date: formData.end_date,
-      priority: formData.priority,
+      priority: formData.priority || "medium",
       created_by: session.user.id,
       assignee_ids: assigneeIds,
       assigned_to_name: assigneeNames,
@@ -224,7 +225,6 @@ export default function Home() {
       is_weekend_task: false,
       is_comday: formData.task_type === "libur_pengganti",
       task_type: formData.task_type,
-      priority: "medium",
     };
 
     try {
@@ -348,6 +348,8 @@ export default function Home() {
               {viewMode === "dashboard" && "Dashboard"}
               {viewMode === "calendar" && "Kalender Jadwal"}
               {viewMode === "list" && "Semua Jadwal"}
+              {viewMode === "notes" && "Catatan"}
+              {viewMode === "report" && "Laporan Bulanan"}
             </h1>
             <p className="text-xs text-muted-foreground">
               {format(new Date(), "EEEE, d MMMM yyyy", { locale: idLocale })}
@@ -392,6 +394,8 @@ export default function Home() {
         {viewMode === "notes" && (
           <NotesView session={session} userProfile={userProfile} />
         )}
+
+        {viewMode === "report" && <ReportView tasks={tasks} users={users} />}
       </main>
 
       {/* Task Form Modal */}

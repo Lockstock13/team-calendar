@@ -160,3 +160,28 @@ CREATE POLICY "tasks: admin delete any"
 
 -- Set first admin (re-run if needed):
 -- UPDATE public.profiles SET role = 'admin' WHERE email = 'insidersusan@gmail.com';
+
+
+-- ─── 7. NOTIFICATION COLUMNS (Push / Telegram / Email) ──────
+-- Run this block in Supabase SQL Editor to add notification
+-- preference columns and the push subscription store.
+
+-- Notification preferences (per-user toggles)
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS notif_telegram   BOOLEAN DEFAULT true,
+  ADD COLUMN IF NOT EXISTS notif_push       BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS notif_email      BOOLEAN DEFAULT false;
+
+-- Web Push subscription object (JSONB — one per user per device/browser)
+-- Contains: { endpoint, keys: { p256dh, auth } }
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS push_subscription JSONB DEFAULT NULL;
+
+-- Index so we can quickly find users who have an active push subscription
+CREATE INDEX IF NOT EXISTS profiles_push_subscription_idx
+  ON public.profiles USING GIN (push_subscription)
+  WHERE push_subscription IS NOT NULL;
+
+-- telegram_chat_id column (in case it's missing from older installs)
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS telegram_chat_id TEXT DEFAULT NULL;

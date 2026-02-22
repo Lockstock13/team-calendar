@@ -7,6 +7,7 @@ import {
   LogOut,
   Shield,
   FileText,
+  BarChart2,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -27,6 +28,7 @@ export default function Header({
     { id: "calendar", label: "Kalender", icon: Calendar },
     { id: "list", label: "List", icon: LayoutList },
     { id: "notes", label: "Notes", icon: FileText },
+    { id: "report", label: "Report", icon: BarChart2 },
   ];
 
   return (
