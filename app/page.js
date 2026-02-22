@@ -134,11 +134,28 @@ export default function Home() {
           options: { data: { full_name: data.full_name } },
         });
         if (error) throw error;
+
+        // Kalau perlu konfirmasi email dulu
+        if (signUpData.user && !signUpData.session) {
+          setAuthError(
+            "✅ Akun berhasil dibuat! Cek email untuk konfirmasi, lalu login.",
+          );
+          setAuthLoading(false);
+          return;
+        }
+
+        // Kalau langsung masuk (email confirmation dimatikan)
         if (signUpData.user) {
-          await supabase
-            .from("profiles")
-            .update({ full_name: data.full_name })
-            .eq("id", signUpData.user.id);
+          await supabase.from("profiles").upsert(
+            {
+              id: signUpData.user.id,
+              email: data.email,
+              full_name: data.full_name,
+              role: "member",
+              is_active: true,
+            },
+            { onConflict: "id" },
+          );
         }
       }
     } catch (err) {
