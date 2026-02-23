@@ -139,10 +139,12 @@ export async function GET(request) {
       })
       .join("\n");
 
-    const pushBody =
-      todayTasks.length === 1
-        ? `${todayTasks[0].title}${todayTasks[0].assigned_to_name ? " · " + todayTasks[0].assigned_to_name : ""}`
-        : `${todayTasks.length} jadwal — ${todayTasks.map((t) => t.title).join(", ")}`;
+    const pushBody = todayTasks
+      .map(
+        (t) =>
+          `${t.title}${t.assigned_to_name ? " · " + t.assigned_to_name : ""}`,
+      )
+      .join(" | ");
 
     // ── Kirim ke setiap member aktif ──────────────────────────────────────────
     for (const member of allMembers) {
