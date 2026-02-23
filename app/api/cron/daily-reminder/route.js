@@ -37,9 +37,13 @@ export async function GET(request) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     );
 
-    // ── Tanggal hari ini (UTC = WIB saat cron jam 05:30) ─────────────────────
+    // ── Tanggal hari ini dalam WIB (UTC+7) ───────────────────────────────────
+    // PENTING: server jalan di UTC. Cron jam 22:30 UTC = 05:30 WIB hari berikutnya.
+    // Kalau pakai now.toISOString() langsung → dapat tanggal UTC (kemarin) → tasks tidak ketemu.
+    // Fix: tambah 7 jam ke UTC biar dapat tanggal WIB yang benar.
     const now = new Date();
-    const todayStr = now.toISOString().split("T")[0];
+    const wibNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+    const todayStr = wibNow.toISOString().split("T")[0];
     const dateLabel = format(
       new Date(todayStr + "T00:00:00"),
       "EEEE, d MMMM yyyy",
