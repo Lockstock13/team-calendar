@@ -53,7 +53,7 @@ export async function GET(request) {
     // ── Ambil semua jadwal hari ini (kecuali libur pengganti) ─────────────────
     const { data: todayTasks, error: taskError } = await supabase
       .from("tasks")
-      .select("*")
+      .select("id, title, start_date, assigned_to_name, task_type")
       .eq("start_date", todayStr)
       .neq("task_type", "libur_pengganti")
       .order("title", { ascending: true });
@@ -239,7 +239,14 @@ export async function GET(request) {
     return NextResponse.json({
       ok: true,
       date: todayStr,
+      utc_now: new Date().toISOString(),
+      wib_now: wibNow.toISOString(),
       tasks: todayTasks.length,
+      task_list: todayTasks.map((t) => ({
+        title: t.title,
+        date: t.start_date,
+        assignee: t.assigned_to_name,
+      })),
       members: allMembers.length,
       notified: stats,
     });
