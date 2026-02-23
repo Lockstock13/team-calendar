@@ -90,8 +90,7 @@ export async function GET(request) {
     if (!todayTasks?.length) {
       console.log(`[cron] ${todayStr}: tidak ada jadwal hari ini.`);
 
-      // Tetap kirim notif "tidak ada jadwal" ke semua member
-      // (opsional — comment blok ini kalau tidak mau notif kalau kosong)
+      // Kirim notif "tidak ada jadwal" ke semua member
       const emptyPayload = {
         title: `☀️ ${dateLabel}`,
         body: "Tidak ada jadwal hari ini. Selamat istirahat! 🎉",
