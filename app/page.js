@@ -57,6 +57,7 @@ export default function Home() {
   const [authError, setAuthError] = useState("");
   const [inactiveBlock, setInactiveBlock] = useState(false);
   const [toast, setToast] = useState(null); // { msg, type }
+  const [submitting, setSubmitting] = useState(false);
 
   // ─── Auth ────────────────────────────────────────────────────────────────────
 
@@ -204,8 +205,18 @@ export default function Home() {
 
   // ─── Task CRUD ────────────────────────────────────────────────────────────────
 
+  const showToast = (msg, type = "success") => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const handleSubmit = async (formData) => {
-    if (!session) return;
+    if (!session) {
+      showToast("Sesi habis, silakan refresh halaman.", "error");
+      return;
+    }
+    if (submitting) return;
+    setSubmitting(true);
 
     const assigneeIds = formData.assignee_ids;
     const assigneeUsers = users.filter((u) => assigneeIds.includes(u.id));
@@ -239,18 +250,20 @@ export default function Home() {
         ({ error } = await supabase.from("tasks").insert([taskData]));
       }
       if (error) throw error;
-      await fetchTasks();
 
-      // Toast sukses
-      setToast({
-        msg: editingTask
+      // Tutup form + toast LANGSUNG — jangan tunggu fetchTasks
+      // Realtime subscription akan update list otomatis
+      closeForm();
+      showToast(
+        editingTask
           ? "Jadwal berhasil diupdate ✓"
           : "Jadwal berhasil ditambahkan ✓",
-        type: "success",
-      });
-      setTimeout(() => setToast(null), 3000);
+      );
 
-      // Kirim notif Telegram (fire & forget, gak blokir UI)
+      // fetchTasks sebagai fallback (non-blocking)
+      fetchTasks().catch(() => {});
+
+      // Kirim notif (fire & forget)
       fetch("/api/notify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -260,11 +273,11 @@ export default function Home() {
           actorName: userProfile?.full_name || session.user.email,
           action: editingTask ? "updated" : "created",
         }),
-      }).catch(() => {}); // silent fail jika Telegram belum dikonfigurasi
-
-      closeForm();
+      }).catch(() => {});
     } catch (err) {
-      alert("Gagal menyimpan: " + err.message);
+      showToast("Gagal menyimpan: " + err.message, "error");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -428,6 +441,7 @@ export default function Home() {
           editingTask={editingTask}
           onSubmit={handleSubmit}
           onCancel={closeForm}
+          submitting={submitting}
         />
       )}
     </div>

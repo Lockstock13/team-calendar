@@ -33,7 +33,13 @@ function Avatar({ user, selected }) {
   );
 }
 
-export default function TaskForm({ users, editingTask, onSubmit, onCancel }) {
+export default function TaskForm({
+  users,
+  editingTask,
+  onSubmit,
+  onCancel,
+  submitting = false,
+}) {
   const getInitialType = () => {
     if (!editingTask) return "regular";
     if (editingTask.is_comday || editingTask.task_type === "libur_pengganti")
@@ -265,15 +271,26 @@ export default function TaskForm({ users, editingTask, onSubmit, onCancel }) {
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors"
+              disabled={submitting}
+              className="flex-1 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors disabled:opacity-40"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+              disabled={submitting}
+              className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              {editingTask ? "Simpan Perubahan" : "Tambah Jadwal"}
+              {submitting ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Menyimpan...
+                </>
+              ) : editingTask ? (
+                "Simpan Perubahan"
+              ) : (
+                "Tambah Jadwal"
+              )}
             </button>
           </div>
         </form>
