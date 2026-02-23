@@ -44,6 +44,11 @@ export async function GET(request) {
     const now = new Date();
     const wibNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
     const todayStr = wibNow.toISOString().split("T")[0];
+    const debug = {
+      utc_now: now.toISOString(),
+      wib_now: wibNow.toISOString(),
+      querying_date: todayStr,
+    };
     const dateLabel = format(
       new Date(todayStr + "T00:00:00"),
       "EEEE, d MMMM yyyy",
@@ -90,6 +95,15 @@ export async function GET(request) {
     if (!todayTasks?.length) {
       console.log(`[cron] ${todayStr}: tidak ada jadwal hari ini.`);
 
+      // Ambil semua tasks tanpa filter tanggal untuk debug
+      const { data: allTasksSample } = await supabase
+        .from("tasks")
+        .select("id, title, start_date, task_type")
+        .order("start_date", { ascending: false })
+        .limit(5);
+
+      console.log(`[cron] debug — 5 tasks terbaru:`, allTasksSample);
+
       // Kirim notif "tidak ada jadwal" ke semua member
       const emptyPayload = {
         title: `☀️ ${dateLabel}`,
@@ -117,6 +131,12 @@ export async function GET(request) {
         date: todayStr,
         tasks: 0,
         notified: stats,
+        debug,
+        recent_tasks_in_db: allTasksSample?.map((t) => ({
+          title: t.title,
+          start_date: t.start_date,
+          task_type: t.task_type,
+        })),
       });
     }
 
