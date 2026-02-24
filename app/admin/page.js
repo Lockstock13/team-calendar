@@ -12,6 +12,7 @@ import {
   UserCheck,
   Crown,
   Trash2,
+  Bell,
 } from "lucide-react";
 
 function Avatar({ user }) {
@@ -188,6 +189,12 @@ export default function AdminPage() {
   const handleDeleteConfirm = async () => {
     if (!deleteTarget || !currentUser) return;
     setDeleteLoading(true);
+
+    // Optimistic: langsung hapus dari state
+    const snapshot = members;
+    setMembers((prev) => prev.filter((m) => m.id !== deleteTarget.id));
+    setDeleteTarget(null);
+
     try {
       const res = await fetch("/api/admin/delete-member", {
         method: "POST",
@@ -204,9 +211,11 @@ export default function AdminPage() {
         throw new Error(result.error || "Gagal menghapus member");
       }
 
-      setDeleteTarget(null);
+      // Konfirmasi dari server — re-fetch biar sinkron
       await fetchMembers();
     } catch (err) {
+      // Revert optimistic update
+      setMembers(snapshot);
       alert("Gagal menghapus: " + err.message);
     } finally {
       setDeleteLoading(false);
@@ -217,6 +226,41 @@ export default function AdminPage() {
 
   const activeMembers = members.filter((m) => m.is_active !== false);
   const inactiveMembers = members.filter((m) => m.is_active === false);
+
+  // ── Test Push ──────────────────────────────────────────────────────────────
+  const [testPushLoading, setTestPushLoading] = useState(false);
+  const [testPushMsg, setTestPushMsg] = useState("");
+
+  const handleTestPush = async () => {
+    setTestPushLoading(true);
+    setTestPushMsg("");
+    try {
+      const res = await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task: {
+            title: "Test Push Notification",
+            description: "Ini adalah test push dari admin.",
+            start_date: new Date().toISOString().split("T")[0],
+            end_date: new Date().toISOString().split("T")[0],
+            task_type: "regular",
+            assigned_to_name: "Semua Member",
+          },
+          assigneeIds: members.map((m) => m.id),
+          actorName: currentUser?.full_name || "Admin",
+          action: "created",
+        }),
+      });
+      const result = await res.json();
+      setTestPushMsg(`✅ Terkirim ke ${result.sent?.push ?? 0} perangkat`);
+    } catch (err) {
+      setTestPushMsg("❌ Gagal: " + err.message);
+    } finally {
+      setTestPushLoading(false);
+      setTimeout(() => setTestPushMsg(""), 4000);
+    }
+  };
 
   // ── Loading state ──────────────────────────────────────────────────────────
 
@@ -422,6 +466,29 @@ export default function AdminPage() {
             </div>
           </div>
         )}
+
+        {/* Test Push */}
+        <div className="bg-background border rounded-2xl p-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold">🔔 Test Push Notification</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Kirim test push ke semua member yang sudah aktifkan notifikasi.
+            </p>
+            {testPushMsg && (
+              <p className="text-xs mt-1 font-medium text-emerald-600">
+                {testPushMsg}
+              </p>
+            )}
+          </div>
+          <button
+            onClick={handleTestPush}
+            disabled={testPushLoading}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex-shrink-0"
+          >
+            <Bell className="w-4 h-4" />
+            {testPushLoading ? "Mengirim..." : "Test Push"}
+          </button>
+        </div>
 
         {/* Info box */}
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-sm text-blue-700 space-y-1">

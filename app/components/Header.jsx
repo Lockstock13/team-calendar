@@ -8,6 +8,7 @@ import {
   Shield,
   FileText,
   BarChart2,
+  MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -17,6 +18,7 @@ export default function Header({
   viewMode,
   setViewMode,
   handleLogout,
+  unreadChat = 0,
 }) {
   const isAdmin = userProfile?.role === "admin";
   const initial = (userProfile?.full_name || session?.user?.email || "?")
@@ -29,6 +31,7 @@ export default function Header({
     { id: "list", label: "List", icon: LayoutList },
     { id: "notes", label: "Notes", icon: FileText },
     { id: "report", label: "Report", icon: BarChart2 },
+    { id: "chat", label: "Chat", icon: MessageCircle, badge: unreadChat },
   ];
 
   return (
@@ -46,11 +49,11 @@ export default function Header({
           </div>
 
           <nav className="flex gap-0.5">
-            {navItems.map(({ id, label, icon: Icon }) => (
+            {navItems.map(({ id, label, icon: Icon, badge }) => (
               <button
                 key={id}
                 onClick={() => setViewMode(id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   viewMode === id
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -58,6 +61,11 @@ export default function Header({
               >
                 <Icon className="w-4 h-4" />
                 <span className="hidden sm:inline">{label}</span>
+                {badge > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                    {badge > 99 ? "99+" : badge}
+                  </span>
+                )}
               </button>
             ))}
           </nav>

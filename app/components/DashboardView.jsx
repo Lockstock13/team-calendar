@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { format, addDays } from "date-fns";
 import { id } from "date-fns/locale";
-import { Sun, Calendar, Clock, Moon, Coffee } from "lucide-react";
+import { Sun, Clock, Coffee, CalendarDays, ChevronRight } from "lucide-react";
 
 function Avatar({ user, size = "sm" }) {
   const cls = size === "lg" ? "w-9 h-9 text-sm" : "w-7 h-7 text-xs";
@@ -22,7 +22,7 @@ function TypeBadge({ task }) {
   if (task.is_comday || task.task_type === "libur_pengganti") {
     return (
       <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
-        🏖️ Libur Pengganti
+        🏖️ Libur
       </span>
     );
   }
@@ -64,20 +64,178 @@ function TaskRow({ task, users }) {
   );
 }
 
-export default function DashboardView({ tasks, users }) {
+// ─── My Schedule task row ──────────────────────────────────────────────────────
+
+function MyTaskRow({ task }) {
+  const dateStr = task.start_date
+    ? format(new Date(task.start_date + "T00:00:00"), "d MMM", { locale: id })
+    : "-";
+  const endStr =
+    task.end_date && task.end_date !== task.start_date
+      ? format(new Date(task.end_date + "T00:00:00"), "d MMM", { locale: id })
+      : null;
+
+  const isLibur = task.is_comday || task.task_type === "libur_pengganti";
+  const barColor = isLibur
+    ? "#10b981"
+    : task.is_weekend_task
+      ? "#a855f7"
+      : "#3b82f6";
+
+  return (
+    <div className="flex items-center gap-3 py-2.5 border-b last:border-0">
+      {/* Color dot */}
+      <div
+        className="w-2 h-2 rounded-full flex-shrink-0"
+        style={{ backgroundColor: barColor }}
+      />
+      {/* Date */}
+      <div className="w-14 flex-shrink-0 text-right">
+        <span className="text-xs font-medium text-muted-foreground tabular-nums">
+          {dateStr}
+        </span>
+        {endStr && (
+          <span className="block text-xs text-muted-foreground/70 tabular-nums">
+            – {endStr}
+          </span>
+        )}
+      </div>
+      {/* Title */}
+      <span className="flex-1 text-sm font-medium truncate">{task.title}</span>
+      {/* Badge */}
+      {isLibur && (
+        <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0">
+          🏖️ Libur
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ─── My Schedule Panel ─────────────────────────────────────────────────────────
+
+function MySchedulePanel({ tasks, users, currentUserId }) {
+  const now = new Date();
+  const monthStart = format(
+    new Date(now.getFullYear(), now.getMonth(), 1),
+    "yyyy-MM-dd",
+  );
+  const monthEnd = format(
+    new Date(now.getFullYear(), now.getMonth() + 1, 0),
+    "yyyy-MM-dd",
+  );
+
+  const currentUser = users.find((u) => u.id === currentUserId);
+
+  const myTasks = useMemo(
+    () =>
+      tasks
+        .filter(
+          (t) =>
+            (t.assignee_ids || []).includes(currentUserId) &&
+            t.start_date >= monthStart &&
+            t.start_date <= monthEnd,
+        )
+        .sort((a, b) => (a.start_date || "").localeCompare(b.start_date || "")),
+    [tasks, currentUserId, monthStart, monthEnd],
+  );
+
+  const regular = myTasks.filter(
+    (t) => !t.is_comday && t.task_type !== "libur_pengganti",
+  );
+  const libur = myTasks.filter(
+    (t) => t.is_comday || t.task_type === "libur_pengganti",
+  );
+
+  const monthLabel = format(now, "MMMM yyyy", { locale: id });
+  const color = currentUser?.color || "#64748b";
+
+  return (
+    <div className="bg-background border rounded-2xl overflow-hidden">
+      {/* Header strip */}
+      <div className="px-5 pt-5 pb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-primary" />
+            My Schedule
+          </h2>
+          <span className="text-xs text-muted-foreground capitalize">
+            {monthLabel}
+          </span>
+        </div>
+
+        {/* User info + summary */}
+        <div className="flex items-center gap-3">
+          {currentUser && <Avatar user={currentUser} size="lg" />}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold truncate">
+              {currentUser?.full_name || currentUser?.email || "Kamu"}
+            </p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-xs text-muted-foreground">
+                {regular.length} tugas
+              </span>
+              {libur.length > 0 && (
+                <>
+                  <span className="text-muted-foreground/40 text-xs">·</span>
+                  <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">
+                    {libur.length} libur pengganti
+                  </span>
+                </>
+              )}
+              <span className="text-muted-foreground/40 text-xs">·</span>
+              <span className="text-xs font-bold tabular-nums">
+                {myTasks.length} total
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        {myTasks.length > 0 && (
+          <div className="mt-3 h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${Math.min((myTasks.length / Math.max(myTasks.length, 1)) * 100, 100)}%`,
+                backgroundColor: color,
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Task list */}
+      <div className="border-t px-5">
+        {myTasks.length === 0 ? (
+          <div className="py-8 text-center text-muted-foreground">
+            <CalendarDays className="w-7 h-7 mx-auto mb-2 opacity-25" />
+            <p className="text-sm">Tidak ada jadwal bulan ini</p>
+          </div>
+        ) : (
+          <div className="max-h-64 overflow-y-auto">
+            {myTasks.map((t) => (
+              <MyTaskRow key={t.id} task={t} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Dashboard ────────────────────────────────────────────────────────────
+
+export default function DashboardView({ tasks, users, currentUserId }) {
   const todayStr = format(new Date(), "yyyy-MM-dd");
   const tomorrowStr = format(addDays(new Date(), 1), "yyyy-MM-dd");
 
   const now = new Date();
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const weekStart = format(startOfWeek, "yyyy-MM-dd");
   const monthStart = format(startOfMonth, "yyyy-MM-dd");
 
   const todayTasks = tasks.filter((t) => t.start_date === todayStr);
   const tomorrowTasks = tasks.filter((t) => t.start_date === tomorrowStr);
-  const weekTasks = tasks.filter((t) => t.start_date >= weekStart);
   const monthTasks = tasks.filter((t) => t.start_date >= monthStart);
 
   const stats = [
@@ -90,14 +248,6 @@ export default function DashboardView({ tasks, users }) {
       dot: "bg-orange-400",
     },
     {
-      label: "Minggu Ini",
-      value: weekTasks.length,
-      icon: Calendar,
-      iconColor: "text-blue-500",
-      bg: "bg-blue-50",
-      dot: "bg-blue-400",
-    },
-    {
       label: "Bulan Ini",
       value: monthTasks.length,
       icon: Clock,
@@ -105,34 +255,12 @@ export default function DashboardView({ tasks, users }) {
       bg: "bg-indigo-50",
       dot: "bg-indigo-400",
     },
-    {
-      label: "Libur Pengganti",
-      value: monthTasks.filter(
-        (t) => t.is_comday || t.task_type === "libur_pengganti",
-      ).length,
-      icon: Moon,
-      iconColor: "text-emerald-500",
-      bg: "bg-emerald-50",
-      dot: "bg-emerald-400",
-    },
   ];
-
-  // Workload per user bulan ini
-  const userWorkload = users
-    .map((u) => ({
-      user: u,
-      count: monthTasks.filter((t) => (t.assignee_ids || []).includes(u.id))
-        .length,
-    }))
-    .filter((w) => w.count > 0)
-    .sort((a, b) => b.count - a.count);
-
-  const maxCount = userWorkload[0]?.count || 1;
 
   return (
     <div className="space-y-6">
-      {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* Stat Cards — 2 cards only */}
+      <div className="grid grid-cols-2 gap-3">
         {stats.map(({ label, value, icon: Icon, iconColor, bg, dot }) => (
           <div
             key={label}
@@ -202,45 +330,12 @@ export default function DashboardView({ tasks, users }) {
           )}
         </div>
 
-        {/* Workload */}
-        <div className="bg-background border rounded-2xl p-5">
-          <h2 className="font-semibold mb-4">Beban Kerja Bulan Ini</h2>
-          {userWorkload.length === 0 ? (
-            <div className="py-10 text-center text-muted-foreground">
-              <p className="text-sm">Belum ada data</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {userWorkload.map(({ user, count }, i) => (
-                <div key={user.id} className="flex items-center gap-3">
-                  <span className="text-xs text-muted-foreground w-4 text-right tabular-nums">
-                    {i + 1}
-                  </span>
-                  <Avatar user={user} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-sm font-medium truncate">
-                        {user.full_name || user.email}
-                      </span>
-                      <span className="text-xs font-bold tabular-nums ml-2">
-                        {count}
-                      </span>
-                    </div>
-                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${(count / maxCount) * 100}%`,
-                          backgroundColor: user.color || "#64748b",
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* My Schedule */}
+        <MySchedulePanel
+          tasks={tasks}
+          users={users}
+          currentUserId={currentUserId}
+        />
       </div>
     </div>
   );

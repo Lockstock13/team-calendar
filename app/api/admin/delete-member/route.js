@@ -9,7 +9,10 @@ export async function POST(request) {
       return NextResponse.json({ error: "Missing userId" }, { status: 400 });
     }
     if (!requesterId) {
-      return NextResponse.json({ error: "Missing requesterId" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing requesterId" },
+        { status: 400 },
+      );
     }
 
     // Gunakan service role key agar bisa delete dari auth.users
@@ -62,10 +65,14 @@ export async function POST(request) {
     // }
 
     // ── Hapus dari tabel profiles ─────────────────────────────────────────────
-    const { error: profileError } = await supabase
+    // Pakai .select() agar kita tahu apakah baris benar-benar terhapus.
+    // Kalau SUPABASE_SERVICE_ROLE_KEY tidak diset, anon key + RLS bisa
+    // return success tapi 0 rows affected — kita tangkap di sini.
+    const { data: deleted, error: profileError } = await supabase
       .from("profiles")
       .delete()
-      .eq("id", userId);
+      .eq("id", userId)
+      .select("id");
 
     if (profileError) {
       console.error("Profile delete error:", profileError);
@@ -75,11 +82,20 @@ export async function POST(request) {
       );
     }
 
+    if (!deleted || deleted.length === 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Hapus gagal — profil tidak ditemukan atau akses ditolak. Pastikan SUPABASE_SERVICE_ROLE_KEY sudah diset di environment variables.",
+        },
+        { status: 500 },
+      );
+    }
+
     // ── Hapus dari auth.users (butuh service role key) ────────────────────────
     let authDeleted = false;
     if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      const { error: authError } =
-        await supabase.auth.admin.deleteUser(userId);
+      const { error: authError } = await supabase.auth.admin.deleteUser(userId);
       if (authError) {
         // Profil sudah terhapus, tapi auth user gagal dihapus.
         // Log saja, jangan rollback — user tidak bisa login tanpa profil.

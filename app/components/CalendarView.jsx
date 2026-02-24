@@ -3,7 +3,7 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { X } from "lucide-react";
@@ -175,14 +175,95 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
   );
 }
 
+// ─── Holiday Detail Modal ──────────────────────────────────────────────────────
+
+function HolidayModal({ holiday, onClose }) {
+  if (!holiday) return null;
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-background rounded-2xl border shadow-xl w-full max-w-sm"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="h-2 rounded-t-2xl bg-red-400" />
+        <div className="p-5 space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">
+                🇮🇩 Libur Nasional
+              </span>
+              <h3 className="font-semibold text-base mt-2 leading-snug">
+                {holiday.localName || holiday.name}
+              </h3>
+              {holiday.localName !== holiday.name && (
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {holiday.name}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1.5 hover:bg-muted rounded-lg flex-shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-muted-foreground w-16">Tanggal</span>
+            <span className="font-medium">
+              {format(
+                new Date(holiday.date + "T00:00:00"),
+                "EEEE, d MMMM yyyy",
+                {
+                  locale: id,
+                },
+              )}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Fetch Indonesian public holidays from Nager.Date ─────────────────────────
+
+async function fetchHolidays(year) {
+  try {
+    const res = await fetch(
+      `https://date.nager.at/api/v3/PublicHolidays/${year}/ID`,
+      { next: { revalidate: 86400 } },
+    );
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
 // ─── Main CalendarView ─────────────────────────────────────────────────────────
 
 export default function CalendarView({ tasks, users, onEdit, onDelete }) {
   const [selectedTask, setSelectedTask] = useState(null);
+  const [selectedHoliday, setSelectedHoliday] = useState(null);
   const [filterUserId, setFilterUserId] = useState("");
+  const [holidays, setHolidays] = useState([]);
+
+  // ── Fetch holidays for current year (+ next year) ──────────────────────────
+  useEffect(() => {
+    const year = new Date().getFullYear();
+    const months = new Date().getMonth(); // 0-based
+    const years = months >= 10 ? [year, year + 1] : [year];
+
+    Promise.all(years.map(fetchHolidays)).then((results) => {
+      setHolidays(results.flat());
+    });
+  }, []);
 
   // ── Filtered tasks ──────────────────────────────────────────────────────────
-
   const filtered = useMemo(
     () =>
       filterUserId
@@ -192,68 +273,91 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
   );
 
   // ── Build FullCalendar event objects ────────────────────────────────────────
+  // Each task is EXPANDED into one event per assignee so every member gets
+  // their own colour block. Event id = "{taskId}-{userId}".
 
-  const calendarEvents = useMemo(
-    () =>
-      filtered.map((task) => {
-        const assigneeIds = task.assignee_ids || [];
-        const firstAssignee = users.find((u) => u.id === assigneeIds[0]);
+  const calendarEvents = useMemo(() => {
+    const taskEvents = filtered.flatMap((task) => {
+      const assigneeIds = task.assignee_ids || [];
 
-        // Use the first assignee's colour; fall back to a neutral grey
-        const color = firstAssignee?.color || "#64748b";
+      // FullCalendar end date is EXCLUSIVE — compute in local time.
+      const rawEnd =
+        task.end_date && task.end_date >= task.start_date
+          ? task.end_date
+          : task.start_date;
+      const [ey, em, ed] = rawEnd.split("-").map(Number);
+      const next = new Date(ey, em - 1, ed + 1);
+      const endStr = [
+        next.getFullYear(),
+        String(next.getMonth() + 1).padStart(2, "0"),
+        String(next.getDate()).padStart(2, "0"),
+      ].join("-");
 
-        const prefix =
-          task.is_comday || task.task_type === "libur_pengganti" ? "🏖️ " : "";
+      const prefix =
+        task.is_comday || task.task_type === "libur_pengganti" ? "🏖️ " : "";
 
-        const allNames = task.assigned_to_name || "";
-        let title = prefix + task.title;
-        if (allNames) title += ` · ${allNames}`;
+      if (assigneeIds.length === 0) {
+        // No assignees — show once with neutral colour
+        return [
+          {
+            id: task.id,
+            title: prefix + task.title,
+            start: task.start_date,
+            end: endStr,
+            allDay: true,
+            backgroundColor: "#64748b",
+            borderColor: "#64748b",
+            textColor: "#fff",
+            extendedProps: { type: "task", task },
+          },
+        ];
+      }
 
-        // FullCalendar end date is EXCLUSIVE.
-        // Build it in local time to avoid UTC-offset issues (e.g. UTC+7 users
-        // seeing dates shift back by one day when using toISOString()).
-        const rawEnd =
-          task.end_date && task.end_date >= task.start_date
-            ? task.end_date
-            : task.start_date;
-        const [ey, em, ed] = rawEnd.split("-").map(Number);
-        const next = new Date(ey, em - 1, ed + 1);
-        const endStr = [
-          next.getFullYear(),
-          String(next.getMonth() + 1).padStart(2, "0"),
-          String(next.getDate()).padStart(2, "0"),
-        ].join("-");
+      // One event per assignee
+      return assigneeIds.map((uid) => {
+        const user = users.find((u) => u.id === uid);
+        const color =
+          task.is_comday || task.task_type === "libur_pengganti"
+            ? "#10b981"
+            : user?.color || "#64748b";
+        const name = user?.full_name || user?.email?.split("@")[0] || "?";
 
         return {
-          id: task.id,
-          title,
+          id: `${task.id}-${uid}`,
+          title: `${prefix}${task.title} · ${name}`,
           start: task.start_date,
           end: endStr,
           allDay: true,
           backgroundColor: color,
           borderColor: color,
           textColor: "#fff",
-          extendedProps: task,
+          extendedProps: { type: "task", task },
         };
-      }),
-    [filtered, users],
-  );
+      });
+    });
 
-  // ── Render ──────────────────────────────────────────────────────────────────
-  //
-  // NO key prop on FullCalendar.
-  //
-  // Previously we used key={calendarEvents.map(...).join(",")} which forced a
-  // full unmount + remount on every task change, resetting the month view.
-  // Then we switched to key={filterUserId} which still caused a cascading
-  // month-drift bug: datesSet's info.startStr is the grid start (e.g. May 26
-  // for a June view), so each remount jumped back ~1 week, and repeated filter
-  // clicks kept drifting backward toward January.
-  //
-  // The correct fix: no key at all. FullCalendar v6's React wrapper is
-  // fully reactive — when the `events` prop array changes (due to a filter
-  // change or a new task), FullCalendar diffs and updates events in-place
-  // without resetting navigation state.
+    // Holiday events — red, non-interactive feel
+    const holidayEvents = holidays.map((h) => ({
+      id: `holiday-${h.date}`,
+      title: `🇮🇩 ${h.localName || h.name}`,
+      start: h.date,
+      end: h.date,
+      allDay: true,
+      backgroundColor: "#fee2e2",
+      borderColor: "#fca5a5",
+      textColor: "#dc2626",
+      extendedProps: { type: "holiday", holiday: h },
+      display: "block",
+    }));
+
+    return [...holidayEvents, ...taskEvents];
+  }, [filtered, users, holidays]);
+
+  // ── Day cell background tint for holidays ───────────────────────────────────
+  const holidayDates = useMemo(
+    () => new Set(holidays.map((h) => h.date)),
+    [holidays],
+  );
 
   return (
     <>
@@ -308,6 +412,24 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
         })}
       </div>
 
+      {/* Legend */}
+      <div className="flex items-center gap-3 mb-3 flex-wrap">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm bg-red-200 border border-red-300" />
+          <span className="text-xs text-muted-foreground">Libur Nasional</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm bg-emerald-400" />
+          <span className="text-xs text-muted-foreground">Libur Pengganti</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm bg-primary" />
+          <span className="text-xs text-muted-foreground">
+            1 blok = 1 anggota tim
+          </span>
+        </div>
+      </div>
+
       {/* Calendar */}
       <div className="bg-background border rounded-2xl p-4 calendar-wrap">
         <FullCalendar
@@ -323,23 +445,42 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
           }}
           buttonText={{ today: "Hari Ini", month: "Bulan", week: "Minggu" }}
           eventClick={(info) => {
-            const task = tasks.find((t) => t.id === info.event.id);
-            if (task) setSelectedTask(task);
+            const { type, task, holiday } = info.event.extendedProps;
+            if (type === "holiday") {
+              setSelectedHoliday(holiday);
+            } else {
+              setSelectedTask(task);
+            }
           }}
           height="auto"
           dayCellClassNames={(arg) => {
             const day = arg.date.getDay();
-            return day === 0 || day === 6 ? ["fc-weekend-cell"] : [];
+            const dateStr = [
+              arg.date.getFullYear(),
+              String(arg.date.getMonth() + 1).padStart(2, "0"),
+              String(arg.date.getDate()).padStart(2, "0"),
+            ].join("-");
+            const classes = [];
+            if (day === 0 || day === 6) classes.push("fc-weekend-cell");
+            if (holidayDates.has(dateStr)) classes.push("fc-holiday-cell");
+            return classes;
           }}
-          eventContent={(arg) => (
-            <div className="px-1.5 py-0.5 text-xs font-medium truncate leading-relaxed">
-              {arg.event.title}
-            </div>
-          )}
+          eventContent={(arg) => {
+            const isHoliday = arg.event.extendedProps.type === "holiday";
+            return (
+              <div
+                className={`px-1.5 py-0.5 text-xs font-medium truncate leading-relaxed ${
+                  isHoliday ? "italic" : ""
+                }`}
+              >
+                {arg.event.title}
+              </div>
+            );
+          }}
         />
       </div>
 
-      {/* Event detail modal */}
+      {/* Task detail modal */}
       {selectedTask && (
         <EventDetailModal
           task={selectedTask}
@@ -347,6 +488,14 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
           onClose={() => setSelectedTask(null)}
           onEdit={onEdit}
           onDelete={onDelete}
+        />
+      )}
+
+      {/* Holiday detail modal */}
+      {selectedHoliday && (
+        <HolidayModal
+          holiday={selectedHoliday}
+          onClose={() => setSelectedHoliday(null)}
         />
       )}
     </>

@@ -14,6 +14,7 @@ import ListView from "./components/ListView";
 import TaskForm from "./components/TaskForm";
 import NotesView from "./components/NotesView";
 import ReportView from "./components/ReportView";
+import ChatView from "./components/ChatView";
 
 // Generate warna fallback berdasarkan string
 const generateColor = (str) => {
@@ -58,6 +59,7 @@ export default function Home() {
   const [inactiveBlock, setInactiveBlock] = useState(false);
   const [toast, setToast] = useState(null); // { msg, type }
   const [submitting, setSubmitting] = useState(false);
+  const [unreadChat, setUnreadChat] = useState(0);
 
   // ─── Auth ────────────────────────────────────────────────────────────────────
 
@@ -66,6 +68,18 @@ export default function Home() {
       if (session) await bootSession(session);
       else setLoading(false);
     });
+
+    // Realtime: unread chat badge
+    const chatChannel = supabase
+      .channel("chat_unread")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        () => {
+          if (viewMode !== "chat") setUnreadChat((n) => n + 1);
+        },
+      )
+      .subscribe();
 
     const {
       data: { subscription },
@@ -98,6 +112,7 @@ export default function Home() {
     return () => {
       subscription.unsubscribe();
       supabase.removeChannel(channel);
+      supabase.removeChannel(chatChannel);
     };
   }, []);
 
@@ -359,8 +374,12 @@ export default function Home() {
         session={session}
         userProfile={userProfile}
         viewMode={viewMode}
-        setViewMode={setViewMode}
+        setViewMode={(v) => {
+          if (v === "chat") setUnreadChat(0);
+          setViewMode(v);
+        }}
         handleLogout={handleLogout}
+        unreadChat={unreadChat}
       />
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-4">
@@ -373,6 +392,7 @@ export default function Home() {
               {viewMode === "list" && "Semua Jadwal"}
               {viewMode === "notes" && "Catatan"}
               {viewMode === "report" && "Laporan Bulanan"}
+              {viewMode === "chat" && "Team Chat"}
             </h1>
             <p className="text-xs text-muted-foreground">
               {format(new Date(), "EEEE, d MMMM yyyy", { locale: idLocale })}
@@ -391,7 +411,11 @@ export default function Home() {
 
         {/* Views */}
         {viewMode === "dashboard" && (
-          <DashboardView tasks={tasks} users={users} />
+          <DashboardView
+            tasks={tasks}
+            users={users}
+            currentUserId={session.user.id}
+          />
         )}
 
         {viewMode === "calendar" && (
@@ -419,6 +443,10 @@ export default function Home() {
         )}
 
         {viewMode === "report" && <ReportView tasks={tasks} users={users} />}
+
+        {viewMode === "chat" && (
+          <ChatView session={session} userProfile={userProfile} users={users} />
+        )}
       </main>
 
       {/* Task Form Modal */}

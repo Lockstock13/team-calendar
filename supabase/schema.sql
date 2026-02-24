@@ -185,3 +185,46 @@ CREATE INDEX IF NOT EXISTS profiles_push_subscription_idx
 -- telegram_chat_id column (in case it's missing from older installs)
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS telegram_chat_id TEXT DEFAULT NULL;
+
+
+-- ─── 8. NOTES note_type COLUMN ──────────────────────────────
+-- Tambah kolom note_type ke tabel notes (jika belum ada).
+
+ALTER TABLE public.notes
+  ADD COLUMN IF NOT EXISTS note_type TEXT NOT NULL DEFAULT 'regular'
+    CHECK (note_type IN ('regular', 'table'));
+
+
+-- ─── 9. MESSAGES TABLE (Team Chat) ──────────────────────────
+
+CREATE TABLE IF NOT EXISTS public.messages (
+  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  content    TEXT NOT NULL,
+  user_id    UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Index untuk query urut waktu
+CREATE INDEX IF NOT EXISTS messages_created_at_idx
+  ON public.messages (created_at ASC);
+
+-- RLS
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+
+-- Semua member aktif bisa baca semua pesan
+CREATE POLICY "messages: read all"
+  ON public.messages FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- Member aktif bisa kirim pesan
+CREATE POLICY "messages: insert own"
+  ON public.messages FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+-- Hanya pemilik pesan yang bisa hapus pesannya sendiri
+CREATE POLICY "messages: delete own"
+  ON public.messages FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_id);

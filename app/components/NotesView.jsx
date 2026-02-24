@@ -2,22 +2,39 @@
 
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { Pin, PinOff, Pencil, Trash2, Plus, Check, X } from "lucide-react";
+import {
+  Pin,
+  PinOff,
+  Pencil,
+  Trash2,
+  Plus,
+  Check,
+  X,
+  Table,
+  FileText,
+  Maximize2,
+} from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+// ─── Constants ─────────────────────────────────────────────────────────────────
 
 const CATEGORIES = [
-  { id: "all",        label: "Semua",    emoji: "" },
-  { id: "umum",       label: "Umum",     emoji: "🗒️" },
-  { id: "keuangan",   label: "Keuangan", emoji: "💰" },
-  { id: "password",   label: "Password", emoji: "🔐" },
-  { id: "lainnya",    label: "Lainnya",  emoji: "📋" },
+  { id: "all", label: "Semua", emoji: "" },
+  { id: "umum", label: "Umum", emoji: "🗒️" },
+  { id: "keuangan", label: "Keuangan", emoji: "💰" },
+  { id: "password", label: "Password", emoji: "🔐" },
+  { id: "lainnya", label: "Lainnya", emoji: "📋" },
 ];
 
 const CAT_STYLE = {
-  umum:     "bg-blue-50 text-blue-700 border-blue-200",
+  umum: "bg-blue-50 text-blue-700 border-blue-200",
   keuangan: "bg-yellow-50 text-yellow-700 border-yellow-200",
   password: "bg-red-50 text-red-600 border-red-200",
-  lainnya:  "bg-slate-50 text-slate-600 border-slate-200",
+  lainnya: "bg-slate-50 text-slate-600 border-slate-200",
 };
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
 
 function Avatar({ user }) {
   return (
@@ -31,28 +48,129 @@ function Avatar({ user }) {
   );
 }
 
-function NoteCard({ note, currentUser, users, onUpdate, onDelete }) {
-  const [editing, setEditing]   = useState(false);
-  const [title, setTitle]       = useState(note.title);
-  const [content, setContent]   = useState(note.content || "");
+function parseTableContent(raw) {
+  try {
+    const parsed = JSON.parse(raw || "{}");
+    if (parsed.headers && parsed.rows) return parsed;
+  } catch {}
+  return {
+    headers: ["Kolom 1", "Kolom 2", "Kolom 3"],
+    rows: [
+      ["", "", ""],
+      ["", "", ""],
+    ],
+  };
+}
+
+function CategoryPills({ value, onChange }) {
+  return (
+    <div className="flex gap-1.5 flex-wrap">
+      {CATEGORIES.filter((c) => c.id !== "all").map((c) => (
+        <button
+          key={c.id}
+          type="button"
+          onClick={() => onChange(c.id)}
+          className={`text-xs px-2 py-0.5 rounded-full border font-medium transition-all ${
+            value === c.id
+              ? CAT_STYLE[c.id]
+              : "bg-muted text-muted-foreground border-transparent"
+          }`}
+        >
+          {c.emoji} {c.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── Markdown Toolbar ──────────────────────────────────────────────────────────
+
+const MD_ACTIONS = [
+  { label: "B", wrap: ["**", "**"], title: "Bold" },
+  { label: "I", wrap: ["*", "*"], title: "Italic" },
+  { label: "~~S~~", wrap: ["~~", "~~"], title: "Strikethrough" },
+  { label: "`C`", wrap: ["`", "`"], title: "Inline code" },
+  { label: "H1", prefix: "# ", title: "Heading 1" },
+  { label: "H2", prefix: "## ", title: "Heading 2" },
+  { label: "- ", prefix: "- ", title: "List item" },
+  { label: "[ ]", prefix: "- [ ] ", title: "Checkbox" },
+  { label: "> ", prefix: "> ", title: "Blockquote" },
+];
+
+function MdToolbar({ textareaRef, value, onChange }) {
+  const apply = (action) => {
+    const el = textareaRef.current;
+    if (!el) return;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    const selected = value.slice(start, end);
+    let newVal, cursor;
+    if (action.wrap) {
+      const [before, after] = action.wrap;
+      newVal =
+        value.slice(0, start) + before + selected + after + value.slice(end);
+      cursor = start + before.length + selected.length + after.length;
+    } else {
+      newVal =
+        value.slice(0, start) + action.prefix + selected + value.slice(end);
+      cursor = start + action.prefix.length + selected.length;
+    }
+    onChange(newVal);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.setSelectionRange(cursor, cursor);
+    });
+  };
+
+  return (
+    <div className="flex gap-0.5 flex-wrap px-1 py-1 border-b bg-muted/30">
+      {MD_ACTIONS.map((a) => (
+        <button
+          key={a.title}
+          type="button"
+          title={a.title}
+          onClick={() => apply(a)}
+          className="px-2 py-0.5 text-xs font-mono font-semibold text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+        >
+          {a.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// ─── Markdown Note Card ────────────────────────────────────────────────────────
+
+function MarkdownNoteCard({ note, currentUser, users, onUpdate, onDelete }) {
+  const [editing, setEditing] = useState(false);
+  const [preview, setPreview] = useState(false);
+  const [title, setTitle] = useState(note.title);
+  const [content, setContent] = useState(note.content || "");
   const [category, setCategory] = useState(note.category || "umum");
-  const [saving, setSaving]     = useState(false);
+  const [saving, setSaving] = useState(false);
   const textRef = useRef(null);
 
-  const author  = users.find((u) => u.id === note.created_by);
-  const editor  = users.find((u) => u.id === note.updated_by);
-  const isMe    = currentUser?.id === note.created_by;
+  const author = users.find((u) => u.id === note.created_by);
+  const isMe = currentUser?.id === note.created_by;
   const isAdmin = currentUser?.role === "admin";
   const canEdit = isMe || isAdmin;
+  const catObj =
+    CATEGORIES.find((c) => c.id === note.category) || CATEGORIES[1];
 
-  const catObj = CATEGORIES.find((c) => c.id === note.category) || CATEGORIES[1];
+  const [expanded, setExpanded] = useState(false);
 
   const save = async () => {
     if (!title.trim()) return;
     setSaving(true);
-    await onUpdate(note.id, { title, content, category, updated_by: currentUser.id });
+    await onUpdate(note.id, {
+      title,
+      content,
+      category,
+      updated_by: currentUser.id,
+    });
     setSaving(false);
     setEditing(false);
+    setPreview(false);
   };
 
   const cancel = () => {
@@ -60,250 +178,919 @@ function NoteCard({ note, currentUser, users, onUpdate, onDelete }) {
     setContent(note.content || "");
     setCategory(note.category || "umum");
     setEditing(false);
+    setPreview(false);
   };
 
   const togglePin = () =>
     onUpdate(note.id, { pinned: !note.pinned, updated_by: currentUser.id });
 
   useEffect(() => {
-    if (editing && textRef.current) textRef.current.focus();
-  }, [editing]);
+    if (editing && !preview && textRef.current) textRef.current.focus();
+  }, [editing, preview]);
 
   return (
-    <div
-      className={`bg-background border rounded-2xl p-4 flex flex-col gap-3 transition-shadow hover:shadow-md ${
-        note.pinned ? "border-primary/40 ring-1 ring-primary/10" : ""
-      }`}
-    >
-      {/* Top row */}
-      <div className="flex items-start justify-between gap-2">
-        {editing ? (
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="flex-1 text-sm font-semibold bg-transparent border-b border-primary/40 focus:outline-none pb-0.5"
-            placeholder="Judul catatan"
-          />
-        ) : (
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {note.pinned && (
-              <Pin className="w-3 h-3 text-primary flex-shrink-0" />
+    <>
+      <div
+        className={`bg-background border rounded-2xl overflow-hidden flex flex-col transition-shadow hover:shadow-md ${note.pinned ? "border-primary/40 ring-1 ring-primary/10" : ""}`}
+      >
+        <div className="h-0.5 bg-blue-400" />
+        <div className="p-4 flex flex-col gap-3 flex-1">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-2">
+            {editing ? (
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="flex-1 text-sm font-semibold bg-transparent border-b border-primary/40 focus:outline-none pb-0.5"
+                placeholder="Judul catatan"
+              />
+            ) : (
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {note.pinned && (
+                  <Pin className="w-3 h-3 text-primary flex-shrink-0" />
+                )}
+                <h3 className="text-sm font-semibold truncate">{note.title}</h3>
+              </div>
             )}
-            <h3 className="text-sm font-semibold truncate">{note.title}</h3>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {editing ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setPreview((v) => !v)}
+                    className={`px-2 py-1 text-xs rounded-lg font-medium transition-colors ${preview ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+                  >
+                    {preview ? "Edit" : "Preview"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={save}
+                    disabled={saving || !title.trim()}
+                    className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg disabled:opacity-40"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancel}
+                    className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              ) : (
+                canEdit && (
+                  <>
+                    <button
+                      onClick={() => setExpanded(true)}
+                      className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
+                      title="Buka penuh"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={togglePin}
+                      className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
+                      title={note.pinned ? "Unpin" : "Pin"}
+                    >
+                      {note.pinned ? (
+                        <PinOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Pin className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setEditing(true)}
+                      className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
+                      title="Edit"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => onDelete(note.id)}
+                      className="p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-500 rounded-lg"
+                      title="Hapus"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                )
+              )}
+            </div>
+          </div>
+
+          {/* Category (edit only) */}
+          {editing && <CategoryPills value={category} onChange={setCategory} />}
+
+          {/* Content */}
+          {editing ? (
+            preview ? (
+              <div className="prose prose-sm max-w-none min-h-[100px] px-3 py-2 bg-muted/20 border rounded-xl overflow-auto">
+                {content ? (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {content}
+                  </ReactMarkdown>
+                ) : (
+                  <p className="text-muted-foreground text-sm italic">
+                    Preview kosong...
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="border rounded-xl overflow-hidden">
+                <MdToolbar
+                  textareaRef={textRef}
+                  value={content}
+                  onChange={setContent}
+                />
+                <textarea
+                  ref={textRef}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full text-sm bg-background px-3 py-2 focus:outline-none resize-none leading-relaxed font-mono"
+                  rows={6}
+                  placeholder={
+                    "Tulis dengan Markdown...\n**bold**, *italic*, # Heading, - list, `code`"
+                  }
+                />
+              </div>
+            )
+          ) : note.content ? (
+            <div className="prose prose-sm max-w-none overflow-auto">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {note.content}
+              </ReactMarkdown>
+            </div>
+          ) : null}
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-1 border-t mt-auto">
+            <div className="flex items-center gap-1.5">
+              {author && <Avatar user={author} />}
+              <span className="text-xs text-muted-foreground">
+                {author?.full_name || author?.email || "—"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+                <FileText className="w-3 h-3" /> MD
+              </span>
+              {!editing && (
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full border font-medium ${CAT_STYLE[note.category] || CAT_STYLE.lainnya}`}
+                >
+                  {catObj.emoji} {catObj.label}
+                </span>
+              )}
+              <span className="text-xs text-muted-foreground">
+                {note.updated_at
+                  ? new Date(note.updated_at).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                    })
+                  : ""}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Expand Modal */}
+      {expanded && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setExpanded(false)}
+        >
+          <div
+            className="bg-background rounded-2xl border shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="h-0.5 bg-blue-400" />
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <div className="flex items-center gap-2">
+                {note.pinned && <Pin className="w-3.5 h-3.5 text-primary" />}
+                <h2 className="font-semibold text-base">{note.title}</h2>
+              </div>
+              <button
+                onClick={() => setExpanded(false)}
+                className="p-1.5 hover:bg-muted rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 py-4">
+              {note.content ? (
+                <div className="prose prose-sm max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {note.content}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground italic">
+                  Catatan kosong.
+                </p>
+              )}
+            </div>
+            <div className="px-5 py-3 border-t flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                {author && <Avatar user={author} />}
+                <span className="text-xs text-muted-foreground">
+                  {author?.full_name || author?.email}
+                </span>
+              </div>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full border font-medium ${CAT_STYLE[note.category] || CAT_STYLE.lainnya}`}
+              >
+                {catObj.emoji} {catObj.label}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ─── Table Note Card ───────────────────────────────────────────────────────────
+
+function TableNoteCard({ note, currentUser, users, onUpdate, onDelete }) {
+  const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(note.title);
+  const [category, setCategory] = useState(note.category || "umum");
+  const [tableData, setTableData] = useState(() =>
+    parseTableContent(note.content),
+  );
+  const [saving, setSaving] = useState(false);
+
+  const author = users.find((u) => u.id === note.created_by);
+  const isMe = currentUser?.id === note.created_by;
+  const isAdmin = currentUser?.role === "admin";
+  const canEdit = isMe || isAdmin;
+  const catObj =
+    CATEGORIES.find((c) => c.id === note.category) || CATEGORIES[1];
+
+  const save = async () => {
+    if (!title.trim()) return;
+    setSaving(true);
+    await onUpdate(note.id, {
+      title,
+      content: JSON.stringify(tableData),
+      category,
+      updated_by: currentUser.id,
+    });
+    setSaving(false);
+    setEditing(false);
+  };
+
+  const cancel = () => {
+    setTitle(note.title);
+    setCategory(note.category || "umum");
+    setTableData(parseTableContent(note.content));
+    setEditing(false);
+  };
+
+  const togglePin = () =>
+    onUpdate(note.id, { pinned: !note.pinned, updated_by: currentUser.id });
+
+  const updateHeader = (i, val) => {
+    const h = [...tableData.headers];
+    h[i] = val;
+    setTableData({ ...tableData, headers: h });
+  };
+
+  const updateCell = (r, c, val) => {
+    const rows = tableData.rows.map((row) => [...row]);
+    rows[r][c] = val;
+    setTableData({ ...tableData, rows });
+  };
+
+  const addRow = () =>
+    setTableData({
+      ...tableData,
+      rows: [...tableData.rows, tableData.headers.map(() => "")],
+    });
+
+  const removeRow = (r) => {
+    const rows = tableData.rows.filter((_, i) => i !== r);
+    setTableData({
+      ...tableData,
+      rows: rows.length ? rows : [tableData.headers.map(() => "")],
+    });
+  };
+
+  const addCol = () =>
+    setTableData({
+      headers: [...tableData.headers, `Kolom ${tableData.headers.length + 1}`],
+      rows: tableData.rows.map((row) => [...row, ""]),
+    });
+
+  const removeCol = (c) => {
+    if (tableData.headers.length <= 1) return;
+    setTableData({
+      headers: tableData.headers.filter((_, i) => i !== c),
+      rows: tableData.rows.map((row) => row.filter((_, i) => i !== c)),
+    });
+  };
+
+  const viewData = parseTableContent(note.content);
+
+  return (
+    <>
+      <div
+        className={`bg-background border rounded-2xl overflow-hidden flex flex-col transition-shadow hover:shadow-md ${note.pinned ? "border-primary/40 ring-1 ring-primary/10" : ""}`}
+      >
+        <div className="h-0.5 bg-emerald-400" />
+        <div className="p-4 flex flex-col gap-3 flex-1">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-2">
+            {editing ? (
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="flex-1 text-sm font-semibold bg-transparent border-b border-primary/40 focus:outline-none pb-0.5"
+                placeholder="Judul tabel"
+              />
+            ) : (
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {note.pinned && (
+                  <Pin className="w-3 h-3 text-primary flex-shrink-0" />
+                )}
+                <h3 className="text-sm font-semibold truncate">{note.title}</h3>
+              </div>
+            )}
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {editing ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={save}
+                    disabled={saving || !title.trim()}
+                    className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg disabled:opacity-40"
+                  >
+                    <Check className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={cancel}
+                    className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </>
+              ) : (
+                canEdit && (
+                  <>
+                    <button
+                      onClick={() => setExpanded(true)}
+                      className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
+                      title="Buka penuh"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={togglePin}
+                      className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
+                      title={note.pinned ? "Unpin" : "Pin"}
+                    >
+                      {note.pinned ? (
+                        <PinOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Pin className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setEditing(true)}
+                      className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
+                      title="Edit"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => onDelete(note.id)}
+                      className="p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-500 rounded-lg"
+                      title="Hapus"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                )
+              )}
+            </div>
+          </div>
+
+          {/* Category (edit only) */}
+          {editing && <CategoryPills value={category} onChange={setCategory} />}
+
+          {/* Table */}
+          {editing ? (
+            <div className="overflow-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr>
+                    {tableData.headers.map((h, c) => (
+                      <th
+                        key={c}
+                        className="border border-border p-0 min-w-[80px]"
+                      >
+                        <div className="flex items-center">
+                          <input
+                            value={h}
+                            onChange={(e) => updateHeader(c, e.target.value)}
+                            className="flex-1 px-2 py-1.5 font-semibold bg-muted/50 focus:outline-none focus:bg-primary/5 w-full min-w-0"
+                          />
+                          {tableData.headers.length > 1 && (
+                            <button
+                              onClick={() => removeCol(c)}
+                              className="px-1 text-muted-foreground hover:text-red-500 flex-shrink-0"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                    <th className="border border-border p-0 w-7">
+                      <button
+                        onClick={addCol}
+                        className="w-full h-full px-1 py-1.5 text-muted-foreground hover:text-primary hover:bg-muted/50 font-bold text-sm"
+                      >
+                        +
+                      </button>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tableData.rows.map((row, r) => (
+                    <tr key={r}>
+                      {row.map((cell, c) => (
+                        <td key={c} className="border border-border p-0">
+                          <input
+                            value={cell}
+                            onChange={(e) => updateCell(r, c, e.target.value)}
+                            className="w-full px-2 py-1.5 bg-transparent focus:outline-none focus:bg-primary/5"
+                          />
+                        </td>
+                      ))}
+                      <td className="border border-border p-0 w-7">
+                        <button
+                          onClick={() => removeRow(r)}
+                          className="w-full h-full flex items-center justify-center px-1 py-1.5 text-muted-foreground hover:text-red-500"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <button
+                onClick={addRow}
+                className="mt-1.5 text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
+              >
+                <Plus className="w-3 h-3" /> Tambah baris
+              </button>
+            </div>
+          ) : (
+            <div className="overflow-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr>
+                    {viewData.headers.map((h, i) => (
+                      <th
+                        key={i}
+                        className="border border-border px-2 py-1.5 bg-muted/40 font-semibold text-left whitespace-nowrap"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {viewData.rows.map((row, r) => (
+                    <tr key={r} className="hover:bg-muted/20 transition-colors">
+                      {row.map((cell, c) => (
+                        <td
+                          key={c}
+                          className="border border-border px-2 py-1.5 whitespace-pre-wrap break-words"
+                        >
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-1 border-t mt-auto">
+            <div className="flex items-center gap-1.5">
+              {author && <Avatar user={author} />}
+              <span className="text-xs text-muted-foreground">
+                {author?.full_name || author?.email || "—"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
+                <Table className="w-3 h-3" /> Tabel
+              </span>
+              {!editing && (
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full border font-medium ${CAT_STYLE[note.category] || CAT_STYLE.lainnya}`}
+                >
+                  {catObj.emoji} {catObj.label}
+                </span>
+              )}
+              <span className="text-xs text-muted-foreground">
+                {note.updated_at
+                  ? new Date(note.updated_at).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                    })
+                  : ""}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Expand Modal */}
+      {expanded && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={() => setExpanded(false)}
+        >
+          <div
+            className="bg-background rounded-2xl border shadow-xl w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="h-0.5 bg-emerald-400" />
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <div className="flex items-center gap-2">
+                {note.pinned && <Pin className="w-3.5 h-3.5 text-primary" />}
+                <h2 className="font-semibold text-base">{note.title}</h2>
+              </div>
+              <button
+                onClick={() => setExpanded(false)}
+                className="p-1.5 hover:bg-muted rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto px-5 py-4">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr>
+                    {viewData.headers.map((h, i) => (
+                      <th
+                        key={i}
+                        className="border border-border px-3 py-2 bg-muted/40 font-semibold text-left whitespace-nowrap"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {viewData.rows.map((row, r) => (
+                    <tr key={r} className="hover:bg-muted/20">
+                      {row.map((cell, c) => (
+                        <td
+                          key={c}
+                          className="border border-border px-3 py-2 whitespace-pre-wrap break-words"
+                        >
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="px-5 py-3 border-t flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                {author && <Avatar user={author} />}
+                <span className="text-xs text-muted-foreground">
+                  {author?.full_name || author?.email}
+                </span>
+              </div>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full border font-medium ${CAT_STYLE[note.category] || CAT_STYLE.lainnya}`}
+              >
+                {catObj.emoji} {catObj.label}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ─── New Note Form ─────────────────────────────────────────────────────────────
+
+function NewNoteForm({ currentUser, onSave, onCancel }) {
+  const [noteType, setNoteType] = useState("regular");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [category, setCategory] = useState("umum");
+  const [preview, setPreview] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [tableData, setTableData] = useState({
+    headers: ["Kolom 1", "Kolom 2", "Kolom 3"],
+    rows: [
+      ["", "", ""],
+      ["", "", ""],
+    ],
+  });
+  const textRef = useRef(null);
+
+  const submit = async () => {
+    if (!title.trim()) return;
+    setSaving(true);
+    const rawContent =
+      noteType === "table" ? JSON.stringify(tableData) : content;
+    await onSave({ title, content: rawContent, category, note_type: noteType });
+    setSaving(false);
+  };
+
+  const updateHeader = (i, val) => {
+    const h = [...tableData.headers];
+    h[i] = val;
+    setTableData({ ...tableData, headers: h });
+  };
+
+  const updateCell = (r, c, val) => {
+    const rows = tableData.rows.map((row) => [...row]);
+    rows[r][c] = val;
+    setTableData({ ...tableData, rows });
+  };
+
+  const addRow = () =>
+    setTableData({
+      ...tableData,
+      rows: [...tableData.rows, tableData.headers.map(() => "")],
+    });
+
+  const removeRow = (r) => {
+    const rows = tableData.rows.filter((_, i) => i !== r);
+    setTableData({
+      ...tableData,
+      rows: rows.length ? rows : [tableData.headers.map(() => "")],
+    });
+  };
+
+  const addCol = () =>
+    setTableData({
+      headers: [...tableData.headers, `Kolom ${tableData.headers.length + 1}`],
+      rows: tableData.rows.map((row) => [...row, ""]),
+    });
+
+  const removeCol = (c) => {
+    if (tableData.headers.length <= 1) return;
+    setTableData({
+      headers: tableData.headers.filter((_, i) => i !== c),
+      rows: tableData.rows.map((row) => row.filter((_, i) => i !== c)),
+    });
+  };
+
+  return (
+    <div className="bg-background border-2 border-primary/20 rounded-2xl overflow-hidden">
+      {/* Type Selector */}
+      <div className="flex border-b">
+        <button
+          type="button"
+          onClick={() => setNoteType("regular")}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
+            noteType === "regular"
+              ? "bg-blue-50 text-blue-700 border-b-2 border-blue-500"
+              : "text-muted-foreground hover:bg-muted/50"
+          }`}
+        >
+          <FileText className="w-4 h-4" /> Regular (Markdown)
+        </button>
+        <button
+          type="button"
+          onClick={() => setNoteType("table")}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
+            noteType === "table"
+              ? "bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500"
+              : "text-muted-foreground hover:bg-muted/50"
+          }`}
+        >
+          <Table className="w-4 h-4" /> Table Note
+        </button>
+      </div>
+
+      <div className="p-4 space-y-3">
+        {/* Title */}
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder={noteType === "table" ? "Judul tabel" : "Judul catatan"}
+          className="w-full text-sm font-semibold bg-transparent border-b border-primary/40 focus:outline-none pb-1"
+          autoFocus
+        />
+
+        {/* Category */}
+        <CategoryPills value={category} onChange={setCategory} />
+
+        {/* Content: Markdown */}
+        {noteType === "regular" && (
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs text-muted-foreground font-medium">
+                Markdown support aktif
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreview((v) => !v)}
+                className={`px-2 py-0.5 text-xs rounded-lg font-medium transition-colors ${
+                  preview
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {preview ? "Edit" : "Preview"}
+              </button>
+            </div>
+            {preview ? (
+              <div className="prose prose-sm max-w-none min-h-[100px] px-3 py-2 bg-muted/20 border rounded-xl overflow-auto">
+                {content ? (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {content}
+                  </ReactMarkdown>
+                ) : (
+                  <p className="text-muted-foreground text-sm italic">
+                    Preview kosong...
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="border rounded-xl overflow-hidden">
+                <MdToolbar
+                  textareaRef={textRef}
+                  value={content}
+                  onChange={setContent}
+                />
+                <textarea
+                  ref={textRef}
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full text-sm bg-background px-3 py-2 focus:outline-none resize-none leading-relaxed font-mono"
+                  rows={5}
+                  placeholder={
+                    "Tulis dengan Markdown...\n**bold**, *italic*, # Heading, - list, `code`"
+                  }
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Content: Table */}
+        {noteType === "table" && (
+          <div className="overflow-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr>
+                  {tableData.headers.map((h, c) => (
+                    <th
+                      key={c}
+                      className="border border-border p-0 min-w-[80px]"
+                    >
+                      <div className="flex items-center">
+                        <input
+                          value={h}
+                          onChange={(e) => updateHeader(c, e.target.value)}
+                          className="flex-1 px-2 py-1.5 font-semibold bg-muted/50 focus:outline-none focus:bg-primary/5 w-full min-w-0"
+                        />
+                        {tableData.headers.length > 1 && (
+                          <button
+                            onClick={() => removeCol(c)}
+                            className="px-1 text-muted-foreground hover:text-red-500 flex-shrink-0"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    </th>
+                  ))}
+                  <th className="border border-border p-0 w-7">
+                    <button
+                      onClick={addCol}
+                      className="w-full h-full px-1 py-1.5 text-muted-foreground hover:text-primary hover:bg-muted/50 font-bold text-sm"
+                    >
+                      +
+                    </button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {tableData.rows.map((row, r) => (
+                  <tr key={r}>
+                    {row.map((cell, c) => (
+                      <td key={c} className="border border-border p-0">
+                        <input
+                          value={cell}
+                          onChange={(e) => updateCell(r, c, e.target.value)}
+                          className="w-full px-2 py-1.5 bg-transparent focus:outline-none focus:bg-primary/5"
+                        />
+                      </td>
+                    ))}
+                    <td className="border border-border p-0 w-7">
+                      <button
+                        onClick={() => removeRow(r)}
+                        className="w-full h-full flex items-center justify-center px-1 py-1.5 text-muted-foreground hover:text-red-500"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button
+              onClick={addRow}
+              className="mt-1.5 text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
+            >
+              <Plus className="w-3 h-3" /> Tambah baris
+            </button>
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {editing ? (
-            <>
-              <button
-                onClick={save}
-                disabled={saving || !title.trim()}
-                className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg disabled:opacity-40"
-              >
-                <Check className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={cancel}
-                className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </>
-          ) : (
-            canEdit && (
-              <>
-                <button
-                  onClick={togglePin}
-                  className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
-                  title={note.pinned ? "Unpin" : "Pin"}
-                >
-                  {note.pinned ? (
-                    <PinOff className="w-3.5 h-3.5" />
-                  ) : (
-                    <Pin className="w-3.5 h-3.5" />
-                  )}
-                </button>
-                <button
-                  onClick={() => setEditing(true)}
-                  className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
-                  title="Edit"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => onDelete(note.id)}
-                  className="p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-500 rounded-lg"
-                  title="Hapus"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </>
-            )
-          )}
-        </div>
-      </div>
-
-      {/* Category selector (edit mode) */}
-      {editing && (
-        <div className="flex gap-1.5 flex-wrap">
-          {CATEGORIES.filter((c) => c.id !== "all").map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setCategory(c.id)}
-              className={`text-xs px-2 py-0.5 rounded-full border font-medium transition-all ${
-                category === c.id
-                  ? CAT_STYLE[c.id]
-                  : "bg-muted text-muted-foreground border-transparent"
-              }`}
-            >
-              {c.emoji} {c.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Content */}
-      {editing ? (
-        <textarea
-          ref={textRef}
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="w-full text-sm bg-muted/40 border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none leading-relaxed"
-          rows={5}
-          placeholder="Isi catatan..."
-        />
-      ) : (
-        note.content && (
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
-            {note.content}
-          </p>
-        )
-      )}
-
-      {/* Footer */}
-      <div className="flex items-center justify-between pt-1 border-t">
-        <div className="flex items-center gap-1.5">
-          {author && <Avatar user={author} />}
-          <span className="text-xs text-muted-foreground">
-            {author?.full_name || author?.email || "—"}
-          </span>
-        </div>
-        <div className="flex items-center gap-2">
-          {!editing && (
-            <span
-              className={`text-xs px-2 py-0.5 rounded-full border font-medium ${
-                CAT_STYLE[note.category] || CAT_STYLE.lainnya
-              }`}
-            >
-              {catObj.emoji} {catObj.label}
-            </span>
-          )}
-          <span className="text-xs text-muted-foreground">
-            {note.updated_at
-              ? new Date(note.updated_at).toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "short",
-                })
-              : ""}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function NewNoteForm({ currentUser, onSave, onCancel }) {
-  const [title, setTitle]       = useState("");
-  const [content, setContent]   = useState("");
-  const [category, setCategory] = useState("umum");
-  const [saving, setSaving]     = useState(false);
-
-  const submit = async (e) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-    setSaving(true);
-    await onSave({ title, content, category });
-    setSaving(false);
-  };
-
-  return (
-    <div className="bg-background border-2 border-primary/20 rounded-2xl p-4 space-y-3">
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Judul catatan"
-        className="w-full text-sm font-semibold bg-transparent border-b border-primary/40 focus:outline-none pb-1"
-        autoFocus
-      />
-
-      {/* Category */}
-      <div className="flex gap-1.5 flex-wrap">
-        {CATEGORIES.filter((c) => c.id !== "all").map((c) => (
+        <div className="flex gap-2 pt-1 border-t">
           <button
-            key={c.id}
             type="button"
-            onClick={() => setCategory(c.id)}
-            className={`text-xs px-2 py-0.5 rounded-full border font-medium transition-all ${
-              category === c.id
-                ? CAT_STYLE[c.id]
-                : "bg-muted text-muted-foreground border-transparent"
-            }`}
+            onClick={onCancel}
+            className="flex-1 py-2 border rounded-xl text-sm font-medium hover:bg-muted transition-colors"
           >
-            {c.emoji} {c.label}
+            Batal
           </button>
-        ))}
-      </div>
-
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="Isi catatan... (password, nominal, link, dll)"
-        className="w-full text-sm bg-muted/40 border rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none leading-relaxed"
-        rows={4}
-      />
-
-      <div className="flex gap-2 pt-1">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex-1 py-2 border rounded-xl text-sm font-medium hover:bg-muted transition-colors"
-        >
-          Batal
-        </button>
-        <button
-          type="button"
-          onClick={submit}
-          disabled={saving || !title.trim()}
-          className="flex-1 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-        >
-          {saving ? "Menyimpan..." : "Simpan Catatan"}
-        </button>
+          <button
+            type="button"
+            onClick={submit}
+            disabled={saving || !title.trim()}
+            className="flex-1 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {saving ? "Menyimpan..." : "Simpan Catatan"}
+          </button>
+        </div>
       </div>
     </div>
   );
 }
+
+// ─── NoteCard dispatcher ───────────────────────────────────────────────────────
+
+function NoteCard({ note, currentUser, users, onUpdate, onDelete }) {
+  if (note.note_type === "table") {
+    return (
+      <TableNoteCard
+        note={note}
+        currentUser={currentUser}
+        users={users}
+        onUpdate={onUpdate}
+        onDelete={onDelete}
+      />
+    );
+  }
+  return (
+    <MarkdownNoteCard
+      note={note}
+      currentUser={currentUser}
+      users={users}
+      onUpdate={onUpdate}
+      onDelete={onDelete}
+    />
+  );
+}
+
+// ─── Main NotesView ────────────────────────────────────────────────────────────
 
 export default function NotesView({ session, userProfile }) {
-  const [notes, setNotes]       = useState([]);
-  const [users, setUsers]       = useState([]);
-  const [loading, setLoading]   = useState(true);
+  const [notes, setNotes] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     fetchAll();
-
-    // Realtime
     const channel = supabase
       .channel("notes_changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "notes" }, fetchNotes)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notes" },
+        fetchNotes,
+      )
       .subscribe();
-
     return () => supabase.removeChannel(channel);
   }, []);
 
@@ -329,12 +1116,13 @@ export default function NotesView({ session, userProfile }) {
     if (data) setUsers(data);
   };
 
-  const handleCreate = async ({ title, content, category }) => {
+  const handleCreate = async ({ title, content, category, note_type }) => {
     const { error } = await supabase.from("notes").insert([
       {
         title,
         content,
         category,
+        note_type: note_type || "regular",
         pinned: false,
         created_by: session.user.id,
         updated_by: session.user.id,
@@ -361,11 +1149,9 @@ export default function NotesView({ session, userProfile }) {
   };
 
   const filtered =
-    activeTab === "all"
-      ? notes
-      : notes.filter((n) => n.category === activeTab);
+    activeTab === "all" ? notes : notes.filter((n) => n.category === activeTab);
 
-  const pinned   = filtered.filter((n) => n.pinned);
+  const pinned = filtered.filter((n) => n.pinned);
   const unpinned = filtered.filter((n) => !n.pinned);
 
   if (loading) {
@@ -380,10 +1166,12 @@ export default function NotesView({ session, userProfile }) {
     <div className="space-y-5">
       {/* Toolbar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        {/* Category tabs */}
         <div className="flex gap-1.5 flex-wrap">
           {CATEGORIES.map((c) => {
-            const count = c.id === "all" ? notes.length : notes.filter((n) => n.category === c.id).length;
+            const count =
+              c.id === "all"
+                ? notes.length
+                : notes.filter((n) => n.category === c.id).length;
             return (
               <button
                 key={c.id}
@@ -400,7 +1188,6 @@ export default function NotesView({ session, userProfile }) {
             );
           })}
         </div>
-
         <button
           onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shadow-sm"

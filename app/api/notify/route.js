@@ -49,32 +49,33 @@ export async function POST(request) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
 
-    // Use service role so we can read all profile columns including push_subscription
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY ||
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     );
 
-    // Fetch all assignee profiles with notification prefs
-    const { data: assignees, error: assigneeError } = await supabase
+    // ── Fetch assignee profiles (for telegram/email — personal notifs) ────────
+    const { data: assignees } = await supabase
       .from("profiles")
       .select("*")
       .in("id", assigneeIds);
 
-    if (assigneeError) {
-      console.error("[notify] profiles fetch error:", assigneeError.message);
+    // ── Fetch ALL active members (for PWA push broadcast) ─────────────────────
+    const { data: allMembers, error: membersError } = await supabase
+      .from("profiles")
+      .select("*")
+      .neq("is_active", false);
+
+    if (membersError) {
+      console.error("[notify] members fetch error:", membersError.message);
       return NextResponse.json(
-        { error: assigneeError.message },
+        { error: membersError.message },
         { status: 500 },
       );
     }
 
-    if (!assignees?.length) {
-      return NextResponse.json({ ok: true, sent: {} });
-    }
-
-    // ── Build shared message content ─────────────────────────────────────────
+    // ── Build shared content ──────────────────────────────────────────────────
 
     const typeLabel =
       task.task_type === "libur_pengganti"
@@ -85,76 +86,68 @@ export async function POST(request) {
 
     const actionLabel =
       action === "created" ? "Jadwal Baru" : "Jadwal Diupdate";
-    const names = assignees.map((a) => a.full_name || a.email).join(", ");
+
+    const assigneeNames = (assignees || [])
+      .map((a) => a.full_name || a.email)
+      .join(", ");
 
     const dateRange =
       task.end_date && task.end_date !== task.start_date
         ? `${formatDate(task.start_date)} – ${formatDate(task.end_date)}`
         : formatDate(task.start_date);
 
-    // ── Telegram message ─────────────────────────────────────────────────────
+    // ── PWA Push payload (broadcast ke semua member) ──────────────────────────
+
+    const pushPayload = {
+      title: `📸 ${actionLabel}`,
+      body: `${task.title} · ${dateRange}${assigneeNames ? " · " + assigneeNames : ""}`,
+      url: "/",
+      tag: `task-${task.id || Date.now()}`,
+      taskId: task.id || null,
+    };
+
+    const stats = { push: 0, telegram: 0, email: 0, pushExpired: [] };
+
+    // Kirim PWA push ke SEMUA member aktif
+    for (const member of allMembers || []) {
+      if (member.notif_push === true && member.push_subscription) {
+        const result = await sendPush(member.push_subscription, pushPayload);
+        if (result.ok) {
+          stats.push++;
+        } else if (result.expired) {
+          stats.pushExpired.push(member.id);
+          await supabase
+            .from("profiles")
+            .update({ push_subscription: null, notif_push: false })
+            .eq("id", member.id);
+        }
+      }
+    }
+
+    // ── Telegram & Email — hanya ke assignees (butuh .env, skip kalau belum) ──
 
     const telegramText =
       `<b>📸 ${actionLabel}</b>\n\n` +
       `<b>${task.title}</b>\n` +
       `${typeLabel}\n\n` +
       `📅 <b>Tanggal:</b> ${dateRange}\n` +
-      `👥 <b>Tim:</b> ${names}\n` +
+      `👥 <b>Tim:</b> ${assigneeNames || "-"}\n` +
       (task.description ? `📝 <b>Catatan:</b> ${task.description}\n` : "") +
-      `\n<i>Ditambahkan oleh ${actorName}</i>`;
+      `\n<i>Oleh ${actorName}</i>`;
 
-    // ── Push notification payload ─────────────────────────────────────────────
-
-    const pushPayload = {
-      title: `📸 ${actionLabel}`,
-      body: `${task.title} · ${dateRange}`,
-      url: "/",
-      tag: `task-${task.id || Date.now()}`,
-      taskId: task.id || null,
-    };
-
-    // ── Send per-assignee ─────────────────────────────────────────────────────
-
-    const stats = { telegram: 0, push: 0, email: 0, pushExpired: [] };
-
-    for (const assignee of assignees) {
-      const name = assignee.full_name || assignee.email;
-
-      // notif_telegram defaults to true if column is null (backward compat)
+    for (const assignee of assignees || []) {
       const wantsTelegram = assignee.notif_telegram !== false;
-      const wantsPush = assignee.notif_push === true;
       const wantsEmail = assignee.notif_email === true;
 
-      // Telegram
       if (wantsTelegram && assignee.telegram_chat_id) {
         const ok = await sendTelegram(assignee.telegram_chat_id, telegramText);
         if (ok) stats.telegram++;
       }
 
-      // Web Push
-      if (wantsPush && assignee.push_subscription) {
-        const result = await sendPush(assignee.push_subscription, {
-          ...pushPayload,
-          body: `${task.title} · ${dateRange}`,
-        });
-
-        if (result.ok) {
-          stats.push++;
-        } else if (result.expired) {
-          // Subscription has expired — clean it up so we don't retry
-          stats.pushExpired.push(assignee.id);
-          await supabase
-            .from("profiles")
-            .update({ push_subscription: null, notif_push: false })
-            .eq("id", assignee.id);
-        }
-      }
-
-      // Email
       if (wantsEmail && assignee.email) {
         const sent = await sendTaskEmail({
           to: assignee.email,
-          recipientName: name,
+          recipientName: assignee.full_name || assignee.email,
           task,
           actorName,
           action,
@@ -163,8 +156,7 @@ export async function POST(request) {
       }
     }
 
-    // ── Also send to Telegram group (if TELEGRAM_CHAT_ID is set) ─────────────
-
+    // Telegram group broadcast
     const groupChatId = process.env.TELEGRAM_CHAT_ID;
     if (groupChatId) {
       await sendTelegram(groupChatId, telegramText);
