@@ -45,7 +45,7 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto"
+        className="bg-background rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Colour stripe */}
@@ -67,18 +67,18 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
                   </span>
                 )}
                 {task.priority && (
-                  <span className="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-sm font-medium border border-zinc-200">
+                  <span className="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-sm font-medium border border-border">
                     {priorityLabel[task.priority] || task.priority}
                   </span>
                 )}
               </div>
-              <h3 className="text-lg font-bold text-zinc-800 leading-tight">
+              <h3 className="text-lg font-bold text-foreground leading-tight">
                 {task.title}
               </h3>
             </div>
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 rounded-full transition-colors"
+              className="absolute top-4 right-4 p-1.5 text-muted-foreground/80 hover:bg-zinc-100 hover:text-zinc-600 rounded-full transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -87,10 +87,10 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
           {/* Detail rows */}
           <div className="space-y-4 pt-1">
             <div>
-              <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+              <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
                 {lang === "id" ? "Tanggal" : "Date"}
               </p>
-              <span className="text-[14px] font-medium text-zinc-800">
+              <span className="text-[14px] font-medium text-foreground">
                 {format(
                   new Date(task.start_date + "T00:00:00"),
                   "EEEE, d MMMM yyyy",
@@ -107,21 +107,21 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
             </div>
 
             <div>
-              <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+              <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
                 Status
               </p>
-              <span className="text-[14px] font-medium text-zinc-800">
+              <span className="text-[14px] font-medium text-foreground">
                 {statusLabel[task.status] || task.status}
               </span>
             </div>
 
             {task.description && (
               <div className="pt-1">
-                <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
                   {lang === "id" ? "Catatan" : "Notes"}
                 </p>
-                <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-100">
-                  <p className="text-[13px] text-zinc-700 leading-relaxed break-words whitespace-pre-wrap">
+                <div className="bg-zinc-50 p-3 rounded-lg border border-border">
+                  <p className="text-[13px] text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
                     {task.description}
                   </p>
                 </div>
@@ -129,7 +129,7 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
             )}
 
             <div className="pt-1">
-              <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+              <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
                 {lang === "id" ? "Tim Penugasan" : "Assigned Team"}
               </p>
               <div className="flex flex-wrap gap-2 mt-2">
@@ -137,7 +137,7 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
                   assignees.map((u) => (
                     <div
                       key={u.id}
-                      className="flex items-center gap-2 bg-white border border-zinc-200 pl-1 pr-3 py-1 rounded-full shadow-sm"
+                      className="flex items-center gap-2 bg-background border border-border pl-1 pr-3 py-1 rounded-full shadow-sm"
                     >
                       <div
                         className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-medium"
@@ -145,13 +145,13 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
                       >
                         {(u.full_name || u.email).charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-[12px] font-medium text-zinc-700">
+                      <span className="text-[12px] font-medium text-foreground/90">
                         {u.full_name || u.email.split("@")[0]}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <span className="text-sm text-zinc-400 italic">
+                  <span className="text-sm text-muted-foreground/80 italic">
                     {task.assigned_to_name || "—"}
                   </span>
                 )}
@@ -160,13 +160,13 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
           </div>
 
           {/* Actions */}
-          <div className="mt-6 pt-4 border-t border-zinc-100 flex gap-2 justify-end">
+          <div className="mt-6 pt-4 border-t border-border flex gap-2 justify-end">
             <button
               onClick={() => {
                 onDelete(task.id);
                 onClose();
               }}
-              className="px-4 py-2 bg-white border border-red-100 text-red-600 rounded-xl hover:bg-red-50 text-sm font-semibold transition-colors active:scale-95"
+              className="px-4 py-2 bg-background border border-red-100 text-red-600 rounded-xl hover:bg-red-50 text-sm font-semibold transition-colors active:scale-95"
             >
               {lang === "id" ? "Hapus" : "Delete"}
             </button>
@@ -196,14 +196,14 @@ function HolidayModal({ holiday, onClose, lang }) {
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto"
+        className="bg-background rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="h-1.5 bg-red-400" />
         <div className="p-6">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 rounded-full transition-colors"
+            className="absolute top-4 right-4 p-1.5 text-muted-foreground/80 hover:bg-zinc-100 hover:text-zinc-600 rounded-full transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -213,19 +213,19 @@ function HolidayModal({ holiday, onClose, lang }) {
               <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-sm font-medium border border-red-100/50">
                 🇮🇩 {lang === "id" ? "Libur Nasional" : "Public Holiday"}
               </span>
-              <h3 className="text-lg font-bold text-zinc-800 leading-tight mt-3">
+              <h3 className="text-lg font-bold text-foreground leading-tight mt-3">
                 {holiday.localName || holiday.name}
               </h3>
               {holiday.localName !== holiday.name && (
-                <p className="text-[13px] text-zinc-500 mt-1">{holiday.name}</p>
+                <p className="text-[13px] text-muted-foreground mt-1">{holiday.name}</p>
               )}
             </div>
 
-            <div className="pt-2 border-t border-zinc-100">
-              <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+            <div className="pt-2 border-t border-border">
+              <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
                 {lang === "id" ? "Tanggal" : "Date"}
               </p>
-              <span className="text-[14px] font-medium text-zinc-800">
+              <span className="text-[14px] font-medium text-foreground">
                 {format(
                   new Date(holiday.date + "T00:00:00"),
                   "EEEE, d MMMM yyyy",
@@ -237,10 +237,10 @@ function HolidayModal({ holiday, onClose, lang }) {
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-end">
+          <div className="mt-6 pt-4 border-t border-border flex justify-end">
             <button
               onClick={onClose}
-              className="px-5 py-2 bg-white border hover:bg-zinc-50 border-zinc-200 text-zinc-700 rounded-xl text-sm font-semibold transition-colors active:scale-95 shadow-sm"
+              className="px-5 py-2 bg-background border hover:bg-zinc-50 border-border text-foreground/90 rounded-xl text-sm font-semibold transition-colors active:scale-95 shadow-sm"
             >
               {lang === "id" ? "Tutup" : "Close"}
             </button>
@@ -387,7 +387,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
   return (
     <div className="w-full max-w-[1200px] mx-auto space-y-4 pb-10">
       {/* Calendar Wrap (Glassmorphism) */}
-      <div className="bg-white/80 border border-zinc-100 rounded-xl p-2 sm:p-4 shadow-sm calendar-wrap">
+      <div className="bg-background/90 backdrop-blur-sm border border-border rounded-xl p-2 sm:p-4 shadow-sm calendar-wrap">
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
@@ -429,9 +429,8 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
             const isHoliday = arg.event.extendedProps.type === "holiday";
             return (
               <div
-                className={`px-1.5 py-0.5 text-xs font-medium truncate leading-relaxed ${
-                  isHoliday ? "italic" : ""
-                }`}
+                className={`px-1.5 py-0.5 text-xs font-medium truncate leading-relaxed ${isHoliday ? "italic" : ""
+                  }`}
               >
                 {arg.event.title}
               </div>
@@ -441,20 +440,19 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
       </div>
 
       {/* Bottom Controls (Legend + Filters) - Minimalist Pill Style */}
-      <div className="bg-white/90 border border-zinc-100 rounded-xl p-3 sm:p-4 shadow-sm">
+      <div className="bg-background/90 backdrop-blur-sm border border-border rounded-xl p-3 sm:p-4 shadow-sm">
         {/* Filters */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <span className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest flex-shrink-0">
+          <span className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest flex-shrink-0">
             {lang === "id" ? "Filter Tim:" : "Team Filter:"}
           </span>
           <div className="flex items-center flex-wrap gap-2">
             <button
               onClick={() => setFilterUserId("")}
-              className={`px-3 py-1 rounded-full text-[11px] sm:text-[13px] font-medium transition-colors border ${
-                filterUserId === ""
-                  ? "bg-zinc-800 text-white border-zinc-800"
-                  : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-300"
-              }`}
+              className={`px-3 py-1 rounded-full text-[11px] sm:text-[13px] font-medium transition-colors border ${filterUserId === ""
+                ? "bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 border-zinc-800 dark:border-zinc-200"
+                : "bg-background text-muted-foreground border-border hover:border-zinc-300"
+                }`}
             >
               {lang === "id" ? "Semua" : "All"}
             </button>
@@ -466,19 +464,15 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
                 <button
                   key={u.id}
                   onClick={() => setFilterUserId(isActive ? "" : u.id)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-[13px] font-medium transition-all border`}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-[13px] font-medium transition-all ${!isActive ? "border border-border text-muted-foreground hover:bg-muted" : "border"}`}
                   style={
                     isActive
                       ? {
-                          backgroundColor: `${color}15`, // Translucent background
-                          color: color,
-                          borderColor: `${color}40`,
-                        }
-                      : {
-                          backgroundColor: "#fff",
-                          color: "#71717a", // zinc-500
-                          borderColor: "#e4e4e7", // zinc-200
-                        }
+                        backgroundColor: `${color}15`, // Translucent background
+                        color: color,
+                        borderColor: `${color}40`,
+                      }
+                      : {} // Rely on tailwind classes below for inactive state
                   }
                 >
                   <div
@@ -493,23 +487,23 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
         </div>
 
         {/* Legend */}
-        <div className="mt-4 pt-3 border-t border-zinc-100/60 w-full">
+        <div className="mt-4 pt-3 border-t border-border/60 w-full">
           <div className="flex items-center justify-between sm:justify-start sm:gap-6 gap-2 w-full">
             <div className="flex items-center gap-1 sm:gap-1.5 flex-1 sm:flex-none justify-center sm:justify-start">
               <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-red-400 flex-shrink-0" />
-              <span className="text-[8.5px] sm:text-[11px] font-semibold sm:font-medium text-zinc-400 uppercase tracking-widest sm:tracking-widest truncate">
+              <span className="text-[8.5px] sm:text-[11px] font-semibold sm:font-medium text-muted-foreground/80 uppercase tracking-widest sm:tracking-widest truncate">
                 {lang === "id" ? "Nasional" : "Holiday"}
               </span>
             </div>
             <div className="flex items-center gap-1 sm:gap-1.5 flex-1 sm:flex-none justify-center sm:justify-start">
               <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-              <span className="text-[8.5px] sm:text-[11px] font-semibold sm:font-medium text-zinc-400 uppercase tracking-widest sm:tracking-widest truncate">
+              <span className="text-[8.5px] sm:text-[11px] font-semibold sm:font-medium text-muted-foreground/80 uppercase tracking-widest sm:tracking-widest truncate">
                 {lang === "id" ? "Pengganti" : "Replacement"}
               </span>
             </div>
             <div className="flex items-center gap-1 sm:gap-1.5 flex-1 sm:flex-none justify-center sm:justify-start">
               <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-zinc-400 flex-shrink-0" />
-              <span className="text-[8.5px] sm:text-[11px] font-semibold sm:font-medium text-zinc-400 uppercase tracking-widest sm:tracking-widest truncate">
+              <span className="text-[8.5px] sm:text-[11px] font-semibold sm:font-medium text-muted-foreground/80 uppercase tracking-widest sm:tracking-widest truncate">
                 {lang === "id" ? "1 blok=1 tim" : "1 dot=1 team"}
               </span>
             </div>

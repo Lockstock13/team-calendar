@@ -56,14 +56,14 @@ function TaskRow({ task, users, lang, onClick }) {
   return (
     <div
       onClick={() => onClick && onClick(task)}
-      className="group flex items-center gap-3 py-1.5 px-2 hover:bg-zinc-100 rounded transition-all duration-200 cursor-pointer border-b border-transparent hover:border-zinc-200 last:hover:border-transparent"
+      className="group flex items-center gap-3 py-1.5 px-2 hover:bg-zinc-100 rounded transition-all duration-200 cursor-pointer border-b border-transparent hover:border-border last:hover:border-transparent"
     >
       {/* Notion-style dot bullet */}
       <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 group-hover:bg-zinc-400 transition-colors flex-shrink-0 ml-1.5 mr-0.5"></div>
 
       <div className="flex-1 min-w-0 pr-4">
         <div className="flex items-center gap-2">
-          <p className="text-[13.5px] font-medium text-zinc-700/90 truncate tracking-tight group-hover:text-zinc-900 transition-colors">
+          <p className="text-[13.5px] font-medium text-foreground/90/90 truncate tracking-tight group-hover:text-foreground font-semibold transition-colors">
             {task.title}
           </p>
           <TypeBadge task={task} lang={lang} />
@@ -72,7 +72,7 @@ function TaskRow({ task, users, lang, onClick }) {
 
       {/* Assignee avatars & name aligned perfectly to the right */}
       <div className="flex items-center justify-end gap-3 flex-shrink-0 w-auto sm:w-48">
-        <span className="text-[11px] text-zinc-400 font-medium hidden sm:block flex-1 min-w-0 truncate text-right">
+        <span className="text-[11px] text-muted-foreground/80 font-medium hidden sm:block flex-1 min-w-0 truncate text-right">
           {task.assigned_to_name || "—"}
         </span>
         <div className="flex gap-1 justify-end w-[68px]">
@@ -80,14 +80,14 @@ function TaskRow({ task, users, lang, onClick }) {
             <Avatar key={u.id} user={u} />
           ))}
           {assignees.length > 3 && (
-            <div className="w-5 h-5 rounded-full bg-zinc-100 border border-white flex items-center justify-center text-[8px] font-medium text-zinc-500 z-10">
+            <div className="w-5 h-5 rounded-full bg-zinc-100 border border-white flex items-center justify-center text-[8px] font-medium text-muted-foreground z-10">
               +{assignees.length - 3}
             </div>
           )}
         </div>
       </div>
       {/* Hover arrow micro-interaction */}
-      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-zinc-400 flex-shrink-0 pr-1">
+      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-muted-foreground/80 flex-shrink-0 pr-1">
         <ChevronRight className="w-3.5 h-3.5" />
       </div>
     </div>
@@ -122,16 +122,16 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
   );
 
   return (
-    <div className="flex flex-col h-full bg-white/95 rounded-xl border border-zinc-100 shadow-sm">
+    <div className="flex flex-col h-full bg-background/ rounded-xl border border-border shadow-sm">
       {/* Header compact Notion-style */}
-      <div className="px-4 py-3 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50 rounded-t-xl">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-zinc-50/50 rounded-t-xl">
         <div className="flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-zinc-400" />
-          <h2 className="text-[13px] font-medium tracking-tight text-zinc-800/90 dark:text-zinc-100">
+          <Calendar className="w-4 h-4 text-muted-foreground/80" />
+          <h2 className="text-[13px] font-medium tracking-tight text-foreground/ dark:text-zinc-100">
             {lang === "id" ? "Jadwal Saya" : "My Schedule"}
           </h2>
         </div>
-        <div className="text-[11px] font-medium text-zinc-500 bg-white border border-zinc-200 px-2 py-0.5 rounded shadow-sm">
+        <div className="text-[11px] font-medium text-muted-foreground bg-background border border-border px-2 py-0.5 rounded shadow-sm">
           {myTasks.length} {lang === "id" ? "Tugas" : "Tasks"}
         </div>
       </div>
@@ -139,9 +139,9 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
       {/* Task list compact */}
       <div className="flex-1 p-1.5 overflow-hidden flex flex-col">
         {myTasks.length === 0 ? (
-          <div className="py-8 flex flex-col items-center justify-center text-zinc-400 h-full">
+          <div className="py-8 flex flex-col items-center justify-center text-muted-foreground/80 h-full">
             <span className="text-3xl mb-3 opacity-60">🎮</span>
-            <p className="text-[13px] font-medium text-zinc-500">
+            <p className="text-[13px] font-medium text-muted-foreground">
               {lang === "id"
                 ? "All clear boss! Waktunya ngopi."
                 : "All clear boss! Time for coffee."}
@@ -171,7 +171,7 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
                     {/* Minimalist Date Box */}
                     <div className="w-10 pt-0.5 flex-shrink-0 text-right">
                       <span
-                        className={`text-[11px] font-medium block tracking-wide ${isLibur ? "text-red-400/80" : "text-zinc-400 group-hover:text-zinc-600"}`}
+                        className={`text-[11px] font-medium block tracking-wide ${isLibur ? "text-red-400/80" : "text-muted-foreground/80 group-hover:text-zinc-600"}`}
                       >
                         {dateStr}
                       </span>
@@ -180,7 +180,7 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
                     <div className="w-[1px] h-3.5 bg-zinc-200 mt-0.5 flex-shrink-0 group-hover:bg-zinc-300 transition-colors" />
                     {/* Title */}
                     <span
-                      className={`flex-1 text-[13px] font-medium tracking-tight ${isLibur ? "text-zinc-400 line-through decoration-zinc-200" : "text-zinc-700/90 group-hover:text-zinc-900"}`}
+                      className={`flex-1 text-[13px] font-medium tracking-tight ${isLibur ? "text-muted-foreground/80 line-through decoration-zinc-200" : "text-foreground/90/90 group-hover:text-foreground font-semibold"}`}
                     >
                       {task.title}
                     </span>
@@ -242,7 +242,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
     <div className="w-full max-w-[1200px] mx-auto px-1 sm:px-0 lg:px-4 space-y-6 pb-12 pt-2 lg:pt-6">
       {/* Personal Greeting */}
       <div className="mb-4 px-1">
-        <p className="text-[13.5px] sm:text-[14.5px] font-medium italic tracking-tight text-zinc-500 animate-fade-in">
+        <p className="text-[13.5px] sm:text-[14.5px] font-medium italic tracking-tight text-muted-foreground animate-fade-in">
           {greeting}
         </p>
       </div>
@@ -250,36 +250,36 @@ export default function DashboardView({ tasks, users, currentUserId }) {
       {/* Minimalist Stat Cards */}
       <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4">
         {/* Today */}
-        <div className="w-full sm:w-56 bg-white/95 border border-zinc-100 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-zinc-200 transition-colors group">
-          <div className="flex items-center gap-2 text-zinc-400 mb-3 group-hover:text-zinc-500 transition-colors">
+        <div className="w-full sm:w-56 bg-background/ border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
+          <div className="flex items-center gap-2 text-muted-foreground/80 mb-3 group-hover:text-muted-foreground transition-colors">
             <Clock className="w-3.5 h-3.5" />
             <span className="text-[12px] font-medium tracking-wide uppercase">
               {lang === "id" ? "Hari Ini" : "Today"}
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-semibold text-zinc-800 dark:text-zinc-100 tracking-tight leading-none group-hover:text-black dark:group-hover:text-white transition-colors">
+            <span className="text-2xl font-semibold text-foreground dark:text-zinc-100 tracking-tight leading-none group-hover:text-black dark:group-hover:text-white transition-colors">
               {todayTasks.length}
             </span>
-            <span className="text-[11px] font-medium text-zinc-400 tracking-wide">
+            <span className="text-[11px] font-medium text-muted-foreground/80 tracking-wide">
               {lang === "id" ? "Jadwal" : "Tasks"}
             </span>
           </div>
         </div>
 
         {/* This Month */}
-        <div className="w-full sm:w-56 bg-white/95 border border-zinc-100 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-zinc-200 transition-colors group">
-          <div className="flex items-center gap-2 text-zinc-400 mb-3 group-hover:text-zinc-500 transition-colors">
+        <div className="w-full sm:w-56 bg-background/ border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
+          <div className="flex items-center gap-2 text-muted-foreground/80 mb-3 group-hover:text-muted-foreground transition-colors">
             <Calendar className="w-3.5 h-3.5" />
             <span className="text-[12px] font-medium tracking-wide uppercase">
               {lang === "id" ? "Bulan Ini" : "This Month"}
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-semibold text-zinc-800 dark:text-zinc-100 tracking-tight leading-none group-hover:text-black dark:group-hover:text-white transition-colors">
+            <span className="text-2xl font-semibold text-foreground dark:text-zinc-100 tracking-tight leading-none group-hover:text-black dark:group-hover:text-white transition-colors">
               {monthTasks.length}
             </span>
-            <span className="text-[11px] font-medium text-zinc-400 tracking-wide">
+            <span className="text-[11px] font-medium text-muted-foreground/80 tracking-wide">
               {lang === "id" ? "Jadwal" : "Tasks"}
             </span>
           </div>
@@ -294,16 +294,16 @@ export default function DashboardView({ tasks, users, currentUserId }) {
           <div>
             <div className="flex items-center gap-2 mb-2 px-1">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500/80"></span>
-              <h2 className="font-semibold text-[13.5px] sm:text-[14.5px] tracking-tight text-zinc-800/90 dark:text-zinc-100">
+              <h2 className="font-semibold text-[13.5px] sm:text-[14.5px] tracking-tight text-foreground/ dark:text-zinc-100">
                 {lang === "id" ? "Agenda Hari Ini ⚡" : "Today's Agenda ⚡"}
               </h2>
             </div>
 
-            <div className="bg-white/95 border border-zinc-100 rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-background/ border border-border rounded-xl overflow-hidden shadow-sm">
               {todayTasks.length === 0 ? (
-                <div className="px-5 py-8 flex items-center justify-center flex-col text-zinc-400 bg-transparent">
+                <div className="px-5 py-8 flex items-center justify-center flex-col text-muted-foreground/80 bg-transparent">
                   <span className="text-2xl mb-2">🌬️</span>
-                  <span className="text-[13px] font-medium text-zinc-500 text-center max-w-xs">
+                  <span className="text-[13px] font-medium text-muted-foreground text-center max-w-xs">
                     {lang === "id"
                       ? "Kosong nih. Bisa nyantai atau ngedit foto kemarin."
                       : "Clear horizons. Relax or edit those photos."}
@@ -330,12 +330,12 @@ export default function DashboardView({ tasks, users, currentUserId }) {
             <div>
               <div className="flex items-center gap-2 mb-2 px-1 mt-5">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
-                <h2 className="font-semibold text-[13.5px] sm:text-[14.5px] tracking-tight text-zinc-800/90 dark:text-zinc-100">
+                <h2 className="font-semibold text-[13.5px] sm:text-[14.5px] tracking-tight text-foreground/ dark:text-zinc-100">
                   {lang === "id" ? "Besok 🚀" : "Tomorrow 🚀"}
                 </h2>
               </div>
 
-              <div className="bg-white/95 border border-zinc-100 rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-background/ border border-border rounded-xl overflow-hidden shadow-sm">
                 <div className="p-1">
                   {tomorrowTasks.map((t) => (
                     <TaskRow
@@ -371,7 +371,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
           onClick={() => setPreviewTask(null)}
         >
           <div
-            className="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto"
+            className="bg-background w-full max-w-sm rounded-t-2xl sm:rounded-2xl shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header / Type Accent */}
@@ -382,7 +382,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
             <div className="p-6">
               <button
                 onClick={() => setPreviewTask(null)}
-                className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 rounded-full transition-colors"
+                className="absolute top-4 right-4 p-1.5 text-muted-foreground/80 hover:bg-zinc-100 hover:text-zinc-600 rounded-full transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -390,10 +390,10 @@ export default function DashboardView({ tasks, users, currentUserId }) {
               <div className="space-y-4 pt-2">
                 <div>
                   <TypeBadge task={previewTask} lang={lang} />
-                  <h3 className="text-lg font-bold text-zinc-800 dark:text-zinc-100 mt-2 leading-tight">
+                  <h3 className="text-lg font-bold text-foreground dark:text-zinc-100 mt-2 leading-tight">
                     {previewTask.title}
                   </h3>
-                  <p className="text-[13px] text-zinc-500 mt-1.5 flex items-center gap-1.5">
+                  <p className="text-[13px] text-muted-foreground mt-1.5 flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5" />
                     {previewTask.start_date
                       ? format(
@@ -407,11 +407,11 @@ export default function DashboardView({ tasks, users, currentUserId }) {
 
                 {previewTask.description && (
                   <div className="pt-2">
-                    <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                    <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
                       {lang === "id" ? "Catatan" : "Notes"}
                     </p>
-                    <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-100">
-                      <p className="text-[13px] text-zinc-700 leading-relaxed break-words whitespace-pre-wrap">
+                    <div className="bg-zinc-50 p-3 rounded-lg border border-border">
+                      <p className="text-[13px] text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
                         {previewTask.description}
                       </p>
                     </div>
@@ -419,7 +419,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
                 )}
 
                 <div className="pt-2">
-                  <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                  <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
                     {lang === "id" ? "Tim Penugasan" : "Assigned Team"}
                   </p>
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -429,10 +429,10 @@ export default function DashboardView({ tasks, users, currentUserId }) {
                       return (
                         <div
                           key={u.id}
-                          className="flex items-center gap-2 bg-white border border-zinc-200 pl-1 pr-3 py-1 rounded-full shadow-sm"
+                          className="flex items-center gap-2 bg-background border border-border pl-1 pr-3 py-1 rounded-full shadow-sm"
                         >
                           <Avatar user={u} size="sm" />
-                          <span className="text-[12px] font-medium text-zinc-700">
+                          <span className="text-[12px] font-medium text-foreground/90">
                             {u.full_name || u.email.split("@")[0]}
                           </span>
                         </div>
@@ -442,10 +442,10 @@ export default function DashboardView({ tasks, users, currentUserId }) {
                 </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-end">
+              <div className="mt-6 pt-4 border-t border-border flex justify-end">
                 <button
                   onClick={() => setPreviewTask(null)}
-                  className="px-5 py-2 bg-white border hover:bg-zinc-50 border-zinc-200 text-zinc-700 rounded-xl text-sm font-semibold transition-colors active:scale-95 shadow-sm"
+                  className="px-5 py-2 bg-background border hover:bg-zinc-50 border-border text-foreground/90 rounded-xl text-sm font-semibold transition-colors active:scale-95 shadow-sm"
                 >
                   {lang === "id" ? "Tutup" : "Close"}
                 </button>

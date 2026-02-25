@@ -274,7 +274,7 @@ export default function NotesView({ session, userProfile }) {
             <div className="flex justify-center pt-8 pb-12">
               <button
                 onClick={() => setVisibleCount((prev) => prev + 12)}
-                className="px-8 py-3 bg-white border-2 border-primary/20 text-primary rounded-2xl text-sm font-bold hover:bg-primary hover:text-white hover:border-primary transition-all shadow-md active:scale-95"
+                className="px-8 py-3 bg-background border-2 border-primary/20 text-primary rounded-2xl text-sm font-bold hover:bg-primary hover:text-white hover:border-primary transition-all shadow-md active:scale-95"
               >
                 {lang === "id" ? "Muat Lebih Banyak" : "Load More"}
               </button>

@@ -325,7 +325,7 @@ function TableNoteCard({ note, currentUser, users, onUpdate, onDelete, lang, cat
                         </div>
 
                         {/* Modal Body */}
-                        <div className="flex-1 overflow-auto p-6 md:p-10 bg-white">
+                        <div className="flex-1 overflow-auto p-6 md:p-10 bg-background">
                             <table className="w-full border-collapse border rounded-xl overflow-hidden shadow-sm">
                                 <thead>
                                     <tr className="bg-muted/50">

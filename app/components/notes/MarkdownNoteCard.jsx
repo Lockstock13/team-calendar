@@ -83,7 +83,7 @@ function MarkdownNoteCard({
   return (
     <>
       <div
-        className={`bg-white/95 border rounded-2xl overflow-hidden flex flex-col transition-shadow hover:shadow-sm ${note.pinned ? "border-primary/40 ring-1 ring-primary/10" : ""}`}
+        className={`bg-background/ border rounded-2xl overflow-hidden flex flex-col transition-shadow hover:shadow-sm ${note.pinned ? "border-primary/40 ring-1 ring-primary/10" : ""}`}
       >
         <div className="h-0.5 bg-blue-400" />
         <div className="p-3 flex flex-col gap-2 flex-1">
@@ -102,7 +102,7 @@ function MarkdownNoteCard({
                 {note.pinned && (
                   <Pin className="w-3 h-3 text-primary flex-shrink-0" />
                 )}
-                <h3 className="text-[13px] font-semibold text-zinc-900 truncate">
+                <h3 className="text-[13px] font-semibold text-foreground font-semibold truncate">
                   {note.title}
                 </h3>
               </div>

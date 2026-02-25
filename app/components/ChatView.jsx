@@ -13,7 +13,7 @@ async function broadcastChatPush({ senderName, content }) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ senderName, content }),
-  }).catch(() => {});
+  }).catch(() => { });
 }
 
 function Avatar({ user, size = "sm" }) {
@@ -59,7 +59,7 @@ function MessageBubble({ msg, isMine, showAvatar, user, lang }) {
     return (
       <div className={`flex flex-col items-end gap-1 mb-2 ${animClass}`}>
         <div className="flex items-end gap-2 group">
-          <span className="text-[10px] text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity mb-2">
+          <span className="text-[10px] text-muted-foreground/80 opacity-0 group-hover:opacity-100 transition-opacity mb-2">
             {time}
           </span>
           <div
@@ -79,7 +79,7 @@ function MessageBubble({ msg, isMine, showAvatar, user, lang }) {
   return (
     <div className={`flex flex-col items-start gap-1 mb-2 ${animClass}`}>
       {showAvatar && (
-        <span className="text-[11px] font-medium text-zinc-500 ml-10">
+        <span className="text-[11px] font-medium text-muted-foreground ml-10">
           {user?.full_name || user?.email?.split("@")[0] || "?"}
         </span>
       )}
@@ -91,10 +91,10 @@ function MessageBubble({ msg, isMine, showAvatar, user, lang }) {
             <div className="w-8" />
           )}
         </div>
-        <div className="px-4 py-2.5 bg-white border border-zinc-100 rounded-2xl rounded-bl-sm text-[13px] text-zinc-800 leading-relaxed break-words shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] max-w-[75%] sm:max-w-[65%]">
+        <div className="px-4 py-2.5 bg-background border border-border rounded-2xl rounded-bl-sm text-[13px] text-foreground leading-relaxed break-words shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] max-w-[75%] sm:max-w-[65%]">
           {msg.content}
         </div>
-        <span className="text-[10px] text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity mb-2">
+        <span className="text-[10px] text-muted-foreground/80 opacity-0 group-hover:opacity-100 transition-opacity mb-2">
           {time}
         </span>
       </div>
@@ -232,15 +232,15 @@ export default function ChatView({ session, userProfile, users }) {
   }
 
   return (
-    <div className="flex flex-col bg-white/70 backdrop-blur-3xl border border-zinc-100 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-[calc(100vh-140px)] sm:h-[calc(100vh-120px)] min-h-[420px]">
+    <div className="flex flex-col bg-background/70 backdrop-blur-3xl border border-border rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-[calc(100vh-140px)] sm:h-[calc(100vh-120px)] min-h-[420px]">
       {/* Header */}
-      <div className="px-6 py-4 bg-white/50 backdrop-blur-md border-b border-zinc-100 flex items-center justify-between flex-shrink-0 z-10">
+      <div className="px-6 py-4 bg-background/50 backdrop-blur-md border-b border-border flex items-center justify-between flex-shrink-0 z-10">
         <div className="flex items-center gap-3.5">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 shadow-sm">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-border flex items-center justify-center text-muted-foreground shadow-sm">
             <span className="text-sm sm:text-base">💬</span>
           </div>
           <div className="flex flex-col">
-            <h2 className="font-bold text-[15px] sm:text-[16px] text-zinc-800 tracking-tight leading-none mb-1">
+            <h2 className="font-bold text-[15px] sm:text-[16px] text-foreground tracking-tight leading-none mb-1">
               Team Chat
             </h2>
             <div className="flex items-center gap-1.5 opacity-80">
@@ -248,7 +248,7 @@ export default function ChatView({ session, userProfile, users }) {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <p className="text-[11px] sm:text-[12px] text-zinc-500 font-medium">
+              <p className="text-[11px] sm:text-[12px] text-muted-foreground font-medium">
                 Real-time sync
               </p>
             </div>
@@ -261,7 +261,7 @@ export default function ChatView({ session, userProfile, users }) {
             </div>
           ))}
           {users.length > 5 && (
-            <div className="w-7 h-7 rounded-full bg-zinc-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-zinc-500 ring-2 ring-white">
+            <div className="w-7 h-7 rounded-full bg-zinc-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-muted-foreground ring-2 ring-white">
               +{users.length - 5}
             </div>
           )}
@@ -271,11 +271,11 @@ export default function ChatView({ session, userProfile, users }) {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 scroll-smooth no-scrollbar relative">
         {messages.length === 0 && !loading && (
-          <div className="flex flex-col items-center justify-center h-full text-zinc-400 animate-in fade-in zoom-in-95 duration-500">
-            <div className="w-16 h-16 bg-zinc-50 rounded-full flex items-center justify-center mb-4 border border-zinc-100 shadow-sm">
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground/80 animate-in fade-in zoom-in-95 duration-500">
+            <div className="w-16 h-16 bg-zinc-50 rounded-full flex items-center justify-center mb-4 border border-border shadow-sm">
               <span className="text-2xl">💭</span>
             </div>
-            <p className="text-[13px] font-medium text-zinc-500">
+            <p className="text-[13px] font-medium text-muted-foreground">
               {lang === "id"
                 ? "Belum ada pesan. Say Hi!"
                 : "No messages yet. Say Hi!"}
@@ -310,12 +310,12 @@ export default function ChatView({ session, userProfile, users }) {
       </div>
 
       {/* Input */}
-      <div className="px-4 py-4 sm:p-5 bg-white/60 backdrop-blur-md border-t border-zinc-100 flex-shrink-0 z-10">
+      <div className="px-4 py-4 sm:p-5 bg-background/60 backdrop-blur-md border-t border-border flex-shrink-0 z-10">
         <div className="flex items-end gap-3 max-w-4xl mx-auto">
           <div className="hidden sm:block mb-[5px]">
             <Avatar user={userProfile} size="md" />
           </div>
-          <div className="flex-1 flex items-end gap-2 bg-white border border-zinc-200 focus-within:border-zinc-300 focus-within:shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] focus-within:ring-4 focus-within:ring-zinc-100/50 transition-all rounded-3xl px-4 py-2 sm:py-2.5">
+          <div className="flex-1 flex items-end gap-2 bg-background border border-border focus-within:border-zinc-300 focus-within:shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] focus-within:ring-4 focus-within:ring-zinc-100/50 transition-all rounded-3xl px-4 py-2 sm:py-2.5">
             <textarea
               ref={inputRef}
               value={input}
@@ -324,18 +324,17 @@ export default function ChatView({ session, userProfile, users }) {
               placeholder={
                 lang === "id" ? "Ketik pesan..." : "Type a message..."
               }
-              className="flex-1 bg-transparent text-[13px] text-zinc-800 placeholder:text-zinc-400 focus:outline-none resize-none leading-relaxed max-h-32 no-scrollbar py-1"
+              className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/80 focus:outline-none resize-none leading-relaxed max-h-32 no-scrollbar py-1"
               rows={1}
               style={{ minHeight: "28px" }}
             />
             <button
               onClick={sendMessage}
               disabled={!input.trim() || sending}
-              className={`p-2.5 rounded-full flex-shrink-0 self-end mb-[2px] shadow-sm transition-all duration-300 ${
-                !input.trim() || sending
-                  ? "bg-zinc-100 text-zinc-300 cursor-not-allowed border border-zinc-200"
-                  : "bg-zinc-900 text-white hover:bg-zinc-800 hover:scale-[1.05] active:scale-[0.95]"
-              }`}
+              className={`p-2.5 rounded-full flex-shrink-0 self-end mb-[2px] shadow-sm transition-all duration-300 ${!input.trim() || sending
+                  ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-300 dark:text-zinc-600 cursor-not-allowed border border-border"
+                  : "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 hover:scale-[1.05] active:scale-[0.95]"
+                }`}
             >
               <Send className="w-4 h-4 ml-[1px]" />
             </button>
