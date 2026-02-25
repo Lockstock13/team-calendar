@@ -1,6 +1,6 @@
 # 🚀 Team Workspace & Calendar (White-Label Ready)
 
-> Aplikasi manajemen jadwal & koordinasi tim yang siap di-*self-host* dan di-*white-label* untuk agensi, studio, perusahaan, maupun SaaS mandiri! Dilengkapi fitur PWA berbasis Next.js + Supabase.
+> Aplikasi manajemen jadwal & koordinasi tim yang dirancang khusus untuk mudah di-**self-host**! Sangat cocok untuk pengguna yang ingin mengelola datanya sendiri menggunakan akun **Supabase** gratis, maupun di-deploy pada **STB (Set Top Box) bekas** yang di-*tunneling* ke VPS.
 
 ![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)
 ![Supabase](https://img.shields.io/badge/Supabase-green?style=flat-square&logo=supabase)
@@ -109,12 +109,22 @@ npm run dev
 
 ---
 
-## 📦 Deploy ke Vercel
+## 📦 Deploy (Vercel / VPS / STB Bekas)
 
+Aplikasi ini sangat ringan dan bisa di-*host* di mana saja yang menjalankan Node.js.
+
+### Opsi A: Vercel (Paling Mudah)
 1. Push kodingan ini ke GitHub.
 2. Import project di [Vercel](https://vercel.com).
 3. Salin semua **Environment Variables** dari `.env.local` mu ke sistem Vercel.
 4. Deploy! (Vercel akan otomatis mengenali file `vercel.json` untuk menjalankan *cron job daily reminder*).
+
+### Opsi B: Self-Host VPS / STB Bekas (OpenWrt / Armbian)
+Punya STB (Set Top Box) bekas Indihome (ZTE/HG680) yang sudah di-root (Armbian) atau VPS murah?
+1. Install Node.js v18+ di STB/VPS kamu.
+2. Clone repo ini, isi `.env.local`, jalankan `npm install` & `npm run build`.
+3. Gunakan **PM2** untuk menjalankan aplikasinya di *background*: `pm2 start npm --name "team-calendar" -- start`
+4. Gunakan **Cloudflare Tunnels** (cloudflared) atau Nginx Reverse Proxy (jika pakai VPS) agar aplikasi di STB-mu bisa diakses dari internet publik!
 
 ---
 
@@ -141,4 +151,4 @@ Aplikasi ini tidak butuh diunggah ke PlayStore/AppStore!
 ---
 
 ## 📄 Lisensi
-Sistem open-source yang dapat dipelajari, digandakan, dan dijadikan bisnis SaaS mu sendiri.
+Sistem open-source yang sengaja dibuat agar teman-teman dapat belajar *deploy*, mengatur database sendiri (Self-Host), dan memudahkan manajemen tim tanpa biaya langganan aplikasi luar. Bebas pakai!
