@@ -232,9 +232,9 @@ export default function ChatView({ session, userProfile, users }) {
   }
 
   return (
-    <div className="flex flex-col bg-background/70 backdrop-blur-3xl border border-border rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-[calc(100vh-140px)] sm:h-[calc(100vh-120px)] min-h-[420px]">
+    <div className="flex flex-col bg-background 70 backdrop-blur-3xl border border-border rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-[calc(100vh-140px)] sm:h-[calc(100vh-120px)] min-h-[420px]">
       {/* Header */}
-      <div className="px-6 py-4 bg-background/50 backdrop-blur-md border-b border-border flex items-center justify-between flex-shrink-0 z-10">
+      <div className="px-6 py-4 bg-background 50 backdrop-blur-md border-b border-border flex items-center justify-between flex-shrink-0 z-10">
         <div className="flex items-center gap-3.5">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-border flex items-center justify-center text-muted-foreground shadow-sm">
             <span className="text-sm sm:text-base">💬</span>
@@ -310,7 +310,7 @@ export default function ChatView({ session, userProfile, users }) {
       </div>
 
       {/* Input */}
-      <div className="px-4 py-4 sm:p-5 bg-background/60 backdrop-blur-md border-t border-border flex-shrink-0 z-10">
+      <div className="px-4 py-4 sm:p-5 bg-background 60 backdrop-blur-md border-t border-border flex-shrink-0 z-10">
         <div className="flex items-end gap-3 max-w-4xl mx-auto">
           <div className="hidden sm:block mb-[5px]">
             <Avatar user={userProfile} size="md" />

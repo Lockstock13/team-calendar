@@ -189,7 +189,7 @@ function DailyTable({ tasks, users, lang }) {
   if (sorted.length === 0) return null;
 
   return (
-    <div className="bg-background/ border rounded-xl overflow-hidden">
+    <div className="bg-background 95 border rounded-xl overflow-hidden">
       {/* Desktop table */}
       <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-[13px]">

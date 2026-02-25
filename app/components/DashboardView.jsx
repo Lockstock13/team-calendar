@@ -122,7 +122,7 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
   );
 
   return (
-    <div className="flex flex-col h-full bg-background/ rounded-xl border border-border shadow-sm">
+    <div className="flex flex-col h-full bg-background 95 rounded-xl border border-border shadow-sm">
       {/* Header compact Notion-style */}
       <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-zinc-50/50 rounded-t-xl">
         <div className="flex items-center gap-2">
@@ -250,7 +250,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
       {/* Minimalist Stat Cards */}
       <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4">
         {/* Today */}
-        <div className="w-full sm:w-56 bg-background/ border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
+        <div className="w-full sm:w-56 bg-background 95 border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
           <div className="flex items-center gap-2 text-muted-foreground/80 mb-3 group-hover:text-muted-foreground transition-colors">
             <Clock className="w-3.5 h-3.5" />
             <span className="text-[12px] font-medium tracking-wide uppercase">
@@ -268,7 +268,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
         </div>
 
         {/* This Month */}
-        <div className="w-full sm:w-56 bg-background/ border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
+        <div className="w-full sm:w-56 bg-background 95 border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
           <div className="flex items-center gap-2 text-muted-foreground/80 mb-3 group-hover:text-muted-foreground transition-colors">
             <Calendar className="w-3.5 h-3.5" />
             <span className="text-[12px] font-medium tracking-wide uppercase">
@@ -299,7 +299,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
               </h2>
             </div>
 
-            <div className="bg-background/ border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-background 95 border border-border rounded-xl overflow-hidden shadow-sm">
               {todayTasks.length === 0 ? (
                 <div className="px-5 py-8 flex items-center justify-center flex-col text-muted-foreground/80 bg-transparent">
                   <span className="text-2xl mb-2">🌬️</span>
@@ -335,7 +335,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
                 </h2>
               </div>
 
-              <div className="bg-background/ border border-border rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-background 95 border border-border rounded-xl overflow-hidden shadow-sm">
                 <div className="p-1">
                   {tomorrowTasks.map((t) => (
                     <TaskRow

@@ -58,7 +58,7 @@ export default function MobileNav({ unreadChat = 0 }) {
   ];
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-20 border-t bg-background/90 backdrop-blur-md sm:hidden">
+    <nav className="fixed bottom-0 inset-x-0 z-20 border-t bg-background 90 backdrop-blur-md sm:hidden">
       <div className="max-w-7xl mx-auto px-2">
         <div className="grid grid-cols-6 items-stretch h-14">
           {items.map(({ id, path, label, icon: Icon, badge }) => {

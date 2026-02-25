@@ -80,7 +80,7 @@ export default function Header({
 
   return (
     <>
-      <header className="border-b bg-background/80 backdrop-blur sticky top-0 z-10">
+      <header className="border-b bg-background 80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           {/* Left: Logo + Nav */}
           <div className="flex items-center gap-5">
