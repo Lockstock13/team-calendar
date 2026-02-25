@@ -122,18 +122,26 @@ export default function Header({
 
           {/* Right: Admin + Profile + Logout */}
           <div className="flex items-center gap-1">
-            {/* Mobile Profile Trigger */}
-            <button
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="sm:hidden flex items-center justify-center hover:opacity-80 transition-opacity"
-            >
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-background shadow-sm"
-                style={{ backgroundColor: userProfile?.color || "#64748b" }}
+            {/* Mobile Profile/Theme Triggers */}
+            <div className="sm:hidden flex items-center gap-1.5 mr-0.5">
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="p-1.5 text-muted-foreground hover:text-foreground active:scale-95 transition-all"
               >
-                {initial}
-              </div>
-            </button>
+                {theme === "dark" ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+              </button>
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="flex items-center justify-center hover:opacity-80 transition-opacity"
+              >
+                <div
+                  className="w-[30px] h-[30px] rounded-full flex items-center justify-center text-white text-[11px] font-bold shadow-sm"
+                  style={{ backgroundColor: userProfile?.color || "#64748b" }}
+                >
+                  {initial}
+                </div>
+              </button>
+            </div>
 
             {/* Desktop Navigation */}
             <div className="hidden sm:flex items-center gap-1">
