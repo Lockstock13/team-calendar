@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Calendar, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import Logo from "./Logo";
 
-export default function AuthForm({ onAuth, loading, error }) {
+export default function AuthForm({ onAuth, loading, error, lang = "id" }) {
   const [mode, setMode] = useState("login");
   const [data, setData] = useState({ email: "", password: "", full_name: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -14,13 +15,13 @@ export default function AuthForm({ onAuth, loading, error }) {
         {/* Logo */}
         <div className="text-center">
           <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Calendar className="w-7 h-7 text-primary-foreground" />
+            <Logo className="w-8 h-8 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Still Photo Team
+            Still Photo TTV
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Jadwal Fotografer
+            {lang === "id" ? "Jadwal Fotografer" : "Photographers Schedule"}
           </p>
         </div>
 
@@ -29,18 +30,17 @@ export default function AuthForm({ onAuth, loading, error }) {
           {/* Tab toggle */}
           <div className="flex gap-1 p-1 bg-muted rounded-xl">
             {[
-              { id: "login", label: "Masuk" },
-              { id: "register", label: "Daftar" },
+              { id: "login", label: lang === "id" ? "Masuk" : "Log in" },
+              { id: "register", label: lang === "id" ? "Daftar" : "Sign up" },
             ].map(({ id, label }) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => setMode(id)}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                  mode === id
-                    ? "bg-background shadow-sm text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${mode === id
+                  ? "bg-background shadow-sm text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 {label}
               </button>
@@ -59,7 +59,7 @@ export default function AuthForm({ onAuth, loading, error }) {
               <div>
                 <input
                   type="text"
-                  placeholder="Nama Lengkap"
+                  placeholder={lang === "id" ? "Nama Lengkap" : "Full Name"}
                   value={data.full_name}
                   onChange={(e) =>
                     setData({ ...data, full_name: e.target.value })
@@ -83,7 +83,11 @@ export default function AuthForm({ onAuth, loading, error }) {
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="Password (min. 6 karakter)"
+                placeholder={
+                  lang === "id"
+                    ? "Password (min. 6 karakter)"
+                    : "Password (min. 6 chars)"
+                }
                 value={data.password}
                 onChange={(e) => setData({ ...data, password: e.target.value })}
                 className="w-full px-3 py-2.5 pr-10 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
@@ -96,7 +100,13 @@ export default function AuthForm({ onAuth, loading, error }) {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 tabIndex={-1}
                 aria-label={
-                  showPassword ? "Sembunyikan password" : "Tampilkan password"
+                  showPassword
+                    ? lang === "id"
+                      ? "Sembunyikan password"
+                      : "Hide password"
+                    : lang === "id"
+                      ? "Tampilkan password"
+                      : "Show password"
                 }
               >
                 {showPassword ? (
@@ -109,11 +119,10 @@ export default function AuthForm({ onAuth, loading, error }) {
 
             {error && (
               <div
-                className={`p-3 rounded-xl text-sm border ${
-                  error.startsWith("✅")
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                    : "bg-red-50 text-red-600 border-red-100"
-                }`}
+                className={`p-3 rounded-xl text-sm border ${error.startsWith("✅")
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                  : "bg-red-50 text-red-600 border-red-100"
+                  }`}
               >
                 {error}
               </div>
@@ -122,19 +131,25 @@ export default function AuthForm({ onAuth, loading, error }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl font-medium text-sm disabled:opacity-50 transition-all hover:opacity-90 mt-1"
+              className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-sm disabled:opacity-50 transition-all shadow-md hover:shadow-lg active:scale-95 mt-1"
             >
               {loading
-                ? "Loading..."
+                ? lang === "id"
+                  ? "Memproses..."
+                  : "Loading..."
                 : mode === "login"
-                  ? "Masuk"
-                  : "Daftar Akun"}
+                  ? lang === "id"
+                    ? "Masuk"
+                    : "Log in"
+                  : lang === "id"
+                    ? "Daftar Akun"
+                    : "Create Account"}
             </button>
           </form>
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
-          Still Photo Team &copy; {new Date().getFullYear()}
+          Still Photo TTV &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>

@@ -12,10 +12,14 @@ import {
   MessageCircle,
   X,
   Aperture,
+  Moon,
+  Sun,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { useGlobalContext } from "@/app/providers";
+import Logo from "./Logo";
 
 export default function Header({
   session,
@@ -27,6 +31,7 @@ export default function Header({
   const { language } = useGlobalContext();
   const lang = language || "en";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   const isAdmin = userProfile?.role === "admin";
   const initial = (userProfile?.full_name || session?.user?.email || "?")
@@ -81,7 +86,7 @@ export default function Header({
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                <Aperture className="w-4 h-4 text-primary-foreground" />
+                <Logo className="w-4 h-4 text-primary-foreground" />
               </div>
               <span className="font-bold tracking-tight text-[15px] sm:text-sm">
                 Still Photo TTV
@@ -157,6 +162,14 @@ export default function Header({
                     (lang === "id" ? "Profil" : "Profile")}
                 </span>
               </Link>
+
+              <button
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all"
+                title={lang === "id" ? "Ganti Tema" : "Toggle Theme"}
+              >
+                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
 
               <button
                 onClick={handleLogout}

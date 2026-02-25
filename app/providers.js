@@ -9,6 +9,7 @@ import TaskForm from "@/app/components/TaskForm";
 import { usePathname } from "next/navigation";
 import { useToast } from "@/app/components/ToastProvider";
 import { useConfirm } from "@/app/components/ConfirmProvider";
+import { ThemeProvider } from "next-themes";
 
 const GlobalContext = createContext({});
 
@@ -213,7 +214,7 @@ export default function Providers({ children }) {
         "success",
       );
 
-      fetchTasks().catch(() => {});
+      fetchTasks().catch(() => { });
 
       fetch("/api/notify", {
         method: "POST",
@@ -224,7 +225,7 @@ export default function Providers({ children }) {
           actorName: userProfile?.full_name || session.user.email,
           action: editingTask ? "updated" : "created",
         }),
-      }).catch(() => {});
+      }).catch(() => { });
     } catch (err) {
       addToast("Gagal menyimpan: " + err.message, "error");
     } finally {
@@ -363,7 +364,7 @@ export default function Providers({ children }) {
 
   if (!session) {
     return (
-      <AuthForm onAuth={handleAuth} loading={authLoading} error={authError} />
+      <AuthForm onAuth={handleAuth} loading={authLoading} error={authError} lang={language || "en"} />
     );
   }
 
@@ -393,29 +394,31 @@ export default function Providers({ children }) {
         setLanguage,
       }}
     >
-      <div className="min-h-screen bg-muted/20">
-        <Header
-          session={session}
-          userProfile={userProfile}
-          handleLogout={handleLogout}
-          unreadChat={unreadChat}
-        />
-        {children}
-        <MobileNav unreadChat={unreadChat} />
-
-        {showForm && (
-          <TaskForm /* We need to import TaskForm in providers.js */
-            users={users}
-            editingTask={editingTask}
-            onSubmit={handleTaskSubmit}
-            onCancel={() => {
-              setShowForm(false);
-              setEditingTask(null);
-            }}
-            submitting={submitting}
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <div className="min-h-screen bg-muted/20">
+          <Header
+            session={session}
+            userProfile={userProfile}
+            handleLogout={handleLogout}
+            unreadChat={unreadChat}
           />
-        )}
-      </div>
+          {children}
+          <MobileNav unreadChat={unreadChat} />
+
+          {showForm && (
+            <TaskForm /* We need to import TaskForm in providers.js */
+              users={users}
+              editingTask={editingTask}
+              onSubmit={handleTaskSubmit}
+              onCancel={() => {
+                setShowForm(false);
+                setEditingTask(null);
+              }}
+              submitting={submitting}
+            />
+          )}
+        </div>
+      </ThemeProvider>
     </GlobalContext.Provider>
   );
 }
