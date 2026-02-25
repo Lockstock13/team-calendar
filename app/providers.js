@@ -285,21 +285,6 @@ export default function Providers({ children }) {
           setAuthLoading(false);
           return;
         }
-
-        if (signUpData.user) {
-          await supabase
-            .from("profiles")
-            .upsert(
-              {
-                id: signUpData.user.id,
-                email: data.email,
-                full_name: data.full_name,
-                role: "member",
-                is_active: true,
-              },
-              { onConflict: "id" },
-            );
-        }
       }
     } catch (err) {
       setAuthError(err.message);
