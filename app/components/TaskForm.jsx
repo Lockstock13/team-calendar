@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, Check } from "lucide-react";
+import { useToast } from "@/app/components/ToastProvider";
 
 const TASK_TYPES = [
   {
@@ -23,9 +24,8 @@ const TASK_TYPES = [
 function Avatar({ user, selected }) {
   return (
     <div
-      className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 transition-all ${
-        selected ? "ring-primary scale-110" : "ring-background"
-      }`}
+      className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 transition-all ${selected ? "ring-primary scale-110" : "ring-background"
+        }`}
       style={{ backgroundColor: user?.color || "#64748b" }}
     >
       {(user?.full_name || user?.email || "?").charAt(0).toUpperCase()}
@@ -40,6 +40,8 @@ export default function TaskForm({
   onCancel,
   submitting = false,
 }) {
+  const { addToast } = useToast();
+
   const getInitialType = () => {
     if (!editingTask) return "regular";
     if (editingTask.is_comday || editingTask.task_type === "libur_pengganti")
@@ -81,7 +83,7 @@ export default function TaskForm({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (data.assignee_ids.length === 0) {
-      alert("Pilih minimal 1 fotografer.");
+      addToast("Pilih minimal 1 fotografer.", "error");
       return;
     }
     onSubmit(data);
@@ -124,11 +126,10 @@ export default function TaskForm({
                   key={type.id}
                   type="button"
                   onClick={() => handleTypeChange(type.id)}
-                  className={`p-3 border-2 rounded-xl text-left transition-all ${
-                    data.task_type === type.id
+                  className={`p-3 border-2 rounded-xl text-left transition-all ${data.task_type === type.id
                       ? `${type.border} ring-2 ${type.active} ring-offset-1`
                       : "border-border hover:bg-muted"
-                  }`}
+                    }`}
                 >
                   <div className="text-sm font-semibold leading-snug">
                     {type.label}
@@ -236,9 +237,8 @@ export default function TaskForm({
                   <div
                     key={user.id}
                     onClick={() => toggleAssignee(user.id)}
-                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
-                      selected ? "bg-primary/5" : "hover:bg-muted/50"
-                    }`}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${selected ? "bg-primary/5" : "hover:bg-muted/50"
+                      }`}
                   >
                     <Avatar user={user} selected={selected} />
                     <div className="flex-1 min-w-0">
@@ -250,11 +250,10 @@ export default function TaskForm({
                       </p>
                     </div>
                     <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                        selected
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${selected
                           ? "bg-primary border-primary"
                           : "border-muted-foreground/30"
-                      }`}
+                        }`}
                     >
                       {selected && (
                         <Check className="w-3 h-3 text-primary-foreground" />

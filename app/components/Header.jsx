@@ -11,27 +11,31 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useGlobalContext } from "@/app/providers";
 
 export default function Header({
   session,
   userProfile,
-  viewMode,
-  setViewMode,
   handleLogout,
   unreadChat = 0,
 }) {
+  const pathname = usePathname();
+  const { language } = useGlobalContext();
+  const lang = language || "en";
+
   const isAdmin = userProfile?.role === "admin";
   const initial = (userProfile?.full_name || session?.user?.email || "?")
     .charAt(0)
     .toUpperCase();
 
   const navItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { id: "calendar", label: "Kalender", icon: Calendar },
-    { id: "list", label: "List", icon: LayoutList },
-    { id: "notes", label: "Notes", icon: FileText },
-    { id: "report", label: "Report", icon: BarChart2 },
-    { id: "chat", label: "Chat", icon: MessageCircle, badge: unreadChat },
+    { id: "dashboard", path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "calendar", path: "/calendar", label: lang === "id" ? "Kalender" : "Calendar", icon: Calendar },
+    { id: "list", path: "/list", label: lang === "id" ? "Daftar" : "List", icon: LayoutList },
+    { id: "notes", path: "/notes", label: lang === "id" ? "Catatan" : "Notes", icon: FileText },
+    { id: "report", path: "/report", label: lang === "id" ? "Laporan" : "Report", icon: BarChart2 },
+    { id: "chat", path: "/chat", label: "Chat", icon: MessageCircle, badge: unreadChat },
   ];
 
   return (
@@ -49,25 +53,27 @@ export default function Header({
           </div>
 
           <nav className="flex gap-0.5">
-            {navItems.map(({ id, label, icon: Icon, badge }) => (
-              <button
-                key={id}
-                onClick={() => setViewMode(id)}
-                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  viewMode === id
+            {navItems.map(({ id, path, label, icon: Icon, badge }) => {
+              const isActive = pathname === path || (path === '/dashboard' && pathname === '/');
+              return (
+                <Link
+                  key={id}
+                  href={path}
+                  className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${isActive
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{label}</span>
-                {badge > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
-                    {badge > 99 ? "99+" : badge}
-                  </span>
-                )}
-              </button>
-            ))}
+                    }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="hidden sm:inline">{label}</span>
+                  {badge > 0 && (
+                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                      {badge > 99 ? "99+" : badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
@@ -94,14 +100,14 @@ export default function Header({
               {initial}
             </div>
             <span className="hidden md:inline text-foreground text-sm">
-              {userProfile?.full_name || "Profil"}
+              {userProfile?.full_name || (lang === "id" ? "Profil" : "Profile")}
             </span>
           </Link>
 
           <button
             onClick={handleLogout}
             className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all"
-            title="Logout"
+            title={lang === "id" ? "Keluar" : "Log out"}
           >
             <LogOut className="w-4 h-4" />
           </button>

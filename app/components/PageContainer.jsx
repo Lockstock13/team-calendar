@@ -1,0 +1,48 @@
+"use client";
+
+import { format } from "date-fns";
+import { id as idLocale, enUS } from "date-fns/locale";
+import { Plus } from "lucide-react";
+import { useGlobalContext } from "@/app/providers";
+
+export default function PageContainer({ title, hideAddButton = false, children }) {
+    const { setShowForm, setEditingTask, language } = useGlobalContext();
+    const lang = language || "en";
+
+    const openNewForm = () => {
+        setEditingTask(null);
+        setShowForm(true);
+    };
+
+    return (
+        <main className="max-w-7xl mx-auto px-4 py-6 space-y-4 opacity-0 animate-fade-in">
+            {/* Toolbar */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="font-bold text-lg uppercase tracking-wide">{title}</h1>
+                    <p className="text-xs text-muted-foreground">
+                        {format(new Date(), "EEEE, d MMMM yyyy", { locale: lang === "id" ? idLocale : enUS })}
+                    </p>
+                </div>
+
+                {!hideAddButton && (
+                    <button
+                        onClick={openNewForm}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shadow-sm"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span className="hidden sm:inline">
+                            {lang === "id" ? "Tambah Jadwal" : "Add Task"}
+                        </span>
+                        <span className="sm:hidden">
+                            {lang === "id" ? "Tambah" : "Add"}
+                        </span>
+                    </button>
+                )}
+            </div>
+
+            {/* Content */}
+            {children}
+        </main>
+    );
+}

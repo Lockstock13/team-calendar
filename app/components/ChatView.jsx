@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Send } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
-import { id } from "date-fns/locale";
+import { id, enUS } from "date-fns/locale";
+import { useGlobalContext } from "@/app/providers";
 
 // Kirim push notif chat ke semua member (fire & forget)
 async function broadcastChatPush({ senderName, content }) {
@@ -12,7 +13,7 @@ async function broadcastChatPush({ senderName, content }) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ senderName, content }),
-  }).catch(() => {});
+  }).catch(() => { });
 }
 
 function Avatar({ user, size = "sm" }) {
@@ -28,12 +29,12 @@ function Avatar({ user, size = "sm" }) {
   );
 }
 
-function DateDivider({ dateStr }) {
+function DateDivider({ dateStr, lang }) {
   const d = new Date(dateStr);
   let label;
-  if (isToday(d)) label = "Hari Ini";
-  else if (isYesterday(d)) label = "Kemarin";
-  else label = format(d, "EEEE, d MMMM yyyy", { locale: id });
+  if (isToday(d)) label = lang === "id" ? "Hari Ini" : "Today";
+  else if (isYesterday(d)) label = lang === "id" ? "Kemarin" : "Yesterday";
+  else label = format(d, "EEEE, d MMMM yyyy", { locale: lang === "id" ? id : enUS });
 
   return (
     <div className="flex items-center gap-3 my-4">
@@ -46,7 +47,7 @@ function DateDivider({ dateStr }) {
   );
 }
 
-function MessageBubble({ msg, isMine, showAvatar, user }) {
+function MessageBubble({ msg, isMine, showAvatar, user, lang }) {
   const time = msg.created_at ? format(new Date(msg.created_at), "HH:mm") : "";
 
   if (isMine) {
@@ -54,7 +55,7 @@ function MessageBubble({ msg, isMine, showAvatar, user }) {
       <div className="flex flex-col items-end gap-0.5 mb-1">
         {showAvatar && (
           <span className="text-xs text-muted-foreground mr-1 mb-0.5">
-            Kamu
+            {lang === "id" ? "Kamu" : "You"}
           </span>
         )}
         <div className="flex items-end gap-2">
@@ -100,6 +101,8 @@ function MessageBubble({ msg, isMine, showAvatar, user }) {
 }
 
 export default function ChatView({ session, userProfile, users }) {
+  const { language } = useGlobalContext();
+  const lang = language || "en";
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
@@ -254,13 +257,13 @@ export default function ChatView({ session, userProfile, users }) {
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <span className="text-4xl mb-3">💬</span>
-            <p className="text-sm">Belum ada pesan. Mulai chat!</p>
+            <p className="text-sm">{lang === "id" ? "Belum ada pesan. Mulai chat!" : "No messages yet. Start chatting!"}</p>
           </div>
         )}
 
         {grouped.map((item) => {
           if (item.type === "divider") {
-            return <DateDivider key={item.key} dateStr={item.dateStr} />;
+            return <DateDivider key={item.key} dateStr={item.dateStr} lang={lang} />;
           }
           const { msg, showAvatar } = item;
           const isMine = msg.user_id === session.user.id;
@@ -274,6 +277,7 @@ export default function ChatView({ session, userProfile, users }) {
               isMine={isMine}
               showAvatar={showAvatar}
               user={user}
+              lang={lang}
             />
           );
         })}
@@ -291,7 +295,7 @@ export default function ChatView({ session, userProfile, users }) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Tulis pesan... (Enter untuk kirim)"
+              placeholder={lang === "id" ? "Tulis pesan... (Enter untuk kirim)" : "Write a message... (Enter to send)"}
               className="flex-1 bg-transparent text-sm focus:outline-none resize-none leading-relaxed max-h-24"
               rows={1}
               style={{ minHeight: "24px" }}
@@ -306,7 +310,7 @@ export default function ChatView({ session, userProfile, users }) {
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-1.5 ml-9">
-          Enter kirim · Shift+Enter baris baru
+          {lang === "id" ? "Enter kirim · Shift+Enter baris baru" : "Enter to send · Shift+Enter for new line"}
         </p>
       </div>
     </div>

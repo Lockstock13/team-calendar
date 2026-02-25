@@ -5,12 +5,13 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useState, useMemo, useEffect } from "react";
 import { format } from "date-fns";
-import { id } from "date-fns/locale";
+import { id, enUS } from "date-fns/locale";
 import { X } from "lucide-react";
+import { useGlobalContext } from "@/app/providers";
 
 // ─── Event Detail Modal ────────────────────────────────────────────────────────
 
-function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
+function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
   if (!task) return null;
 
   const assignees = (task.assignee_ids || [])
@@ -18,15 +19,15 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
     .filter(Boolean);
 
   const statusLabel = {
-    todo: "Belum Mulai",
-    in_progress: "Sedang Berjalan",
-    done: "Selesai",
+    todo: lang === "id" ? "Belum Mulai" : "Not Started",
+    in_progress: lang === "id" ? "Sedang Berjalan" : "In Progress",
+    done: lang === "id" ? "Selesai" : "Done",
   };
 
   const priorityLabel = {
-    low: "🟢 Rendah",
-    medium: "🟡 Sedang",
-    high: "🔴 Tinggi",
+    low: lang === "id" ? "🟢 Rendah" : "🟢 Low",
+    medium: lang === "id" ? "🟡 Sedang" : "🟡 Medium",
+    high: lang === "id" ? "🔴 Tinggi" : "🔴 High",
   };
 
   const accentColor =
@@ -58,7 +59,7 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
               <div className="flex flex-wrap gap-1.5 mb-2">
                 {(task.is_comday || task.task_type === "libur_pengganti") && (
                   <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                    🏖️ Libur Pengganti
+                    🏖️ {lang === "id" ? "Libur Pengganti" : "Replacement Leave"}
                   </span>
                 )}
                 {task.is_weekend_task && !task.is_comday && (
@@ -88,20 +89,20 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
           <div className="space-y-2 text-sm">
             <div className="flex items-start gap-3">
               <span className="text-muted-foreground w-16 flex-shrink-0">
-                Tanggal
+                {lang === "id" ? "Tanggal" : "Date"}
               </span>
               <span className="font-medium">
                 {format(
                   new Date(task.start_date + "T00:00:00"),
                   "d MMMM yyyy",
-                  { locale: id },
+                  { locale: lang === "id" ? id : enUS },
                 )}
                 {task.end_date &&
                   task.end_date !== task.start_date &&
                   ` – ${format(
                     new Date(task.end_date + "T00:00:00"),
                     "d MMMM yyyy",
-                    { locale: id },
+                    { locale: lang === "id" ? id : enUS },
                   )}`}
               </span>
             </div>
@@ -116,7 +117,7 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
             {task.description && (
               <div className="flex items-start gap-3">
                 <span className="text-muted-foreground w-16 flex-shrink-0">
-                  Catatan
+                  {lang === "id" ? "Catatan" : "Notes"}
                 </span>
                 <span className="leading-relaxed">{task.description}</span>
               </div>
@@ -124,7 +125,7 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
 
             <div className="flex items-start gap-3">
               <span className="text-muted-foreground w-16 flex-shrink-0 pt-1">
-                Tim
+                {lang === "id" ? "Tim" : "Team"}
               </span>
               <div className="flex flex-wrap gap-2">
                 {assignees.length > 0 ? (
@@ -166,7 +167,7 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
               }}
               className="flex-1 py-2 text-sm font-medium bg-red-50 text-red-600 border border-red-100 rounded-xl hover:bg-red-100 transition-colors"
             >
-              Hapus
+              {lang === "id" ? "Hapus" : "Delete"}
             </button>
           </div>
         </div>
@@ -177,7 +178,7 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete }) {
 
 // ─── Holiday Detail Modal ──────────────────────────────────────────────────────
 
-function HolidayModal({ holiday, onClose }) {
+function HolidayModal({ holiday, onClose, lang }) {
   if (!holiday) return null;
   return (
     <div
@@ -193,7 +194,7 @@ function HolidayModal({ holiday, onClose }) {
           <div className="flex items-start justify-between gap-3">
             <div>
               <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">
-                🇮🇩 Libur Nasional
+                🇮🇩 {lang === "id" ? "Libur Nasional" : "Public Holiday"}
               </span>
               <h3 className="font-semibold text-base mt-2 leading-snug">
                 {holiday.localName || holiday.name}
@@ -212,13 +213,13 @@ function HolidayModal({ holiday, onClose }) {
             </button>
           </div>
           <div className="flex items-center gap-3 text-sm">
-            <span className="text-muted-foreground w-16">Tanggal</span>
+            <span className="text-muted-foreground w-16">{lang === "id" ? "Tanggal" : "Date"}</span>
             <span className="font-medium">
               {format(
                 new Date(holiday.date + "T00:00:00"),
                 "EEEE, d MMMM yyyy",
                 {
-                  locale: id,
+                  locale: lang === "id" ? id : enUS,
                 },
               )}
             </span>
@@ -247,6 +248,8 @@ async function fetchHolidays(year) {
 // ─── Main CalendarView ─────────────────────────────────────────────────────────
 
 export default function CalendarView({ tasks, users, onEdit, onDelete }) {
+  const { language } = useGlobalContext();
+  const lang = language || "en";
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedHoliday, setSelectedHoliday] = useState(null);
   const [filterUserId, setFilterUserId] = useState("");
@@ -369,13 +372,12 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
 
         <button
           onClick={() => setFilterUserId("")}
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
-            filterUserId === ""
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${filterUserId === ""
               ? "bg-primary text-primary-foreground"
               : "bg-muted text-muted-foreground hover:text-foreground"
-          }`}
+            }`}
         >
-          Semua
+          {lang === "id" ? "Semua" : "All"}
         </button>
 
         {users.map((u) => {
@@ -389,15 +391,15 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
               style={
                 isActive
                   ? {
-                      backgroundColor: color,
-                      color: "#fff",
-                      outline: `2px solid ${color}`,
-                      outlineOffset: "2px",
-                    }
+                    backgroundColor: color,
+                    color: "#fff",
+                    outline: `2px solid ${color}`,
+                    outlineOffset: "2px",
+                  }
                   : {
-                      backgroundColor: "hsl(var(--muted))",
-                      color: "hsl(var(--muted-foreground))",
-                    }
+                    backgroundColor: "hsl(var(--muted))",
+                    color: "hsl(var(--muted-foreground))",
+                  }
               }
             >
               <div
@@ -416,16 +418,16 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
       <div className="flex items-center gap-3 mb-3 flex-wrap">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-sm bg-red-200 border border-red-300" />
-          <span className="text-xs text-muted-foreground">Libur Nasional</span>
+          <span className="text-xs text-muted-foreground">{lang === "id" ? "Libur Nasional" : "Public Holiday"}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-sm bg-emerald-400" />
-          <span className="text-xs text-muted-foreground">Libur Pengganti</span>
+          <span className="text-xs text-muted-foreground">{lang === "id" ? "Libur Pengganti" : "Replacement Leave"}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-sm bg-primary" />
           <span className="text-xs text-muted-foreground">
-            1 blok = 1 anggota tim
+            {lang === "id" ? "1 blok = 1 anggota tim" : "1 block = 1 team member"}
           </span>
         </div>
       </div>
@@ -437,13 +439,13 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
           initialView="dayGridMonth"
           firstDay={1}
           events={calendarEvents}
-          locale="id"
+          locale={lang === "id" ? "id" : "en"}
           headerToolbar={{
             left: "prev,next today",
             center: "title",
             right: "dayGridMonth,dayGridWeek",
           }}
-          buttonText={{ today: "Hari Ini", month: "Bulan", week: "Minggu" }}
+          buttonText={lang === "id" ? { today: "Hari Ini", month: "Bulan", week: "Minggu" } : undefined}
           eventClick={(info) => {
             const { type, task, holiday } = info.event.extendedProps;
             if (type === "holiday") {
@@ -469,9 +471,8 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
             const isHoliday = arg.event.extendedProps.type === "holiday";
             return (
               <div
-                className={`px-1.5 py-0.5 text-xs font-medium truncate leading-relaxed ${
-                  isHoliday ? "italic" : ""
-                }`}
+                className={`px-1.5 py-0.5 text-xs font-medium truncate leading-relaxed ${isHoliday ? "italic" : ""
+                  }`}
               >
                 {arg.event.title}
               </div>
@@ -485,6 +486,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
         <EventDetailModal
           task={selectedTask}
           users={users}
+          lang={lang}
           onClose={() => setSelectedTask(null)}
           onEdit={onEdit}
           onDelete={onDelete}
@@ -495,6 +497,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
       {selectedHoliday && (
         <HolidayModal
           holiday={selectedHoliday}
+          lang={lang}
           onClose={() => setSelectedHoliday(null)}
         />
       )}

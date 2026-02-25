@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useGlobalContext } from "@/app/providers";
+import { useToast } from "@/app/components/ToastProvider";
+import { useConfirm } from "@/app/components/ConfirmProvider";
 import {
   ArrowLeft,
   Shield,
@@ -44,8 +47,8 @@ function Badge({ children, color }) {
 
 // ─── Delete Confirmation Modal ────────────────────────────────────────────────
 
-function DeleteConfirmModal({ member, onConfirm, onCancel, loading }) {
-  const name = member?.full_name || member?.email || "member ini";
+function DeleteConfirmModal({ member, onConfirm, onCancel, loading, lang }) {
+  const name = member?.full_name || member?.email || (lang === "id" ? "member ini" : "this member");
 
   return (
     <div
@@ -63,16 +66,16 @@ function DeleteConfirmModal({ member, onConfirm, onCancel, loading }) {
 
         {/* Text */}
         <div className="text-center space-y-1.5">
-          <h3 className="font-bold text-base">Hapus Member Permanen?</h3>
+          <h3 className="font-bold text-base">{lang === "id" ? "Hapus Member Permanen?" : "Delete Member Permanently?"}</h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Akun <span className="font-semibold text-foreground">{name}</span>{" "}
-            akan dihapus secara permanen. Data login mereka akan dihapus dan{" "}
+            {lang === "id" ? "Akun" : "Account"} <span className="font-semibold text-foreground">{name}</span>{" "}
+            {lang === "id" ? "akan dihapus secara permanen. Data login mereka akan dihapus dan " : "will be permanently deleted. Their login data will be removed and "}
             <span className="font-semibold text-red-600">
-              tidak dapat dipulihkan.
+              {lang === "id" ? "tidak dapat dipulihkan." : "cannot be recovered."}
             </span>
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Jadwal yang sudah di-assign ke member ini tidak terpengaruh.
+            {lang === "id" ? "Jadwal yang sudah di-assign ke member ini tidak terpengaruh." : "Tasks assigned to this member will not be affected."}
           </p>
         </div>
 
@@ -83,7 +86,7 @@ function DeleteConfirmModal({ member, onConfirm, onCancel, loading }) {
             disabled={loading}
             className="flex-1 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors disabled:opacity-40"
           >
-            Batal
+            {lang === "id" ? "Batal" : "Cancel"}
           </button>
           <button
             onClick={onConfirm}
@@ -95,7 +98,7 @@ function DeleteConfirmModal({ member, onConfirm, onCancel, loading }) {
             ) : (
               <Trash2 className="w-4 h-4" />
             )}
-            {loading ? "Menghapus..." : "Hapus Permanen"}
+            {loading ? (lang === "id" ? "Menghapus..." : "Deleting...") : (lang === "id" ? "Hapus Permanen" : "Delete Permanently")}
           </button>
         </div>
       </div>
@@ -107,6 +110,11 @@ function DeleteConfirmModal({ member, onConfirm, onCancel, loading }) {
 
 export default function AdminPage() {
   const router = useRouter();
+  const { language } = useGlobalContext();
+  const lang = language || "en";
+  const { addToast } = useToast();
+  const { confirm } = useConfirm();
+
   const [currentUser, setCurrentUser] = useState(null);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -168,20 +176,26 @@ export default function AdminPage() {
       if (error) throw error;
       await fetchMembers();
     } catch (err) {
-      alert("Gagal: " + err.message);
+      addToast("Gagal: " + err.message, "error");
     } finally {
       setActionLoading(null);
     }
   };
 
-  const confirmAction = (userId, action, name) => {
+  const confirmAction = async (userId, action, name) => {
     const messages = {
       kick: `Nonaktifkan akun ${name}? Mereka tidak bisa login hingga diaktifkan kembali.`,
       activate: `Aktifkan kembali akun ${name}?`,
       make_admin: `Jadikan ${name} sebagai Admin?`,
       make_member: `Turunkan ${name} ke Member biasa?`,
     };
-    if (confirm(messages[action])) doAction(userId, action);
+    const ok = await confirm({
+      title: "Konfirmasi Tindakan",
+      message: messages[action],
+      confirmText: "Ya, Lanjutkan",
+      cancelText: "Batal"
+    });
+    if (ok) doAction(userId, action);
   };
 
   // ── Permanent delete ───────────────────────────────────────────────────────
@@ -216,7 +230,7 @@ export default function AdminPage() {
     } catch (err) {
       // Revert optimistic update
       setMembers(snapshot);
-      alert("Gagal menghapus: " + err.message);
+      addToast("Gagal menghapus: " + err.message, "error");
     } finally {
       setDeleteLoading(false);
     }
@@ -289,11 +303,11 @@ export default function AdminPage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-medium truncate">
-              {member.full_name || "(no name)"}
+              {member.full_name || (lang === "id" ? "(tanpa nama)" : "(no name)")}
             </span>
             {isAdmin && <Badge color="purple">👑 Admin</Badge>}
-            {!isActive && <Badge color="red">Nonaktif</Badge>}
-            {isMe && <Badge color="gray">Kamu</Badge>}
+            {!isActive && <Badge color="red">{lang === "id" ? "Nonaktif" : "Inactive"}</Badge>}
+            {isMe && <Badge color="gray">{lang === "id" ? "Kamu" : "You"}</Badge>}
           </div>
           <p className="text-xs text-muted-foreground truncate mt-0.5">
             {member.email}
@@ -351,7 +365,7 @@ export default function AdminPage() {
                   }
                   disabled={busy}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40"
-                  title="Nonaktifkan"
+                  title={lang === "id" ? "Nonaktifkan" : "Deactivate"}
                 >
                   <UserX className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Kick</span>
@@ -409,7 +423,7 @@ export default function AdminPage() {
           </Link>
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-primary" />
-            <h1 className="font-semibold">Manajemen Member</h1>
+            <h1 className="font-bold uppercase tracking-wide">{lang === "id" ? "Manajemen Member" : "Member Management"}</h1>
           </div>
         </div>
       </header>
@@ -425,26 +439,26 @@ export default function AdminPage() {
             <p className="text-3xl font-bold tabular-nums text-emerald-600">
               {activeMembers.length}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Aktif</p>
+            <p className="text-xs text-muted-foreground mt-1">{lang === "id" ? "Aktif" : "Active"}</p>
           </div>
           <div className="bg-background border rounded-2xl p-4 text-center">
             <p className="text-3xl font-bold tabular-nums text-red-500">
               {inactiveMembers.length}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">Nonaktif</p>
+            <p className="text-xs text-muted-foreground mt-1">{lang === "id" ? "Nonaktif" : "Inactive"}</p>
           </div>
         </div>
 
         {/* Active Members */}
         <div className="bg-background border rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b flex items-center justify-between">
-            <h2 className="font-semibold text-sm">Member Aktif</h2>
-            <Badge color="green">{activeMembers.length} orang</Badge>
+            <h2 className="font-semibold text-sm">{lang === "id" ? "Member Aktif" : "Active Members"}</h2>
+            <Badge color="green">{activeMembers.length} {lang === "id" ? "orang" : "users"}</Badge>
           </div>
           <div className="px-5">
             {activeMembers.length === 0 ? (
               <p className="text-sm text-muted-foreground py-8 text-center">
-                Belum ada member
+                {lang === "id" ? "Belum ada member" : "No members found"}
               </p>
             ) : (
               activeMembers.map((m) => <MemberRow key={m.id} member={m} />)
@@ -456,8 +470,8 @@ export default function AdminPage() {
         {inactiveMembers.length > 0 && (
           <div className="bg-background border rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b flex items-center justify-between">
-              <h2 className="font-semibold text-sm">Akun Nonaktif</h2>
-              <Badge color="red">{inactiveMembers.length} orang</Badge>
+              <h2 className="font-semibold text-sm">{lang === "id" ? "Akun Nonaktif" : "Inactive Accounts"}</h2>
+              <Badge color="red">{inactiveMembers.length} {lang === "id" ? "orang" : "users"}</Badge>
             </div>
             <div className="px-5">
               {inactiveMembers.map((m) => (
@@ -472,7 +486,7 @@ export default function AdminPage() {
           <div>
             <p className="text-sm font-semibold">🔔 Test Push Notification</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Kirim test push ke semua member yang sudah aktifkan notifikasi.
+              {lang === "id" ? "Kirim test push ke semua member yang sudah aktifkan notifikasi." : "Send a test push notification to all members with active alerts."}
             </p>
             {testPushMsg && (
               <p className="text-xs mt-1 font-medium text-emerald-600">
@@ -486,7 +500,7 @@ export default function AdminPage() {
             className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex-shrink-0"
           >
             <Bell className="w-4 h-4" />
-            {testPushLoading ? "Mengirim..." : "Test Push"}
+            {testPushLoading ? (lang === "id" ? "Mengirim..." : "Sending...") : "Test Push"}
           </button>
         </div>
 

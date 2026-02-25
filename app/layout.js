@@ -1,6 +1,9 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
 import PushInit from "./components/PushInit";
+import Providers from "./providers";
+import { ToastProvider } from "./components/ToastProvider";
+import { ConfirmProvider } from "./components/ConfirmProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -55,7 +58,11 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         {/* Registers /sw.js silently — no permission prompt here */}
         <PushInit />
-        {children}
+        <ConfirmProvider>
+          <ToastProvider>
+            <Providers>{children}</Providers>
+          </ToastProvider>
+        </ConfirmProvider>
       </body>
     </html>
   );

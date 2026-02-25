@@ -1,8 +1,9 @@
 "use client";
 
 import { format } from "date-fns";
-import { id } from "date-fns/locale";
+import { id, enUS } from "date-fns/locale";
 import { Clock, Check, Pencil, Trash2 } from "lucide-react";
+import { useGlobalContext } from "@/app/providers";
 
 function Avatar({ user }) {
   return (
@@ -16,11 +17,11 @@ function Avatar({ user }) {
   );
 }
 
-const STATUS = {
-  todo: { label: "Belum Mulai", cls: "text-slate-500 bg-slate-100" },
-  in_progress: { label: "On Going", cls: "text-blue-600 bg-blue-50" },
-  done: { label: "Selesai", cls: "text-green-600 bg-green-50" },
-};
+const getStatusData = (lang) => ({
+  todo: { label: lang === "id" ? "Belum Mulai" : "Not Started", cls: "text-slate-500 bg-slate-100" },
+  in_progress: { label: lang === "id" ? "On Going" : "In Progress", cls: "text-blue-600 bg-blue-50" },
+  done: { label: lang === "id" ? "Selesai" : "Done", cls: "text-green-600 bg-green-50" },
+});
 
 function nextStatus(current) {
   if (current === "todo") return "in_progress";
@@ -36,6 +37,9 @@ export default function ListView({
   onUpdateStatus,
   filterUserId,
 }) {
+  const { language } = useGlobalContext();
+  const lang = language || "en";
+  const STATUS = getStatusData(lang);
   const getUserById = (uid) => users.find((u) => u.id === uid);
 
   const filtered = filterUserId
@@ -46,7 +50,7 @@ export default function ListView({
     return (
       <div className="text-center py-16 text-muted-foreground bg-background border rounded-2xl">
         <Clock className="w-10 h-10 mx-auto mb-3 opacity-30" />
-        <p className="text-sm">Belum ada jadwal</p>
+        <p className="text-sm">{lang === "id" ? "Belum ada jadwal" : "No tasks yet"}</p>
       </div>
     );
   }
@@ -79,17 +83,17 @@ export default function ListView({
                   <h3
                     className={`text-sm font-semibold ${isToday ? "text-orange-500" : "text-muted-foreground"}`}
                   >
-                    {format(dateObj, "EEEE, d MMMM yyyy", { locale: id })}
+                    {format(dateObj, "EEEE, d MMMM yyyy", { locale: lang === "id" ? id : enUS })}
                     {isToday && (
                       <span className="ml-2 text-xs font-medium">
-                        — Hari Ini
+                        — {lang === "id" ? "Hari Ini" : "Today"}
                       </span>
                     )}
                   </h3>
                 </div>
                 <div className="flex-1 h-px bg-border" />
                 <span className="text-xs text-muted-foreground">
-                  {dateTasks.length} jadwal
+                  {dateTasks.length} {lang === "id" ? "jadwal" : "tasks"}
                 </span>
               </div>
 
@@ -129,10 +133,10 @@ export default function ListView({
 
                           {(task.is_comday ||
                             task.task_type === "libur_pengganti") && (
-                            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                              🏖️ Libur Pengganti
-                            </span>
-                          )}
+                              <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                                🏖️ {lang === "id" ? "Libur Pengganti" : "Replacement Leave"}
+                              </span>
+                            )}
 
                           <span
                             className={`text-xs px-2 py-0.5 rounded-full font-medium ${status.cls}`}
@@ -171,11 +175,10 @@ export default function ListView({
                           onClick={() =>
                             onUpdateStatus(task.id, nextStatus(task.status))
                           }
-                          className={`p-1.5 rounded-lg transition-colors ${
-                            task.status === "done"
+                          className={`p-1.5 rounded-lg transition-colors ${task.status === "done"
                               ? "text-green-600 bg-green-50 hover:bg-green-100"
                               : "text-muted-foreground hover:bg-muted"
-                          }`}
+                            }`}
                           title="Update status"
                         >
                           <Check className="w-3.5 h-3.5" />
@@ -190,7 +193,7 @@ export default function ListView({
                         <button
                           onClick={() => onDelete(task.id)}
                           className="p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors"
-                          title="Hapus"
+                          title={lang === "id" ? "Hapus" : "Delete"}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
