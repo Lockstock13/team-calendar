@@ -16,6 +16,9 @@ import {
   Crown,
   Trash2,
   Bell,
+  Settings,
+  Upload,
+  Save,
 } from "lucide-react";
 
 function Avatar({ user }) {
@@ -110,7 +113,7 @@ function DeleteConfirmModal({ member, onConfirm, onCancel, loading, lang }) {
 
 export default function AdminPage() {
   const router = useRouter();
-  const { language } = useGlobalContext();
+  const { language, appSettings, fetchSettings } = useGlobalContext();
   const lang = language || "en";
   const { addToast } = useToast();
   const { confirm } = useConfirm();
@@ -123,6 +126,18 @@ export default function AdminPage() {
   // Delete modal state
   const [deleteTarget, setDeleteTarget] = useState(null); // member object
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Customization state
+  const [appNameInput, setAppNameInput] = useState(appSettings?.app_name || "");
+  const [appColorInput, setAppColorInput] = useState(appSettings?.primary_color || "#0ea5e9");
+  const [savingSettings, setSavingSettings] = useState(false);
+
+  useEffect(() => {
+    if (appSettings) {
+      setAppNameInput(appSettings.app_name || "Team Calendar");
+      setAppColorInput(appSettings.primary_color || "#0ea5e9");
+    }
+  }, [appSettings]);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -273,6 +288,69 @@ export default function AdminPage() {
     } finally {
       setTestPushLoading(false);
       setTimeout(() => setTestPushMsg(""), 4000);
+    }
+  };
+
+  // ── Branding & Settings ────────────────────────────────────────────────────
+  const handleSaveSettings = async () => {
+    if (!appSettings?.id) return;
+    setSavingSettings(true);
+    try {
+      const { error } = await supabase
+        .from('app_settings')
+        .update({ app_name: appNameInput, primary_color: appColorInput, updated_by: currentUser.id })
+        .eq('id', appSettings.id);
+      if (error) throw error;
+      await fetchSettings();
+      addToast(lang === "id" ? "Pengaturan aplikasi disimpan!" : "App settings saved!", "success");
+    } catch (e) {
+      addToast("Gagal menyimpan: " + e.message, "error");
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
+  const handleUploadLogo = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !appSettings?.id) return;
+
+    if (!file.type.startsWith("image/")) {
+      addToast(lang === "id" ? "Harap upload file gambar!" : "Please upload an image file!", "error");
+      return;
+    }
+
+    addToast(lang === "id" ? "Mengunggah logo..." : "Uploading logo...", "info");
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('assets')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) {
+        if (uploadError.statusCode === "404") {
+          throw new Error("Bucket 'assets' tidak ditemukan. Pastikan sudah menjalankan query SQL untuk Storage.");
+        }
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('assets')
+        .getPublicUrl(fileName);
+
+      const { error: dbError } = await supabase
+        .from('app_settings')
+        .update({ logo_url: publicUrl, updated_by: currentUser.id })
+        .eq('id', appSettings.id);
+
+      if (dbError) throw dbError;
+
+      await fetchSettings();
+      addToast(lang === "id" ? "Logo berhasil diupdate!" : "Logo updated successfully!", "success");
+    } catch (err) {
+      addToast("Upload gagal: " + err.message, "error");
     }
   };
 
@@ -446,6 +524,86 @@ export default function AdminPage() {
               {inactiveMembers.length}
             </p>
             <p className="text-xs text-muted-foreground mt-1">{lang === "id" ? "Nonaktif" : "Inactive"}</p>
+          </div>
+        </div>
+
+        {/* ── App Customization ── */}
+        <div className="bg-background border rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b flex items-center justify-between">
+            <h2 className="font-semibold text-sm flex items-center gap-2">
+              <Settings className="w-4 h-4 text-muted-foreground" />
+              {lang === "id" ? "Kustomisasi Aplikasi" : "App Customization"}
+            </h2>
+          </div>
+          <div className="p-5 space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1.5">
+                    {lang === "id" ? "Nama Aplikasi / Tim" : "App / Team Name"}
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full bg-muted/50 border rounded-xl px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    value={appNameInput}
+                    onChange={(e) => setAppNameInput(e.target.value)}
+                    placeholder="e.g. My Awesome Studio"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1.5">
+                    {lang === "id" ? "Warna Utama" : "Primary Color"}
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+                      value={appColorInput}
+                      onChange={(e) => setAppColorInput(e.target.value)}
+                    />
+                    <span className="text-sm font-mono text-muted-foreground uppercase bg-muted/50 px-2 py-1 rounded">
+                      {appColorInput}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-muted-foreground uppercase mb-1.5">
+                    {lang === "id" ? "Logo Aplikasi" : "App Logo"}
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-muted/50 border-2 border-dashed rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {appSettings?.logo_url ? (
+                        <img src={appSettings.logo_url} alt="Logo" className="w-full h-full object-contain p-1" />
+                      ) : (
+                        <Shield className="w-6 h-6 text-muted-foreground/50" />
+                      )}
+                    </div>
+                    <div>
+                      <label className="cursor-pointer bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+                        <Upload className="w-3.5 h-3.5" />
+                        {lang === "id" ? "Pilih Gambar..." : "Choose Image..."}
+                        <input type="file" className="hidden" accept="image/*" onChange={handleUploadLogo} />
+                      </label>
+                      <p className="text-[10px] text-muted-foreground mt-2 max-w-[150px]">
+                        {lang === "id" ? "Gunakan gambar 1:1, max 2MB." : "Use 1:1 image ratio, max 2MB."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end pt-4 border-t">
+              <button
+                onClick={handleSaveSettings}
+                disabled={savingSettings || !appSettings}
+                className="bg-primary text-primary-foreground text-sm font-semibold px-6 py-2 rounded-xl hover:opacity-90 flex items-center gap-2 disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {savingSettings ? (lang === "id" ? "Menyimpan..." : "Saving...") : (lang === "id" ? "Simpan Perubahan" : "Save Changes")}
+              </button>
+            </div>
           </div>
         </div>
 

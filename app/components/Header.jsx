@@ -28,7 +28,7 @@ export default function Header({
   unreadChat = 0,
 }) {
   const pathname = usePathname();
-  const { language } = useGlobalContext();
+  const { language, appSettings } = useGlobalContext();
   const lang = language || "en";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -85,11 +85,17 @@ export default function Header({
           {/* Left: Logo + Nav */}
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                <Logo className="w-4 h-4 text-primary-foreground" />
-              </div>
+              {appSettings?.logo_url ? (
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-muted/30 overflow-hidden">
+                  <img src={appSettings.logo_url} alt="Logo" className="w-full h-full object-contain" />
+                </div>
+              ) : (
+                <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Logo className="w-4 h-4 text-primary-foreground" />
+                </div>
+              )}
               <span className="font-bold tracking-tight text-[15px] sm:text-sm">
-                Still Photo TTV
+                {appSettings?.app_name || "Team Calendar"}
               </span>
             </div>
 

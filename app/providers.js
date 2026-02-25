@@ -18,28 +18,47 @@ export const useGlobalContext = () => useContext(GlobalContext);
 // Helper for color generation
 const generateColor = (str) => {
   const colors = [
-    "#ef4444",
-    "#f97316",
-    "#f59e0b",
-    "#84cc16",
-    "#22c55e",
-    "#10b981",
-    "#14b8a6",
-    "#06b6d4",
-    "#0ea5e9",
-    "#3b82f6",
-    "#6366f1",
-    "#8b5cf6",
-    "#a855f7",
-    "#d946ef",
-    "#ec4899",
-    "#f43f5e",
-    "#64748b",
+    "#ef4444", "#f97316", "#f59e0b", "#84cc16", "#22c55e",
+    "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9", "#3b82f6",
+    "#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899",
+    "#f43f5e", "#64748b",
   ];
   let hash = 0;
   for (let i = 0; i < str.length; i++)
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   return colors[Math.abs(hash) % colors.length];
+};
+
+// Convert hex to HSL for Tailwind CSS variable
+const hexToHslString = (hex) => {
+  if (!hex) return "222.2 47.4% 11.2%"; // default primary
+  let r = 0, g = 0, b = 0;
+  if (hex.length === 4) {
+    r = parseInt(hex[1] + hex[1], 16);
+    g = parseInt(hex[2] + hex[2], 16);
+    b = parseInt(hex[3] + hex[3], 16);
+  } else if (hex.length === 7) {
+    r = parseInt(hex.slice(1, 3), 16);
+    g = parseInt(hex.slice(3, 5), 16);
+    b = parseInt(hex.slice(5, 7), 16);
+  }
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, l = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 };
 
 export default function Providers({ children }) {
@@ -61,8 +80,19 @@ export default function Providers({ children }) {
   const { addToast } = useToast();
   const { confirm } = useConfirm();
   const [language, setLanguageState] = useState("en");
+  const [appSettings, setAppSettings] = useState({
+    app_name: "Team Calendar",
+    logo_url: null,
+    primary_color: "#0ea5e9",
+  });
+
+  const fetchSettings = async () => {
+    const { data } = await supabase.from("app_settings").select("*").single();
+    if (data) setAppSettings(data);
+  };
 
   useEffect(() => {
+    fetchSettings();
     const stored = localStorage.getItem("app_lang");
     if (stored) setLanguageState(stored);
   }, []);
@@ -349,7 +379,13 @@ export default function Providers({ children }) {
 
   if (!session) {
     return (
-      <AuthForm onAuth={handleAuth} loading={authLoading} error={authError} lang={language || "en"} />
+      <AuthForm
+        onAuth={handleAuth}
+        loading={authLoading}
+        error={authError}
+        lang={language || "en"}
+        appSettings={appSettings}
+      />
     );
   }
 
@@ -365,8 +401,10 @@ export default function Providers({ children }) {
         userProfile,
         tasks,
         users,
+        appSettings,
         setTasks,
         fetchTasks,
+        fetchSettings,
         showForm,
         setShowForm,
         editingTask,
@@ -380,6 +418,16 @@ export default function Providers({ children }) {
       }}
     >
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        {appSettings?.primary_color && (
+          <style dangerouslySetInnerHTML={{
+            __html: `
+              :root, .dark { 
+                --primary: ${hexToHslString(appSettings.primary_color)}; 
+                --primary-foreground: 0 0% 100%;
+              }
+            `
+          }} />
+        )}
         <div className="min-h-screen bg-muted/20">
           <Header
             session={session}

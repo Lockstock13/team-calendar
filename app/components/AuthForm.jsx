@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Logo from "./Logo";
 
-export default function AuthForm({ onAuth, loading, error, lang = "id" }) {
+export default function AuthForm({ onAuth, loading, error, lang = "id", appSettings }) {
   const [mode, setMode] = useState("login");
   const [data, setData] = useState({ email: "", password: "", full_name: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -14,14 +14,20 @@ export default function AuthForm({ onAuth, loading, error, lang = "id" }) {
       <div className="w-full max-w-sm space-y-6">
         {/* Logo */}
         <div className="text-center">
-          <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Logo className="w-8 h-8 text-primary-foreground" />
-          </div>
+          {appSettings?.logo_url ? (
+            <div className="w-20 h-20 bg-muted/50 rounded-3xl mx-auto mb-4 overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center justify-center p-2">
+              <img src={appSettings.logo_url} alt="Logo" className="w-full h-full object-contain" />
+            </div>
+          ) : (
+            <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Logo className="w-8 h-8 text-primary-foreground" />
+            </div>
+          )}
           <h1 className="text-2xl font-bold tracking-tight">
-            Still Photo TTV
+            {appSettings?.app_name || "Team Calendar"}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {lang === "id" ? "Jadwal Fotografer" : "Photographers Schedule"}
+            {lang === "id" ? "Portal Jadwal & Tugas" : "Task & Schedule Portal"}
           </p>
         </div>
 
@@ -149,7 +155,7 @@ export default function AuthForm({ onAuth, loading, error, lang = "id" }) {
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
-          Still Photo TTV &copy; {new Date().getFullYear()}
+          {appSettings?.app_name || "Team Calendar"} &copy; {new Date().getFullYear()}
         </p>
       </div>
     </div>
