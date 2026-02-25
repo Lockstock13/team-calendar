@@ -1,5 +1,5 @@
 -- ============================================================
--- App Customization / White-labeling Patch
+-- App Customization / White-labeling Patch (Idempotent)
 -- Run this in: Supabase Dashboard > SQL Editor
 -- ============================================================
 
@@ -14,8 +14,6 @@ CREATE TABLE IF NOT EXISTS public.app_settings (
 );
 
 -- Ensure there is only ever ONE row in this table.
--- We can do this by forcing a specific ID or using a dummy column.
--- Alternatively, just insert the default row if it doesn't exist:
 INSERT INTO public.app_settings (id, app_name) 
 SELECT '00000000-0000-0000-0000-000000000001'::uuid, 'Stay Focused Team'
 WHERE NOT EXISTS (SELECT 1 FROM public.app_settings);
@@ -23,7 +21,12 @@ WHERE NOT EXISTS (SELECT 1 FROM public.app_settings);
 -- ─── 2. ROW LEVEL SECURITY (RLS) FOR APP SETTINGS ───────────
 ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
 
--- Anyone can read the app settings (even unauthenticated, so the login page can load branding)
+-- Drop existing policies to allow re-running the script
+DROP POLICY IF EXISTS "app_settings: read all" ON public.app_settings;
+DROP POLICY IF EXISTS "app_settings: admin update" ON public.app_settings;
+DROP POLICY IF EXISTS "app_settings: admin insert" ON public.app_settings;
+
+-- Anyone can read the app settings
 CREATE POLICY "app_settings: read all"
   ON public.app_settings FOR SELECT
   USING (true);
@@ -51,14 +54,17 @@ CREATE POLICY "app_settings: admin insert"
   );
 
 -- ─── 3. CREATE STORAGE BUCKET FOR ASSETS (LOGOS) ────────────
--- Enable the storage extension if not already enabled (usually is on Supabase)
--- Supabase Storage operates on the `storage.buckets` and `storage.objects` tables.
-
+-- Enable the storage extension if not already enabled
 INSERT INTO storage.buckets (id, name, public) 
 VALUES ('assets', 'assets', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage Policies for 'assets' bucket
+DROP POLICY IF EXISTS "assets: read public" ON storage.objects;
+DROP POLICY IF EXISTS "assets: admin upload" ON storage.objects;
+DROP POLICY IF EXISTS "assets: admin update" ON storage.objects;
+DROP POLICY IF EXISTS "assets: admin delete" ON storage.objects;
+
 -- Everyone can view (public bucket)
 CREATE POLICY "assets: read public"
   ON storage.objects FOR SELECT
