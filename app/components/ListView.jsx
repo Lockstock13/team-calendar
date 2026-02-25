@@ -18,9 +18,18 @@ function Avatar({ user }) {
 }
 
 const getStatusData = (lang) => ({
-  todo: { label: lang === "id" ? "Belum Mulai" : "Not Started", cls: "text-slate-500 bg-slate-100" },
-  in_progress: { label: lang === "id" ? "On Going" : "In Progress", cls: "text-blue-600 bg-blue-50" },
-  done: { label: lang === "id" ? "Selesai" : "Done", cls: "text-green-600 bg-green-50" },
+  todo: {
+    label: lang === "id" ? "Belum Mulai" : "Not Started",
+    cls: "text-slate-500 bg-slate-100",
+  },
+  in_progress: {
+    label: lang === "id" ? "On Going" : "In Progress",
+    cls: "text-blue-600 bg-blue-50",
+  },
+  done: {
+    label: lang === "id" ? "Selesai" : "Done",
+    cls: "text-green-600 bg-green-50",
+  },
 });
 
 function nextStatus(current) {
@@ -50,7 +59,9 @@ export default function ListView({
     return (
       <div className="text-center py-16 text-muted-foreground bg-background border rounded-2xl">
         <Clock className="w-10 h-10 mx-auto mb-3 opacity-30" />
-        <p className="text-sm">{lang === "id" ? "Belum ada jadwal" : "No tasks yet"}</p>
+        <p className="text-sm">
+          {lang === "id" ? "Belum ada jadwal" : "No tasks yet"}
+        </p>
       </div>
     );
   }
@@ -83,7 +94,9 @@ export default function ListView({
                   <h3
                     className={`text-sm font-semibold ${isToday ? "text-orange-500" : "text-muted-foreground"}`}
                   >
-                    {format(dateObj, "EEEE, d MMMM yyyy", { locale: lang === "id" ? id : enUS })}
+                    {format(dateObj, "EEEE, d MMMM yyyy", {
+                      locale: lang === "id" ? id : enUS,
+                    })}
                     {isToday && (
                       <span className="ml-2 text-xs font-medium">
                         — {lang === "id" ? "Hari Ini" : "Today"}
@@ -116,7 +129,7 @@ export default function ListView({
                   return (
                     <div
                       key={task.id}
-                      className="bg-background border rounded-xl p-4 flex items-start gap-3 hover:border-primary/30 transition-colors group"
+                      className="bg-background border rounded-xl p-4 flex items-start gap-3 hover:border-primary/30 hover:shadow-sm transition-colors transition-shadow group"
                     >
                       {/* Color bar */}
                       <div
@@ -133,10 +146,13 @@ export default function ListView({
 
                           {(task.is_comday ||
                             task.task_type === "libur_pengganti") && (
-                              <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                                🏖️ {lang === "id" ? "Libur Pengganti" : "Replacement Leave"}
-                              </span>
-                            )}
+                            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                              🏖️{" "}
+                              {lang === "id"
+                                ? "Libur Pengganti"
+                                : "Replacement Leave"}
+                            </span>
+                          )}
 
                           <span
                             className={`text-xs px-2 py-0.5 rounded-full font-medium ${status.cls}`}
@@ -175,10 +191,11 @@ export default function ListView({
                           onClick={() =>
                             onUpdateStatus(task.id, nextStatus(task.status))
                           }
-                          className={`p-1.5 rounded-lg transition-colors ${task.status === "done"
+                          className={`p-1.5 rounded-lg transition-colors ${
+                            task.status === "done"
                               ? "text-green-600 bg-green-50 hover:bg-green-100"
                               : "text-muted-foreground hover:bg-muted"
-                            }`}
+                          }`}
                           title="Update status"
                         >
                           <Check className="w-3.5 h-3.5" />

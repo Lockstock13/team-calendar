@@ -79,46 +79,66 @@ export default function NotesView({ session, userProfile }) {
     ]);
     if (!error) {
       setShowForm(false);
-      addToast(lang === "id" ? "Catatan berhasil dibuat!" : "Note created successfully!", "success");
+      addToast(
+        lang === "id"
+          ? "Catatan berhasil dibuat!"
+          : "Note created successfully!",
+        "success",
+      );
       fetchNotes();
     } else {
-      addToast(lang === "id" ? "Gagal membuat catatan" : "Failed to create note", "error");
+      addToast(
+        lang === "id" ? "Gagal membuat catatan" : "Failed to create note",
+        "error",
+      );
     }
   };
 
-  const handleUpdate = useCallback(async (id, updates) => {
-    const { error } = await supabase
-      .from("notes")
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq("id", id);
-    if (!error) {
-      addToast(lang === "id" ? "Catatan diperbarui" : "Note updated", "success");
-      fetchNotes();
-    }
-  }, [visibleCount, lang, addToast]);
+  const handleUpdate = useCallback(
+    async (id, updates) => {
+      const { error } = await supabase
+        .from("notes")
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (!error) {
+        addToast(
+          lang === "id" ? "Catatan diperbarui" : "Note updated",
+          "success",
+        );
+        fetchNotes();
+      }
+    },
+    [visibleCount, lang, addToast],
+  );
 
-  const handleDelete = useCallback(async (id) => {
-    const ok = await confirm({
-      title: lang === "id" ? "Hapus Catatan" : "Delete Note",
-      message: lang === "id"
-        ? "Apakah kamu yakin ingin menghapus catatan ini selamanya?"
-        : "Are you sure you want to delete this note forever?",
-      confirmText: lang === "id" ? "Hapus" : "Delete",
-      cancelText: lang === "id" ? "Batal" : "Cancel"
-    });
-    if (!ok) return;
-    const { error } = await supabase.from("notes").delete().eq("id", id);
-    if (!error) {
-      addToast(lang === "id" ? "Catatan dihapus" : "Note deleted", "info");
-      fetchNotes();
-    }
-  }, [lang, visibleCount, addToast, confirm]);
+  const handleDelete = useCallback(
+    async (id) => {
+      const ok = await confirm({
+        title: lang === "id" ? "Hapus Catatan" : "Delete Note",
+        message:
+          lang === "id"
+            ? "Apakah kamu yakin ingin menghapus catatan ini selamanya?"
+            : "Are you sure you want to delete this note forever?",
+        confirmText: lang === "id" ? "Hapus" : "Delete",
+        cancelText: lang === "id" ? "Batal" : "Cancel",
+      });
+      if (!ok) return;
+      const { error } = await supabase.from("notes").delete().eq("id", id);
+      if (!error) {
+        addToast(lang === "id" ? "Catatan dihapus" : "Note deleted", "info");
+        fetchNotes();
+      }
+    },
+    [lang, visibleCount, addToast, confirm],
+  );
 
   const filtered =
     activeTab === "all" ? notes : notes.filter((n) => n.category === activeTab);
 
   const pinned = filtered.filter((n) => n.pinned);
-  const unpinned = filtered.filter((n) => !n.pinned).slice(0, visibleCount - pinned.length);
+  const unpinned = filtered
+    .filter((n) => !n.pinned)
+    .slice(0, visibleCount - pinned.length);
 
   const hasMore = notes.length > visibleCount;
 
@@ -133,7 +153,7 @@ export default function NotesView({ session, userProfile }) {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Toolbar */}
-      <div className="flex items-center justify-between flex-wrap gap-4 bg-background/50 backdrop-blur-sm p-4 rounded-2xl border sticky top-[72px] z-10">
+      <div className="flex items-center justify-between flex-wrap gap-3 sm:gap-4 bg-background/50 backdrop-blur-sm p-3 sm:p-4 rounded-2xl border sticky top-14 sm:top-[72px] z-10">
         <div className="flex gap-2 flex-wrap">
           {categories.map((c) => {
             const count =
@@ -144,13 +164,16 @@ export default function NotesView({ session, userProfile }) {
               <button
                 key={c.id}
                 onClick={() => setActiveTab(c.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === c.id
-                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
-                  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                  activeTab === c.id
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
               >
                 <span>{c.emoji || "📁"}</span> {c.label}
-                <span className="text-[10px] opacity-60 bg-black/10 px-1.5 py-0.5 rounded-full ml-1">{count}</span>
+                <span className="text-[10px] opacity-60 bg-black/10 px-1.5 py-0.5 rounded-full ml-1">
+                  {count}
+                </span>
               </button>
             );
           })}
@@ -178,9 +201,19 @@ export default function NotesView({ session, userProfile }) {
       {/* Empty state */}
       {filtered.length === 0 && !showForm && (
         <div className="text-center py-24 text-muted-foreground bg-background border border-dashed rounded-3xl animate-fade-in shadow-inner">
-          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">🗒️</div>
-          <p className="text-base font-bold text-foreground mb-1">{lang === "id" ? "Belum ada catatan di kategori ini" : "No notes in this category"}</p>
-          <p className="text-sm opacity-70 mb-6">{lang === "id" ? "Mulai dengan membuat catatan pertama kamu!" : "Start by creating your first note!"}</p>
+          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
+            🗒️
+          </div>
+          <p className="text-base font-bold text-foreground mb-1">
+            {lang === "id"
+              ? "Belum ada catatan di kategori ini"
+              : "No notes in this category"}
+          </p>
+          <p className="text-sm opacity-70 mb-6">
+            {lang === "id"
+              ? "Mulai dengan membuat catatan pertama kamu!"
+              : "Start by creating your first note!"}
+          </p>
           <button
             onClick={() => setShowForm(true)}
             className="text-sm bg-primary/10 text-primary px-6 py-2 rounded-xl font-bold hover:bg-primary/20 transition-colors"
@@ -194,7 +227,8 @@ export default function NotesView({ session, userProfile }) {
       {pinned.length > 0 && (
         <div className="space-y-4">
           <p className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2 pl-2">
-            <Pin className="w-3.5 h-3.5 text-blue-500" /> {lang === "id" ? "Catatan Disematkan" : "Pinned Notes"}
+            <Pin className="w-3.5 h-3.5 text-blue-500" />{" "}
+            {lang === "id" ? "Catatan Disematkan" : "Pinned Notes"}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {pinned.map((note) => (
@@ -239,7 +273,7 @@ export default function NotesView({ session, userProfile }) {
           {hasMore && (
             <div className="flex justify-center pt-8 pb-12">
               <button
-                onClick={() => setVisibleCount(prev => prev + 12)}
+                onClick={() => setVisibleCount((prev) => prev + 12)}
                 className="px-8 py-3 bg-white border-2 border-primary/20 text-primary rounded-2xl text-sm font-bold hover:bg-primary hover:text-white hover:border-primary transition-all shadow-md active:scale-95"
               >
                 {lang === "id" ? "Muat Lebih Banyak" : "Load More"}

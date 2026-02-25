@@ -9,7 +9,7 @@ export default function DashboardPage() {
     const lang = language || "en";
 
     return (
-        <PageContainer title={lang === "id" ? "Dashboard" : "Dashboard"}>
+        <PageContainer title={lang === "id" ? "Dashboard" : "Dashboard"} hideAddButton={true}>
             <DashboardView tasks={tasks} users={users} currentUserId={session.user.id} />
         </PageContainer>
     );

@@ -15,13 +15,33 @@ import { useGlobalContext } from "@/app/providers";
 import { enUS } from "date-fns/locale";
 
 const MONTHS_ID = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
 ];
 
 const MONTHS_EN = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -54,9 +74,18 @@ function TypeBadge({ task, lang }) {
 
 function StatusBadge({ status, lang }) {
   const map = {
-    todo: { label: lang === "id" ? "Belum Mulai" : "Not Started", cls: "bg-muted text-muted-foreground" },
-    in_progress: { label: lang === "id" ? "Berjalan" : "In Progress", cls: "bg-amber-100 text-amber-700" },
-    done: { label: lang === "id" ? "Selesai" : "Done", cls: "bg-emerald-100 text-emerald-700" },
+    todo: {
+      label: lang === "id" ? "Belum Mulai" : "Not Started",
+      cls: "bg-muted text-muted-foreground",
+    },
+    in_progress: {
+      label: lang === "id" ? "Berjalan" : "In Progress",
+      cls: "bg-amber-100 text-amber-700",
+    },
+    done: {
+      label: lang === "id" ? "Selesai" : "Done",
+      cls: "bg-emerald-100 text-emerald-700",
+    },
   };
   const s = map[status] || map.todo;
   return (
@@ -72,14 +101,14 @@ function formatDateRange(task, lang) {
   const localeObj = lang === "id" ? id : enUS;
   const start = task.start_date
     ? format(new Date(task.start_date + "T00:00:00"), "d MMM yyyy", {
-      locale: localeObj,
-    })
+        locale: localeObj,
+      })
     : "-";
   const end =
     task.end_date && task.end_date !== task.start_date
       ? format(new Date(task.end_date + "T00:00:00"), "d MMM yyyy", {
-        locale: localeObj,
-      })
+          locale: localeObj,
+        })
       : null;
   return end ? `${start} – ${end}` : start;
 }
@@ -103,8 +132,8 @@ function exportCSV(tasks, users, month, year, lang) {
     const localeObj = lang === "id" ? id : enUS;
     const dateStr = task.start_date
       ? format(new Date(task.start_date + "T00:00:00"), "d MMM yyyy", {
-        locale: localeObj,
-      })
+          locale: localeObj,
+        })
       : "-";
     const endStr =
       task.end_date && task.end_date !== task.start_date
@@ -113,7 +142,9 @@ function exportCSV(tasks, users, month, year, lang) {
     const assigneeNames = task.assigned_to_name || "-";
     const tipe =
       task.is_comday || task.task_type === "libur_pengganti"
-        ? (lang === "id" ? "Libur Pengganti" : "Replacement Leave")
+        ? lang === "id"
+          ? "Libur Pengganti"
+          : "Replacement Leave"
         : "Regular";
     const statusMap = {
       todo: lang === "id" ? "Belum Mulai" : "Not Started",
@@ -158,31 +189,31 @@ function DailyTable({ tasks, users, lang }) {
   if (sorted.length === 0) return null;
 
   return (
-    <div className="bg-background border rounded-2xl overflow-hidden">
+    <div className="bg-white/95 border rounded-xl overflow-hidden">
       {/* Desktop table */}
       <div className="hidden sm:block overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[13px]">
           <thead>
-            <tr className="border-b bg-muted/40">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-8">
+            <tr className="border-b bg-muted/30">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest w-8">
                 No
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-40">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest w-40">
                 {lang === "id" ? "Tanggal" : "Date"}
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
                 {lang === "id" ? "Tugas" : "Task"}
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-44">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest w-44">
                 {lang === "id" ? "Petugas" : "Assignee"}
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-36">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest w-36">
                 {lang === "id" ? "Tipe" : "Type"}
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-28">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest w-28">
                 Status
               </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
                 {lang === "id" ? "Catatan / Info" : "Notes"}
               </th>
             </tr>
@@ -197,21 +228,22 @@ function DailyTable({ tasks, users, lang }) {
                   ? assigneeList
                   : task.assigned_to_name
                     ? [
-                      {
-                        full_name: task.assigned_to_name,
-                        color: "#64748b",
-                        id: "fallback",
-                      },
-                    ]
+                        {
+                          full_name: task.assigned_to_name,
+                          color: "#64748b",
+                          id: "fallback",
+                        },
+                      ]
                     : [];
 
               return (
                 <tr
                   key={task.id}
-                  className={`hover:bg-muted/20 transition-colors ${task.is_comday || task.task_type === "libur_pengganti"
-                    ? "bg-emerald-50/40"
-                    : ""
-                    }`}
+                  className={`hover:bg-muted/20 transition-colors ${
+                    task.is_comday || task.task_type === "libur_pengganti"
+                      ? "bg-emerald-50/40"
+                      : ""
+                  }`}
                 >
                   {/* No */}
                   <td className="px-4 py-3 text-muted-foreground tabular-nums">
@@ -221,10 +253,10 @@ function DailyTable({ tasks, users, lang }) {
                   <td className="px-4 py-3 text-sm font-medium tabular-nums whitespace-nowrap">
                     {task.start_date
                       ? format(
-                        new Date(task.start_date + "T00:00:00"),
-                        "EEE, d MMM yyyy",
-                        { locale: lang === "id" ? id : enUS },
-                      )
+                          new Date(task.start_date + "T00:00:00"),
+                          "EEE, d MMM yyyy",
+                          { locale: lang === "id" ? id : enUS },
+                        )
                       : "-"}
                     {task.end_date && task.end_date !== task.start_date && (
                       <span className="block text-xs text-muted-foreground font-normal">
@@ -289,10 +321,11 @@ function DailyTable({ tasks, users, lang }) {
           return (
             <div
               key={task.id}
-              className={`p-4 space-y-2 ${task.is_comday || task.task_type === "libur_pengganti"
-                ? "bg-emerald-50/50"
-                : ""
-                }`}
+              className={`p-4 space-y-2 ${
+                task.is_comday || task.task_type === "libur_pengganti"
+                  ? "bg-emerald-50/50"
+                  : ""
+              }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2">
@@ -360,8 +393,8 @@ function TaskRow({ task, lang }) {
   const localeObj = lang === "id" ? id : enUS;
   const dateStr = task.start_date
     ? format(new Date(task.start_date + "T00:00:00"), "d MMM yyyy", {
-      locale: localeObj,
-    })
+        locale: localeObj,
+      })
     : "-";
   const endStr =
     task.end_date && task.end_date !== task.start_date
@@ -458,7 +491,9 @@ function PhotographerRow({ user, tasks, maxCount, rank, lang }) {
         <div className="px-5 pb-4 border-t bg-muted/20">
           {sorted.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center">
-              {lang === "id" ? "Tidak ada tugas bulan ini" : "No tasks this month"}
+              {lang === "id"
+                ? "Tidak ada tugas bulan ini"
+                : "No tasks this month"}
             </p>
           ) : (
             <div className="mt-3">
@@ -571,7 +606,8 @@ export default function ReportView({ tasks, users }) {
       {/* ── Print header ── */}
       <div className="print-only hidden">
         <h1 className="text-xl font-bold">
-          {lang === "id" ? "Laporan Bulanan" : "Monthly Report"} — {MONTHS[month]} {year}
+          {lang === "id" ? "Laporan Bulanan" : "Monthly Report"} —{" "}
+          {MONTHS[month]} {year}
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Still Photo Team Calendar
@@ -582,7 +618,11 @@ export default function ReportView({ tasks, users }) {
       {/* ── Summary cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: lang === "id" ? "Total Jadwal" : "Total Tasks", value: totalTasks, cls: "text-blue-600" },
+          {
+            label: lang === "id" ? "Total Jadwal" : "Total Tasks",
+            value: totalTasks,
+            cls: "text-blue-600",
+          },
           {
             label: lang === "id" ? "Tugas Regular" : "Regular Tasks",
             value: totalRegular,
@@ -613,20 +653,22 @@ export default function ReportView({ tasks, users }) {
         <div className="flex items-center gap-1 bg-muted p-1 rounded-xl w-fit no-print">
           <button
             onClick={() => setViewType("table")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${viewType === "table"
-              ? "bg-background shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              viewType === "table"
+                ? "bg-background shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <LayoutList className="w-4 h-4" />
             {lang === "id" ? "Tabel Harian" : "Daily Table"}
           </button>
           <button
             onClick={() => setViewType("photographer")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${viewType === "photographer"
-              ? "bg-background shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              viewType === "photographer"
+                ? "bg-background shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <BarChart2 className="w-4 h-4" />
             {lang === "id" ? "Per Fotografer" : "By Assignee"}
@@ -639,7 +681,8 @@ export default function ReportView({ tasks, users }) {
         <div className="text-center py-16 bg-background border rounded-2xl text-muted-foreground">
           <span className="text-4xl block mb-3">📊</span>
           <p className="text-sm">
-            {lang === "id" ? "Tidak ada jadwal di" : "No tasks in"} {MONTHS[month]} {year}
+            {lang === "id" ? "Tidak ada jadwal di" : "No tasks in"}{" "}
+            {MONTHS[month]} {year}
           </p>
         </div>
       )}
@@ -653,7 +696,9 @@ export default function ReportView({ tasks, users }) {
 
           {/* Print title for table view */}
           <div className="print-only hidden">
-            <h2 className="font-bold text-base mb-2">{lang === "id" ? "Daftar Jadwal Harian" : "Daily Task List"}</h2>
+            <h2 className="font-bold text-base mb-2">
+              {lang === "id" ? "Daftar Jadwal Harian" : "Daily Task List"}
+            </h2>
           </div>
 
           <DailyTable tasks={monthTasks} users={users} lang={lang} />
@@ -661,7 +706,8 @@ export default function ReportView({ tasks, users }) {
           {/* Print: simple flat table */}
           <div className="print-only hidden mt-4 text-xs">
             <p className="text-muted-foreground">
-              Total: {totalTasks} {lang === "id" ? "jadwal" : "tasks"} | {totalRegular} regular | {totalLibur}{" "}
+              Total: {totalTasks} {lang === "id" ? "jadwal" : "tasks"} |{" "}
+              {totalRegular} regular | {totalLibur}{" "}
               {lang === "id" ? "libur pengganti" : "replacement leave"}
             </p>
           </div>
@@ -672,7 +718,9 @@ export default function ReportView({ tasks, users }) {
       {!isEmpty && viewType === "photographer" && (
         <div className="space-y-3">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            {lang === "id" ? "Beban Kerja Per Fotografer" : "Workload By Assignee"}
+            {lang === "id"
+              ? "Beban Kerja Per Fotografer"
+              : "Workload By Assignee"}
           </h2>
           {perUser.map(({ user, tasks: userTasks }, i) => (
             <PhotographerRow

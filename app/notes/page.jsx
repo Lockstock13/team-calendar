@@ -9,7 +9,7 @@ export default function NotesPage() {
     const lang = language || "en";
 
     return (
-        <PageContainer title={lang === "id" ? "Catatan" : "Notes"}>
+        <PageContainer title={lang === "id" ? "Catatan" : "Notes"} hideAddButton={true}>
             <NotesView session={session} userProfile={userProfile} />
         </PageContainer>
     );

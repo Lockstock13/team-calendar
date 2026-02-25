@@ -13,7 +13,7 @@ async function broadcastChatPush({ senderName, content }) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ senderName, content }),
-  }).catch(() => { });
+  }).catch(() => {});
 }
 
 function Avatar({ user, size = "sm" }) {
@@ -34,7 +34,10 @@ function DateDivider({ dateStr, lang }) {
   let label;
   if (isToday(d)) label = lang === "id" ? "Hari Ini" : "Today";
   else if (isYesterday(d)) label = lang === "id" ? "Kemarin" : "Yesterday";
-  else label = format(d, "EEEE, d MMMM yyyy", { locale: lang === "id" ? id : enUS });
+  else
+    label = format(d, "EEEE, d MMMM yyyy", {
+      locale: lang === "id" ? id : enUS,
+    });
 
   return (
     <div className="flex items-center gap-3 my-4">
@@ -49,7 +52,8 @@ function DateDivider({ dateStr, lang }) {
 
 function MessageBubble({ msg, isMine, showAvatar, user, lang }) {
   const time = msg.created_at ? format(new Date(msg.created_at), "HH:mm") : "";
-  const animClass = "animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both";
+  const animClass =
+    "animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both";
 
   if (isMine) {
     return (
@@ -81,7 +85,11 @@ function MessageBubble({ msg, isMine, showAvatar, user, lang }) {
       )}
       <div className="flex items-end gap-2 group">
         <div className="w-8 flex-shrink-0 flex items-end">
-          {showAvatar ? <Avatar user={user} size="md" /> : <div className="w-8" />}
+          {showAvatar ? (
+            <Avatar user={user} size="md" />
+          ) : (
+            <div className="w-8" />
+          )}
         </div>
         <div className="px-4 py-2.5 bg-white border border-zinc-100 rounded-2xl rounded-bl-sm text-[13px] text-zinc-800 leading-relaxed break-words shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] max-w-[75%] sm:max-w-[65%]">
           {msg.content}
@@ -224,10 +232,7 @@ export default function ChatView({ session, userProfile, users }) {
   }
 
   return (
-    <div
-      className="flex flex-col bg-white/70 backdrop-blur-3xl border border-zinc-100 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
-      style={{ height: "calc(100vh - 120px)", minHeight: "500px" }}
-    >
+    <div className="flex flex-col bg-white/70 backdrop-blur-3xl border border-zinc-100 rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-[calc(100vh-140px)] sm:h-[calc(100vh-120px)] min-h-[420px]">
       {/* Header */}
       <div className="px-6 py-4 bg-white/50 backdrop-blur-md border-b border-zinc-100 flex items-center justify-between flex-shrink-0 z-10">
         <div className="flex items-center gap-3.5">
@@ -243,13 +248,17 @@ export default function ChatView({ session, userProfile, users }) {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <p className="text-[11px] sm:text-[12px] text-zinc-500 font-medium">Real-time sync</p>
+              <p className="text-[11px] sm:text-[12px] text-zinc-500 font-medium">
+                Real-time sync
+              </p>
             </div>
           </div>
         </div>
         <div className="flex -space-x-2">
           {users.slice(0, 5).map((u) => (
-            <div key={u.id} className="ring-2 ring-white rounded-full"><Avatar user={u} /></div>
+            <div key={u.id} className="ring-2 ring-white rounded-full">
+              <Avatar user={u} />
+            </div>
           ))}
           {users.length > 5 && (
             <div className="w-7 h-7 rounded-full bg-zinc-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-zinc-500 ring-2 ring-white">
@@ -266,13 +275,19 @@ export default function ChatView({ session, userProfile, users }) {
             <div className="w-16 h-16 bg-zinc-50 rounded-full flex items-center justify-center mb-4 border border-zinc-100 shadow-sm">
               <span className="text-2xl">💭</span>
             </div>
-            <p className="text-[13px] font-medium text-zinc-500">{lang === "id" ? "Belum ada pesan. Say Hi!" : "No messages yet. Say Hi!"}</p>
+            <p className="text-[13px] font-medium text-zinc-500">
+              {lang === "id"
+                ? "Belum ada pesan. Say Hi!"
+                : "No messages yet. Say Hi!"}
+            </p>
           </div>
         )}
 
         {grouped.map((item) => {
           if (item.type === "divider") {
-            return <DateDivider key={item.key} dateStr={item.dateStr} lang={lang} />;
+            return (
+              <DateDivider key={item.key} dateStr={item.dateStr} lang={lang} />
+            );
           }
           const { msg, showAvatar } = item;
           const isMine = msg.user_id === session.user.id;
@@ -306,7 +321,9 @@ export default function ChatView({ session, userProfile, users }) {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={lang === "id" ? "Ketik pesan..." : "Type a message..."}
+              placeholder={
+                lang === "id" ? "Ketik pesan..." : "Type a message..."
+              }
               className="flex-1 bg-transparent text-[13px] text-zinc-800 placeholder:text-zinc-400 focus:outline-none resize-none leading-relaxed max-h-32 no-scrollbar py-1"
               rows={1}
               style={{ minHeight: "28px" }}
@@ -314,10 +331,11 @@ export default function ChatView({ session, userProfile, users }) {
             <button
               onClick={sendMessage}
               disabled={!input.trim() || sending}
-              className={`p-2.5 rounded-full flex-shrink-0 self-end mb-[2px] shadow-sm transition-all duration-300 ${!input.trim() || sending
-                ? "bg-zinc-100 text-zinc-300 cursor-not-allowed border border-zinc-200"
-                : "bg-zinc-900 text-white hover:bg-zinc-800 hover:scale-[1.05] active:scale-[0.95]"
-                }`}
+              className={`p-2.5 rounded-full flex-shrink-0 self-end mb-[2px] shadow-sm transition-all duration-300 ${
+                !input.trim() || sending
+                  ? "bg-zinc-100 text-zinc-300 cursor-not-allowed border border-zinc-200"
+                  : "bg-zinc-900 text-white hover:bg-zinc-800 hover:scale-[1.05] active:scale-[0.95]"
+              }`}
             >
               <Send className="w-4 h-4 ml-[1px]" />
             </button>
