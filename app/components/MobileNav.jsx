@@ -9,13 +9,17 @@ import {
   FileText,
   BarChart2,
   MessageCircle,
+  Moon,
+  Sun
 } from "lucide-react";
 import { useGlobalContext } from "@/app/providers";
+import { useTheme } from "next-themes";
 
 export default function MobileNav({ unreadChat = 0 }) {
   const pathname = usePathname();
   const { language } = useGlobalContext();
   const lang = language || "en";
+  const { theme, setTheme } = useTheme();
 
   const items = [
     {
@@ -59,39 +63,52 @@ export default function MobileNav({ unreadChat = 0 }) {
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-20 border-t bg-background/90 backdrop-blur-md sm:hidden">
-      <div className="max-w-7xl mx-auto px-2">
-        <div className="grid grid-cols-6 items-stretch h-14">
-          {items.map(({ id, path, label, icon: Icon, badge }) => {
-            const isActive =
-              pathname === path || (path === "/dashboard" && pathname === "/");
+      <div className="max-w-7xl mx-auto px-1">
+        <div className="flex justify-between items-center h-14">
+          <div className="grid grid-cols-6 items-stretch flex-1">
+            {items.map(({ id, path, label, icon: Icon, badge }) => {
+              const isActive =
+                pathname === path || (path === "/dashboard" && pathname === "/");
 
-            return (
-              <Link
-                key={id}
-                href={path}
-                className={`relative flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors ${
-                  isActive
+              return (
+                <Link
+                  key={id}
+                  href={path}
+                  className={`relative flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors ${isActive
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"
-                }`}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <div
-                  className={`relative flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
-                    isActive ? "bg-muted" : "bg-transparent"
-                  }`}
+                    }`}
+                  aria-current={isActive ? "page" : undefined}
                 >
-                  <Icon className="w-[18px] h-[18px]" />
-                  {badge > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
-                      {badge > 99 ? "99+" : badge}
-                    </span>
-                  )}
-                </div>
-                <span className="leading-none">{label}</span>
-              </Link>
-            );
-          })}
+                  <div
+                    className={`relative flex items-center justify-center w-8 h-8 rounded-full transition-colors ${isActive ? "bg-muted" : "bg-transparent"
+                      }`}
+                  >
+                    <Icon className="w-[18px] h-[18px]" />
+                    {badge > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                        {badge > 99 ? "99+" : badge}
+                      </span>
+                    )}
+                  </div>
+                  <span className="leading-none">{label}</span>
+                </Link>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors text-muted-foreground hover:text-foreground px-2"
+          >
+            <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-transparent">
+              {theme === "dark" ? (
+                <Sun className="w-[18px] h-[18px]" />
+              ) : (
+                <Moon className="w-[18px] h-[18px]" />
+              )}
+            </div>
+            <span className="leading-none">Tema</span>
+          </button>
         </div>
       </div>
       <div className="h-[env(safe-area-inset-bottom)]" />
