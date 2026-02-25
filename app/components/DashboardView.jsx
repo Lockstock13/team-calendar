@@ -127,7 +127,7 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
       <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-zinc-50/50 rounded-t-xl">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-muted-foreground/80" />
-          <h2 className="text-[13px] font-medium tracking-tight text-foreground/ dark:text-zinc-100">
+          <h2 className="text-[13px] font-medium tracking-tight text-foreground dark:text-zinc-100">
             {lang === "id" ? "Jadwal Saya" : "My Schedule"}
           </h2>
         </div>
@@ -171,7 +171,7 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
                     {/* Minimalist Date Box */}
                     <div className="w-10 pt-0.5 flex-shrink-0 text-right">
                       <span
-                        className={`text-[11px] font-medium block tracking-wide ${isLibur ? "text-red-400/80" : "text-muted-foreground/80 group-hover:text-zinc-600"}`}
+                        className={`text-[11px] font-medium block tracking-wide ${isLibur ? "text-red-400/80" : "text-muted-foreground/80 group-hover:text-foreground"}`}
                       >
                         {dateStr}
                       </span>
@@ -258,7 +258,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-semibold text-foreground dark:text-zinc-100 tracking-tight leading-none group-hover:text-black dark:group-hover:text-white transition-colors">
+            <span className="text-2xl font-semibold text-foreground dark:text-zinc-100 tracking-tight leading-none group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
               {todayTasks.length}
             </span>
             <span className="text-[11px] font-medium text-muted-foreground/80 tracking-wide">
@@ -276,7 +276,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-semibold text-foreground dark:text-zinc-100 tracking-tight leading-none group-hover:text-black dark:group-hover:text-white transition-colors">
+            <span className="text-2xl font-semibold text-foreground dark:text-zinc-100 tracking-tight leading-none group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
               {monthTasks.length}
             </span>
             <span className="text-[11px] font-medium text-muted-foreground/80 tracking-wide">
@@ -294,7 +294,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
           <div>
             <div className="flex items-center gap-2 mb-2 px-1">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500/80"></span>
-              <h2 className="font-semibold text-[13.5px] sm:text-[14.5px] tracking-tight text-foreground/ dark:text-zinc-100">
+              <h2 className="font-semibold text-[13.5px] sm:text-[14.5px] tracking-tight text-foreground dark:text-zinc-100">
                 {lang === "id" ? "Agenda Hari Ini ⚡" : "Today's Agenda ⚡"}
               </h2>
             </div>
@@ -329,8 +329,8 @@ export default function DashboardView({ tasks, users, currentUserId }) {
           {tomorrowTasks.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-2 px-1 mt-5">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-zinc-300"></span>
-                <h2 className="font-semibold text-[13.5px] sm:text-[14.5px] tracking-tight text-foreground/ dark:text-zinc-100">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-600"></span>
+                <h2 className="font-semibold text-[13.5px] sm:text-[14.5px] tracking-tight text-foreground dark:text-zinc-100">
                   {lang === "id" ? "Besok 🚀" : "Tomorrow 🚀"}
                 </h2>
               </div>
@@ -382,7 +382,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
             <div className="p-6">
               <button
                 onClick={() => setPreviewTask(null)}
-                className="absolute top-4 right-4 p-1.5 text-muted-foreground/80 hover:bg-zinc-100 hover:text-zinc-600 rounded-full transition-colors"
+                className="absolute top-4 right-4 p-1.5 text-muted-foreground/80 hover:bg-muted hover:text-foreground rounded-full transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

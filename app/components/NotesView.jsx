@@ -166,8 +166,8 @@ export default function NotesView({ session, userProfile }) {
                 key={c.id}
                 onClick={() => setActiveTab(c.id)}
                 className={`flex-shrink-0 flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[13px] sm:text-sm font-semibold transition-all ${activeTab === c.id
-                    ? "bg-zinc-800 text-white shadow-sm"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                  ? "bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 shadow-sm"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80 border border-transparent"
                   }`}
               >
                 <span>{c.emoji || "📁"}</span> {c.label}
