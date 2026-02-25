@@ -28,7 +28,7 @@ export default function PageContainer({ title, hideAddButton = false, children }
                 {!hideAddButton && (
                     <button
                         onClick={openNewForm}
-                        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:opacity-90 transition-opacity shadow-sm"
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-sm font-semibold hover:bg-zinc-800 transition-colors shadow-sm active:scale-95"
                     >
                         <Plus className="w-4 h-4" />
                         <span className="hidden sm:inline">

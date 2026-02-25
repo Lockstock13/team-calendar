@@ -39,109 +39,107 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
+      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="bg-background rounded-2xl border shadow-xl w-full max-w-md"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Colour stripe */}
         <div
-          className="h-2 rounded-t-2xl"
+          className="h-1.5"
           style={{ backgroundColor: accentColor }}
         />
 
-        <div className="p-5 space-y-4">
+        <div className="p-6">
           {/* Title + badges */}
-          <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3 mb-5">
             <div className="flex-1">
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <div className="flex flex-wrap gap-1.5 mb-2.5">
                 {(task.is_comday || task.task_type === "libur_pengganti") && (
-                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-sm font-medium border border-emerald-100/50">
                     🏖️ {lang === "id" ? "Libur Pengganti" : "Replacement Leave"}
                   </span>
                 )}
                 {task.is_weekend_task && !task.is_comday && (
-                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                  <span className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded-sm font-medium border border-purple-100/50">
                     🌙 Weekend
                   </span>
                 )}
                 {task.priority && (
-                  <span className="text-xs bg-muted px-2 py-0.5 rounded-full">
+                  <span className="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-sm font-medium border border-zinc-200">
                     {priorityLabel[task.priority] || task.priority}
                   </span>
                 )}
               </div>
-              <h3 className="font-semibold text-base leading-snug">
+              <h3 className="text-lg font-bold text-zinc-800 leading-tight">
                 {task.title}
               </h3>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 hover:bg-muted rounded-lg flex-shrink-0"
+              className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 rounded-full transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Detail rows */}
-          <div className="space-y-2 text-sm">
-            <div className="flex items-start gap-3">
-              <span className="text-muted-foreground w-16 flex-shrink-0">
-                {lang === "id" ? "Tanggal" : "Date"}
-              </span>
-              <span className="font-medium">
+          <div className="space-y-4 pt-1">
+            <div>
+              <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">{lang === "id" ? "Tanggal" : "Date"}</p>
+              <span className="text-[14px] font-medium text-zinc-800">
                 {format(
                   new Date(task.start_date + "T00:00:00"),
-                  "d MMMM yyyy",
+                  "EEEE, d MMMM yyyy",
                   { locale: lang === "id" ? id : enUS },
                 )}
                 {task.end_date &&
                   task.end_date !== task.start_date &&
                   ` – ${format(
                     new Date(task.end_date + "T00:00:00"),
-                    "d MMMM yyyy",
+                    "EEEE, d MMMM yyyy",
                     { locale: lang === "id" ? id : enUS },
                   )}`}
               </span>
             </div>
 
-            <div className="flex items-start gap-3">
-              <span className="text-muted-foreground w-16 flex-shrink-0">
-                Status
-              </span>
-              <span>{statusLabel[task.status] || task.status}</span>
+            <div>
+              <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">Status</p>
+              <span className="text-[14px] font-medium text-zinc-800">{statusLabel[task.status] || task.status}</span>
             </div>
 
             {task.description && (
-              <div className="flex items-start gap-3">
-                <span className="text-muted-foreground w-16 flex-shrink-0">
-                  {lang === "id" ? "Catatan" : "Notes"}
-                </span>
-                <span className="leading-relaxed">{task.description}</span>
+              <div className="pt-1">
+                <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">{lang === "id" ? "Catatan" : "Notes"}</p>
+                <div className="bg-zinc-50 p-3 rounded-lg border border-zinc-100">
+                  <p className="text-[13px] text-zinc-700 leading-relaxed break-words whitespace-pre-wrap">
+                    {task.description}
+                  </p>
+                </div>
               </div>
             )}
 
-            <div className="flex items-start gap-3">
-              <span className="text-muted-foreground w-16 flex-shrink-0 pt-1">
-                {lang === "id" ? "Tim" : "Team"}
-              </span>
-              <div className="flex flex-wrap gap-2">
+            <div className="pt-1">
+              <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">
+                {lang === "id" ? "Tim Penugasan" : "Assigned Team"}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2">
                 {assignees.length > 0 ? (
                   assignees.map((u) => (
-                    <div key={u.id} className="flex items-center gap-1.5">
+                    <div key={u.id} className="flex items-center gap-2 bg-white border border-zinc-200 pl-1 pr-3 py-1 rounded-full shadow-sm">
                       <div
-                        className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                        className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-medium"
                         style={{ backgroundColor: u.color || "#64748b" }}
                       >
                         {(u.full_name || u.email).charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-sm">{u.full_name || u.email}</span>
+                      <span className="text-[12px] font-medium text-zinc-700">{u.full_name || u.email.split("@")[0]}</span>
                     </div>
                   ))
                 ) : (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-sm text-zinc-400 italic">
                     {task.assigned_to_name || "—"}
                   </span>
                 )}
@@ -150,24 +148,24 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 pt-2 border-t">
-            <button
-              onClick={() => {
-                onEdit(task);
-                onClose();
-              }}
-              className="flex-1 py-2 text-sm font-medium border rounded-xl hover:bg-muted transition-colors"
-            >
-              Edit
-            </button>
+          <div className="mt-6 pt-4 border-t border-zinc-100 flex gap-2 justify-end">
             <button
               onClick={() => {
                 onDelete(task.id);
                 onClose();
               }}
-              className="flex-1 py-2 text-sm font-medium bg-red-50 text-red-600 border border-red-100 rounded-xl hover:bg-red-100 transition-colors"
+              className="px-4 py-2 bg-white border border-red-100 text-red-600 rounded-xl hover:bg-red-50 text-sm font-semibold transition-colors active:scale-95"
             >
               {lang === "id" ? "Hapus" : "Delete"}
+            </button>
+            <button
+              onClick={() => {
+                onEdit(task);
+                onClose();
+              }}
+              className="px-5 py-2 bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 text-sm font-semibold transition-colors shadow-sm active:scale-95"
+            >
+              Edit
             </button>
           </div>
         </div>
@@ -182,47 +180,58 @@ function HolidayModal({ holiday, onClose, lang }) {
   if (!holiday) return null;
   return (
     <div
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4"
+      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="bg-background rounded-2xl border shadow-xl w-full max-w-sm"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-sm relative overflow-hidden animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="h-2 rounded-t-2xl bg-red-400" />
-        <div className="p-5 space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">
+        <div className="h-1.5 bg-red-400" />
+        <div className="p-6">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 rounded-full transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          <div className="space-y-4 pt-1">
+            <div className="mb-2">
+              <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-sm font-medium border border-red-100/50">
                 🇮🇩 {lang === "id" ? "Libur Nasional" : "Public Holiday"}
               </span>
-              <h3 className="font-semibold text-base mt-2 leading-snug">
+              <h3 className="text-lg font-bold text-zinc-800 leading-tight mt-3">
                 {holiday.localName || holiday.name}
               </h3>
               {holiday.localName !== holiday.name && (
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-[13px] text-zinc-500 mt-1">
                   {holiday.name}
                 </p>
               )}
             </div>
+
+            <div className="pt-2 border-t border-zinc-100">
+              <p className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest mb-1.5">{lang === "id" ? "Tanggal" : "Date"}</p>
+              <span className="text-[14px] font-medium text-zinc-800">
+                {format(
+                  new Date(holiday.date + "T00:00:00"),
+                  "EEEE, d MMMM yyyy",
+                  {
+                    locale: lang === "id" ? id : enUS,
+                  },
+                )}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-zinc-100 flex justify-end">
             <button
               onClick={onClose}
-              className="p-1.5 hover:bg-muted rounded-lg flex-shrink-0"
+              className="px-5 py-2 bg-white border hover:bg-zinc-50 border-zinc-200 text-zinc-700 rounded-xl text-sm font-semibold transition-colors active:scale-95 shadow-sm"
             >
-              <X className="w-4 h-4" />
+              {lang === "id" ? "Tutup" : "Close"}
             </button>
-          </div>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-muted-foreground w-16">{lang === "id" ? "Tanggal" : "Date"}</span>
-            <span className="font-medium">
-              {format(
-                new Date(holiday.date + "T00:00:00"),
-                "EEEE, d MMMM yyyy",
-                {
-                  locale: lang === "id" ? id : enUS,
-                },
-              )}
-            </span>
           </div>
         </div>
       </div>
@@ -363,77 +372,9 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
   );
 
   return (
-    <>
-      {/* Filter bar */}
-      <div className="flex items-center gap-2 mb-3 flex-wrap">
-        <span className="text-sm text-muted-foreground font-medium">
-          Filter:
-        </span>
-
-        <button
-          onClick={() => setFilterUserId("")}
-          className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${filterUserId === ""
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
-        >
-          {lang === "id" ? "Semua" : "All"}
-        </button>
-
-        {users.map((u) => {
-          const isActive = filterUserId === u.id;
-          const color = u.color || "#64748b";
-          return (
-            <button
-              key={u.id}
-              onClick={() => setFilterUserId(isActive ? "" : u.id)}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-sm font-medium transition-all"
-              style={
-                isActive
-                  ? {
-                    backgroundColor: color,
-                    color: "#fff",
-                    outline: `2px solid ${color}`,
-                    outlineOffset: "2px",
-                  }
-                  : {
-                    backgroundColor: "hsl(var(--muted))",
-                    color: "hsl(var(--muted-foreground))",
-                  }
-              }
-            >
-              <div
-                className="w-4 h-4 rounded-full flex-shrink-0 ring-1 ring-white/30"
-                style={{
-                  backgroundColor: isActive ? "rgba(255,255,255,0.3)" : color,
-                }}
-              />
-              {u.full_name || u.email?.split("@")[0]}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Legend */}
-      <div className="flex items-center gap-3 mb-3 flex-wrap">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-red-200 border border-red-300" />
-          <span className="text-xs text-muted-foreground">{lang === "id" ? "Libur Nasional" : "Public Holiday"}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-emerald-400" />
-          <span className="text-xs text-muted-foreground">{lang === "id" ? "Libur Pengganti" : "Replacement Leave"}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-primary" />
-          <span className="text-xs text-muted-foreground">
-            {lang === "id" ? "1 blok = 1 anggota tim" : "1 block = 1 team member"}
-          </span>
-        </div>
-      </div>
-
-      {/* Calendar */}
-      <div className="bg-background border rounded-2xl p-4 calendar-wrap">
+    <div className="w-full max-w-[1200px] mx-auto px-4 lg:px-6 space-y-4 pb-10">
+      {/* Calendar Wrap (Glassmorphism) */}
+      <div className="bg-white/70 backdrop-blur-3xl border border-zinc-100 rounded-xl p-4 shadow-sm calendar-wrap">
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
@@ -481,6 +422,77 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
         />
       </div>
 
+      {/* Bottom Controls (Legend + Filters) - Minimalist Pill Style */}
+      <div className="bg-white/80 backdrop-blur-xl border border-zinc-100 rounded-xl p-4 shadow-sm">
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <span className="text-[12px] font-semibold text-zinc-400 uppercase tracking-widest flex-shrink-0">
+            {lang === "id" ? "Filter Tim:" : "Team Filter:"}
+          </span>
+          <div className="flex items-center flex-wrap gap-2">
+            <button
+              onClick={() => setFilterUserId("")}
+              className={`px-3 py-1 rounded-full text-[13px] font-medium transition-colors border ${filterUserId === ""
+                ? "bg-zinc-800 text-white border-zinc-800"
+                : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-300"
+                }`}
+            >
+              {lang === "id" ? "Semua" : "All"}
+            </button>
+
+            {users.map((u) => {
+              const isActive = filterUserId === u.id;
+              const color = u.color || "#64748b";
+              return (
+                <button
+                  key={u.id}
+                  onClick={() => setFilterUserId(isActive ? "" : u.id)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[13px] font-medium transition-all border`}
+                  style={
+                    isActive
+                      ? {
+                        backgroundColor: `${color}15`, // Translucent background
+                        color: color,
+                        borderColor: `${color}40`,
+                      }
+                      : {
+                        backgroundColor: "#fff",
+                        color: "#71717a", // zinc-500
+                        borderColor: "#e4e4e7" // zinc-200
+                      }
+                  }
+                >
+                  <div
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: color }}
+                  />
+                  {u.full_name || u.email?.split("@")[0]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="mt-4 pt-4 border-t border-zinc-100 flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-red-400" />
+            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wide">{lang === "id" ? "Libur Nasional" : "Public Holiday"}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wide">{lang === "id" ? "Libur Pengganti" : "Replacement Leave"}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-zinc-400" />
+            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wide">
+              {lang === "id" ? "1 blok = 1 tim" : "1 block = 1 team"}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Task detail modal */}
       {selectedTask && (
         <EventDetailModal
@@ -501,6 +513,6 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
           onClose={() => setSelectedHoliday(null)}
         />
       )}
-    </>
+    </div>
   );
 }
