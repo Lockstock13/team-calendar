@@ -86,7 +86,7 @@ function MarkdownNoteCard({
         className={`bg-white/95 border rounded-2xl overflow-hidden flex flex-col transition-shadow hover:shadow-sm ${note.pinned ? "border-primary/40 ring-1 ring-primary/10" : ""}`}
       >
         <div className="h-0.5 bg-blue-400" />
-        <div className="p-4 flex flex-col gap-3 flex-1">
+        <div className="p-3 flex flex-col gap-2 flex-1">
           {/* Header */}
           <div className="flex items-start justify-between gap-2">
             {editing ? (
@@ -217,7 +217,7 @@ function MarkdownNoteCard({
               </div>
             )
           ) : (
-            <div className="prose prose-sm max-w-none text-[13px] line-clamp-[8] overflow-hidden">
+            <div className="prose prose-sm max-w-none text-[13px] line-clamp-4 overflow-hidden mb-1">
               <MarkdownRenderer content={note.content || ""} />
             </div>
           )}

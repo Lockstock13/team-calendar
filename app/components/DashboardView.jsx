@@ -156,8 +156,8 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
               {myTasks.map((task) => {
                 const dateStr = task.start_date
                   ? format(new Date(task.start_date + "T00:00:00"), "d MMM", {
-                      locale: localeObj,
-                    })
+                    locale: localeObj,
+                  })
                   : "-";
                 const isLibur =
                   task.is_comday || task.task_type === "libur_pengganti";
@@ -216,27 +216,27 @@ export default function DashboardView({ tasks, users, currentUserId }) {
   const monthTasks = tasks.filter((t) => t.start_date >= monthStart);
 
   const currentHour = new Date().getHours();
-  let greeting = lang === "id" ? "Selamat malam" : "Good evening";
+  let greeting = lang === "id" ? '"Selamat malam..." 🌙' : '"Good evening..." 🌙';
   if (currentHour >= 5 && currentHour < 12)
     greeting =
       lang === "id"
-        ? "Pagi team, gas ngopi dulu! ☕"
-        : "Morning team, let's grab coffee! ☕";
+        ? '"Pagi team, gas ngopi dulu..." ☕'
+        : '"Morning team, let\'s grab coffee..." ☕';
   else if (currentHour >= 12 && currentHour < 15)
     greeting =
       lang === "id"
-        ? "Panas nih, tetep biasakan fokus ya! ☀️"
-        : "It's hot outside, stay focused! ☀️";
+        ? '"Panas nih, tetep biasakan fokus ya..." ☀️'
+        : '"It\'s hot outside, stay focused..." ☀️';
   else if (currentHour >= 15 && currentHour < 18)
     greeting =
       lang === "id"
-        ? "Sore team, dikit lagi kelar! 🌅"
-        : "Afternoon team, almost done! 🌅";
+        ? '"Sore team, dikit lagi kelar..." 🌅'
+        : '"Afternoon team, almost done..." 🌅';
   else
     greeting =
       lang === "id"
-        ? "Waktunya rehat, besok lanjut lagi 🌙"
-        : "Time to rest, continue tomorrow 🌙";
+        ? '"Waktunya rehat, besok lanjut lagi..." 🌙'
+        : '"Time to rest, continue tomorrow..." 🌙';
 
   return (
     <div className="w-full max-w-[1200px] mx-auto px-1 sm:px-0 lg:px-4 space-y-6 pb-12 pt-2 lg:pt-6">
@@ -397,10 +397,10 @@ export default function DashboardView({ tasks, users, currentUserId }) {
                     <Calendar className="w-3.5 h-3.5" />
                     {previewTask.start_date
                       ? format(
-                          new Date(previewTask.start_date + "T00:00:00"),
-                          "EEEE, d MMM yyyy",
-                          { locale: lang === "id" ? id : enUS },
-                        )
+                        new Date(previewTask.start_date + "T00:00:00"),
+                        "EEEE, d MMM yyyy",
+                        { locale: lang === "id" ? id : enUS },
+                      )
                       : "—"}
                   </p>
                 </div>

@@ -153,8 +153,9 @@ export default function NotesView({ session, userProfile }) {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Toolbar */}
-      <div className="flex items-center justify-between flex-wrap gap-3 sm:gap-4 bg-background/50 backdrop-blur-sm p-3 sm:p-4 rounded-2xl border sticky top-14 sm:top-[72px] z-10">
-        <div className="flex gap-2 flex-wrap">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-background/90 backdrop-blur-md p-3 sm:p-4 rounded-2xl border sticky top-14 sm:top-[72px] z-10 shadow-sm">
+        {/* Categories scrollable on mobile */}
+        <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap no-scrollbar -mx-1 px-1 sm:mx-0 sm:px-0">
           {categories.map((c) => {
             const count =
               c.id === "all"
@@ -164,14 +165,13 @@ export default function NotesView({ session, userProfile }) {
               <button
                 key={c.id}
                 onClick={() => setActiveTab(c.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
-                  activeTab === c.id
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
+                className={`flex-shrink-0 flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[13px] sm:text-sm font-semibold transition-all ${activeTab === c.id
+                    ? "bg-zinc-800 text-white shadow-sm"
+                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                  }`}
               >
                 <span>{c.emoji || "📁"}</span> {c.label}
-                <span className="text-[10px] opacity-60 bg-black/10 px-1.5 py-0.5 rounded-full ml-1">
+                <span className="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full ml-0.5">
                   {count}
                 </span>
               </button>

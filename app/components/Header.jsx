@@ -11,6 +11,7 @@ import {
   BarChart2,
   MessageCircle,
   X,
+  Aperture,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -80,7 +81,7 @@ export default function Header({
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-4 h-4 text-primary-foreground" />
+                <Aperture className="w-4 h-4 text-primary-foreground" />
               </div>
               <span className="font-bold tracking-tight text-[15px] sm:text-sm">
                 Still Photo TTV
@@ -97,8 +98,8 @@ export default function Header({
                     key={id}
                     href={path}
                     className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                       }`}
                   >
                     <Icon className="w-4 h-4" />
