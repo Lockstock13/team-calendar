@@ -8,6 +8,8 @@ import { format } from "date-fns";
 import { id, enUS } from "date-fns/locale";
 import { X } from "lucide-react";
 import { useGlobalContext } from "@/app/providers";
+import { useToast } from "@/app/components/ToastProvider";
+import { supabase } from "@/lib/supabase";
 
 // ─── Event Detail Modal ────────────────────────────────────────────────────────
 
@@ -258,6 +260,7 @@ async function fetchHolidays(year) {
 
 export default function CalendarView({ tasks, users, onEdit, onDelete }) {
   const { language } = useGlobalContext();
+  const { addToast } = useToast();
   const lang = language || "en";
   const [selectedTask, setSelectedTask] = useState(null);
   const [selectedHoliday, setSelectedHoliday] = useState(null);
@@ -372,9 +375,10 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
   );
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto px-4 lg:px-6 space-y-4 pb-10">
+    <div className="w-full max-w-[1200px] mx-auto space-y-4 pb-10">
+
       {/* Calendar Wrap (Glassmorphism) */}
-      <div className="bg-white/70 backdrop-blur-3xl border border-zinc-100 rounded-xl p-4 shadow-sm calendar-wrap">
+      <div className="bg-white/70 backdrop-blur-3xl border border-zinc-100 rounded-xl p-2 sm:p-4 shadow-sm calendar-wrap">
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
@@ -423,7 +427,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
       </div>
 
       {/* Bottom Controls (Legend + Filters) - Minimalist Pill Style */}
-      <div className="bg-white/80 backdrop-blur-xl border border-zinc-100 rounded-xl p-4 shadow-sm">
+      <div className="bg-white/80 backdrop-blur-xl border border-zinc-100 rounded-xl p-3 sm:p-4 shadow-sm">
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -433,7 +437,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
           <div className="flex items-center flex-wrap gap-2">
             <button
               onClick={() => setFilterUserId("")}
-              className={`px-3 py-1 rounded-full text-[13px] font-medium transition-colors border ${filterUserId === ""
+              className={`px-3 py-1 rounded-full text-[11px] sm:text-[13px] font-medium transition-colors border ${filterUserId === ""
                 ? "bg-zinc-800 text-white border-zinc-800"
                 : "bg-white text-zinc-500 border-zinc-200 hover:border-zinc-300"
                 }`}
@@ -448,7 +452,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
                 <button
                   key={u.id}
                   onClick={() => setFilterUserId(isActive ? "" : u.id)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[13px] font-medium transition-all border`}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-[13px] font-medium transition-all border`}
                   style={
                     isActive
                       ? {
@@ -475,20 +479,26 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
         </div>
 
         {/* Legend */}
-        <div className="mt-4 pt-4 border-t border-zinc-100 flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-red-400" />
-            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wide">{lang === "id" ? "Libur Nasional" : "Public Holiday"}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wide">{lang === "id" ? "Libur Pengganti" : "Replacement Leave"}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-zinc-400" />
-            <span className="text-[11px] font-medium text-zinc-500 uppercase tracking-wide">
-              {lang === "id" ? "1 blok = 1 tim" : "1 block = 1 team"}
-            </span>
+        <div className="mt-4 pt-3 border-t border-zinc-100/60 w-full">
+          <div className="flex items-center justify-between sm:justify-start sm:gap-6 gap-2 w-full">
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-1 sm:flex-none justify-center sm:justify-start">
+              <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+              <span className="text-[8.5px] sm:text-[11px] font-semibold sm:font-medium text-zinc-400 uppercase tracking-widest sm:tracking-widest truncate">
+                {lang === "id" ? "Nasional" : "Holiday"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-1 sm:flex-none justify-center sm:justify-start">
+              <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+              <span className="text-[8.5px] sm:text-[11px] font-semibold sm:font-medium text-zinc-400 uppercase tracking-widest sm:tracking-widest truncate">
+                {lang === "id" ? "Pengganti" : "Replacement"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-1 sm:flex-none justify-center sm:justify-start">
+              <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-zinc-400 flex-shrink-0" />
+              <span className="text-[8.5px] sm:text-[11px] font-semibold sm:font-medium text-zinc-400 uppercase tracking-widest sm:tracking-widest truncate">
+                {lang === "id" ? "1 blok=1 tim" : "1 dot=1 team"}
+              </span>
+            </div>
           </div>
         </div>
       </div>
