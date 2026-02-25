@@ -202,18 +202,26 @@ export default function DashboardView({ tasks, users, currentUserId }) {
   const lang = language || "en";
   const [previewTask, setPreviewTask] = useState(null);
 
-  const todayStr = format(new Date(), "yyyy-MM-dd");
-  const tomorrowStr = format(addDays(new Date(), 1), "yyyy-MM-dd");
-  const startOfMonth = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth(),
-    1,
-  );
-  const monthStart = format(startOfMonth, "yyyy-MM-dd");
+  const {
+    todayTasks,
+    tomorrowTasks,
+    monthTasks,
+  } = useMemo(() => {
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    const tomorrowStr = format(addDays(new Date(), 1), "yyyy-MM-dd");
+    const startOfMonth = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      1,
+    );
+    const monthStart = format(startOfMonth, "yyyy-MM-dd");
 
-  const todayTasks = tasks.filter((t) => t.start_date === todayStr);
-  const tomorrowTasks = tasks.filter((t) => t.start_date === tomorrowStr);
-  const monthTasks = tasks.filter((t) => t.start_date >= monthStart);
+    return {
+      todayTasks: tasks.filter((t) => t.start_date === todayStr),
+      tomorrowTasks: tasks.filter((t) => t.start_date === tomorrowStr),
+      monthTasks: tasks.filter((t) => t.start_date >= monthStart),
+    };
+  }, [tasks]);
 
   const currentHour = new Date().getHours();
   let greeting = lang === "id" ? '"Selamat malam..." 🌙' : '"Good evening..." 🌙';

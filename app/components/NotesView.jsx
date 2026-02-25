@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { Pin, Plus } from "lucide-react";
 import { useGlobalContext } from "@/app/providers";
@@ -26,6 +26,28 @@ export default function NotesView({ session, userProfile }) {
   const [showForm, setShowForm] = useState(false);
   const [visibleCount, setVisibleCount] = useState(12);
 
+  // Ref to hold the latest visibleCount for the realtime listener to avoid stale closures
+  const visibleCountRef = useRef(visibleCount);
+  useEffect(() => {
+    visibleCountRef.current = visibleCount;
+  }, [visibleCount]);
+
+  const fetchNotes = useCallback(async () => {
+    const count = visibleCountRef.current;
+    const { data } = await supabase
+      .from("notes")
+      .select("*")
+      .order("pinned", { ascending: false })
+      .order("updated_at", { ascending: false })
+      .limit(count + 1);
+    if (data) setNotes(data);
+  }, []);
+
+  const fetchAll = useCallback(async () => {
+    await Promise.all([fetchNotes(), fetchUsers()]);
+    setLoading(false);
+  }, [fetchNotes]);
+
   useEffect(() => {
     fetchAll();
     const channel = supabase
@@ -37,25 +59,11 @@ export default function NotesView({ session, userProfile }) {
       )
       .subscribe();
     return () => supabase.removeChannel(channel);
-  }, []);
+  }, [fetchAll, fetchNotes]);
 
-  const fetchAll = async () => {
-    await Promise.all([fetchNotes(), fetchUsers()]);
-    setLoading(false);
-  };
-
-  const fetchNotes = async () => {
-    const { data } = await supabase
-      .from("notes")
-      .select("*")
-      .order("pinned", { ascending: false })
-      .order("updated_at", { ascending: false })
-      .limit(visibleCount + 1); // Fetch one extra to check if there's more
-    if (data) setNotes(data);
-  };
   useEffect(() => {
     fetchNotes();
-  }, [visibleCount]);
+  }, [visibleCount, fetchNotes]);
 
   const fetchUsers = async () => {
     const { data } = await supabase
@@ -108,7 +116,7 @@ export default function NotesView({ session, userProfile }) {
         fetchNotes();
       }
     },
-    [visibleCount, lang, addToast],
+    [lang, addToast, fetchNotes],
   );
 
   const handleDelete = useCallback(
@@ -129,7 +137,7 @@ export default function NotesView({ session, userProfile }) {
         fetchNotes();
       }
     },
-    [lang, visibleCount, addToast, confirm],
+    [lang, addToast, confirm, fetchNotes],
   );
 
   const filtered =
