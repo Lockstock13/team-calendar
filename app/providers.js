@@ -74,7 +74,6 @@ export default function Providers({ children }) {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [unreadChat, setUnreadChat] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
   const pathname = usePathname();
   const { addToast } = useToast();
   const { confirm } = useConfirm();
@@ -339,8 +338,6 @@ export default function Providers({ children }) {
         handleTaskSubmit,
         language,
         setLanguage,
-        searchQuery,
-        setSearchQuery,
       }}
     >
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

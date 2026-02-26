@@ -80,26 +80,28 @@ export default function NewNoteForm({ currentUser, onSave, onCancel, lang, categ
                 <button
                     type="button"
                     onClick={() => setNoteType("regular")}
-                    className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-bold transition-all ${noteType === "regular"
-                        ? "bg-blue-50 text-blue-700 border-b-2 border-blue-500 shadow-inner"
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 sm:py-4 text-sm font-bold transition-all ${noteType === "regular"
+                        ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-b-2 border-blue-500"
                         : "text-muted-foreground hover:bg-muted/50"
                         }`}
                 >
-                    <FileText className="w-4 h-4" /> Regular (Markdown)
+                    <FileText className="w-4 h-4" />
+                    <span className="hidden sm:inline">Regular (Markdown)</span>
+                    <span className="sm:hidden">Markdown</span>
                 </button>
                 <button
                     type="button"
                     onClick={() => setNoteType("table")}
-                    className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-bold transition-all ${noteType === "table"
-                        ? "bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500 shadow-inner"
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 sm:py-4 text-sm font-bold transition-all ${noteType === "table"
+                        ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-b-2 border-emerald-500"
                         : "text-muted-foreground hover:bg-muted/50"
                         }`}
                 >
-                    <Table className="w-4 h-4" /> Table Note
+                    <Table className="w-4 h-4" /> Table
                 </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
                 {/* Title */}
                 <input
                     type="text"
@@ -111,7 +113,7 @@ export default function NewNoteForm({ currentUser, onSave, onCancel, lang, categ
                 />
 
                 {/* Category */}
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <span className="text-xs font-bold text-muted-foreground uppercase">{lang === "id" ? "Kategori:" : "Category:"}</span>
                     <CategoryPills value={category} onChange={setCategory} categories={categories} />
                 </div>
@@ -155,7 +157,7 @@ export default function NewNoteForm({ currentUser, onSave, onCancel, lang, categ
                                     ref={textRef}
                                     value={content}
                                     onChange={(e) => setContent(e.target.value)}
-                                    className="w-full text-base bg-background p-4 focus:outline-none resize-none leading-relaxed font-mono min-h-[150px]"
+                                    className="w-full text-base bg-background p-3 sm:p-4 focus:outline-none resize-none leading-relaxed font-mono min-h-[120px] sm:min-h-[150px]"
                                     placeholder={lang === "id" ?
                                         "Tulis dengan Markdown...\n**bold**, *italic*, # Heading, - list, `code`" :
                                         "Write with Markdown...\n**bold**, *italic*, # Heading, - list, `code`"
@@ -175,7 +177,7 @@ export default function NewNoteForm({ currentUser, onSave, onCancel, lang, categ
                                     {tableData.headers.map((h, c) => (
                                         <th
                                             key={c}
-                                            className="border border-border p-0 min-w-[100px]"
+                                            className="border border-border p-0 min-w-[80px] sm:min-w-[100px]"
                                         >
                                             <div className="flex items-center p-2 gap-1">
                                                 <input

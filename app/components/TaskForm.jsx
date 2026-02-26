@@ -93,11 +93,11 @@ export default function TaskForm({
       onClick={onCancel}
     >
       <div
-        className="bg-background rounded-t-2xl sm:rounded-2xl border shadow-xl w-full max-w-lg max-h-[92vh] overflow-y-auto"
+        className="bg-background rounded-t-2xl sm:rounded-2xl border shadow-xl w-full max-w-lg max-h-[95vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-background z-10 rounded-t-2xl sm:rounded-t-2xl">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b sticky top-0 bg-background z-10 rounded-t-2xl sm:rounded-t-2xl">
           <h2 className="font-semibold text-base">
             {editingTask ? (lang === "id" ? "Edit Jadwal" : "Edit Task") : (lang === "id" ? "Tambah Jadwal" : "Add Task")}
           </h2>
@@ -110,7 +110,7 @@ export default function TaskForm({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 sm:space-y-5">
           {/* Task Type */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -221,7 +221,7 @@ export default function TaskForm({
               {data.assignee_ids.length > 0 &&
                 `(${data.assignee_ids.length} ${lang === "id" ? "dipilih" : "selected"})`}
             </label>
-            <div className="border rounded-xl overflow-hidden divide-y max-h-52 overflow-y-auto">
+            <div className="border rounded-xl overflow-hidden divide-y max-h-44 sm:max-h-52 overflow-y-auto">
               {users.length === 0 && (
                 <p className="text-sm text-muted-foreground p-4 text-center">
                   {lang === "id" ? "Belum ada anggota" : "No members yet"}

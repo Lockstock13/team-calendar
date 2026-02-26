@@ -45,7 +45,7 @@ function TaskRow({ task, users, lang, onClick }) {
   return (
     <div
       onClick={() => onClick && onClick(task)}
-      className="group flex items-center gap-3 py-1.5 px-2 hover:bg-zinc-100 rounded transition-all duration-200 cursor-pointer border-b border-transparent hover:border-border last:hover:border-transparent"
+      className="group flex items-center gap-3 py-2.5 sm:py-1.5 px-2 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded transition-all duration-200 cursor-pointer border-b border-transparent hover:border-border last:hover:border-transparent"
     >
       {/* Notion-style dot bullet */}
       <div className="w-1.5 h-1.5 rounded-full bg-zinc-300 group-hover:bg-zinc-400 transition-colors flex-shrink-0 ml-1.5 mr-0.5"></div>
@@ -155,7 +155,7 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
                   <div
                     key={task.id}
                     onClick={() => onTaskClick && onTaskClick(task)}
-                    className="group flex items-start gap-2.5 py-2.5 px-3 hover:bg-zinc-100 rounded transition-all duration-200 cursor-pointer"
+                    className="group flex items-start gap-2.5 py-3 sm:py-2.5 px-3 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded transition-all duration-200 cursor-pointer"
                   >
                     {/* Minimalist Date Box */}
                     <div className="w-10 pt-0.5 flex-shrink-0 text-right">
@@ -245,17 +245,17 @@ export default function DashboardView({ tasks, users, currentUserId }) {
       </div>
 
       {/* Minimalist Stat Cards */}
-      <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {/* Today */}
-        <div className="w-full sm:w-56 bg-background/95 border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
+        <div className="bg-background/95 border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
           <div className="flex items-center gap-2 text-muted-foreground/80 mb-3 group-hover:text-muted-foreground transition-colors">
             <Clock className="w-3.5 h-3.5" />
-            <span className="text-[12px] font-medium tracking-wide uppercase">
+            <span className="text-[11px] sm:text-[12px] font-medium tracking-wide uppercase">
               {lang === "id" ? "Hari Ini" : "Today"}
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-semibold text-foreground dark:text-zinc-100 tracking-tight leading-none group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+            <span className="text-2xl font-semibold text-foreground dark:text-zinc-100 tracking-tight leading-none">
               {todayTasks.length}
             </span>
             <span className="text-[11px] font-medium text-muted-foreground/80 tracking-wide">
@@ -265,15 +265,15 @@ export default function DashboardView({ tasks, users, currentUserId }) {
         </div>
 
         {/* This Month */}
-        <div className="w-full sm:w-56 bg-background/95 border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
+        <div className="bg-background/95 border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
           <div className="flex items-center gap-2 text-muted-foreground/80 mb-3 group-hover:text-muted-foreground transition-colors">
             <Calendar className="w-3.5 h-3.5" />
-            <span className="text-[12px] font-medium tracking-wide uppercase">
+            <span className="text-[11px] sm:text-[12px] font-medium tracking-wide uppercase">
               {lang === "id" ? "Bulan Ini" : "This Month"}
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-semibold text-foreground dark:text-zinc-100 tracking-tight leading-none group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+            <span className="text-2xl font-semibold text-foreground dark:text-zinc-100 tracking-tight leading-none">
               {monthTasks.length}
             </span>
             <span className="text-[11px] font-medium text-muted-foreground/80 tracking-wide">
