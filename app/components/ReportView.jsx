@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useGlobalContext } from "@/app/providers";
 import { enUS } from "date-fns/locale";
+import Avatar from "@/app/components/Avatar";
+
 
 const MONTHS_ID = [
   "Januari",
@@ -46,16 +48,7 @@ const MONTHS_EN = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function Avatar({ user }) {
-  return (
-    <div
-      className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-      style={{ backgroundColor: user?.color || "#64748b" }}
-    >
-      {(user?.full_name || user?.email || "?").charAt(0).toUpperCase()}
-    </div>
-  );
-}
+
 
 function TypeBadge({ task, lang }) {
   if (task.is_comday || task.task_type === "libur_pengganti") {
@@ -240,8 +233,8 @@ function DailyTable({ tasks, users, lang }) {
                 <tr
                   key={task.id}
                   className={`hover:bg-muted/20 transition-colors ${task.is_comday || task.task_type === "libur_pengganti"
-                      ? "bg-emerald-50/40"
-                      : ""
+                    ? "bg-emerald-50/40 dark:bg-emerald-950/20"
+                    : ""
                     }`}
                 >
                   {/* No */}
@@ -321,8 +314,8 @@ function DailyTable({ tasks, users, lang }) {
             <div
               key={task.id}
               className={`p-4 space-y-2 ${task.is_comday || task.task_type === "libur_pengganti"
-                  ? "bg-emerald-50/50"
-                  : ""
+                ? "bg-emerald-50/50 dark:bg-emerald-950/20"
+                : ""
                 }`}
             >
               <div className="flex items-start justify-between gap-2">
@@ -652,8 +645,8 @@ export default function ReportView({ tasks, users }) {
           <button
             onClick={() => setViewType("table")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${viewType === "table"
-                ? "bg-background shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+              ? "bg-background shadow-sm text-foreground"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <LayoutList className="w-4 h-4" />
@@ -662,8 +655,8 @@ export default function ReportView({ tasks, users }) {
           <button
             onClick={() => setViewType("photographer")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${viewType === "photographer"
-                ? "bg-background shadow-sm text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+              ? "bg-background shadow-sm text-foreground"
+              : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <BarChart2 className="w-4 h-4" />

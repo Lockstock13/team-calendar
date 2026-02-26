@@ -87,8 +87,17 @@ export default function Providers({ children }) {
   });
 
   const fetchSettings = async () => {
-    const { data } = await supabase.from("app_settings").select("*").single();
-    if (data) setAppSettings(data);
+    try {
+      const { data, error } = await supabase.from("app_settings").select("*").single();
+      if (error) {
+        // Table might not exist yet (new deployment) — use defaults silently
+        console.warn("[settings] app_settings not available:", error.message, "— using defaults.");
+        return;
+      }
+      if (data) setAppSettings(data);
+    } catch (err) {
+      console.warn("[settings] Failed to fetch app settings:", err.message, "— using defaults.");
+    }
   };
 
   useEffect(() => {

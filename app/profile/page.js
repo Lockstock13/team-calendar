@@ -673,7 +673,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Info box */}
-          <div className="mx-5 mb-5 bg-blue-50 border border-blue-100 rounded-xl p-3 text-xs text-blue-700 space-y-1">
+          <div className="mx-5 mb-5 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl p-3 text-xs text-blue-700 dark:text-blue-300 space-y-1">
             <p className="font-semibold uppercase">{lang === "id" ? "📌 INFO NOTIFIKASI" : "📌 NOTIFICATION INFO"}</p>
             <ul className="list-disc list-inside space-y-0.5 leading-relaxed mt-1">
               <li>

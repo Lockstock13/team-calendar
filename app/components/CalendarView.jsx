@@ -10,6 +10,8 @@ import { X } from "lucide-react";
 import { useGlobalContext } from "@/app/providers";
 import { useToast } from "@/app/components/ToastProvider";
 import { supabase } from "@/lib/supabase";
+import Avatar from "@/app/components/Avatar";
+
 
 // ─── Event Detail Modal ────────────────────────────────────────────────────────
 
@@ -120,7 +122,7 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
                 <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
                   {lang === "id" ? "Catatan" : "Notes"}
                 </p>
-                <div className="bg-zinc-50 p-3 rounded-lg border border-border">
+                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-border">
                   <p className="text-[13px] text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
                     {task.description}
                   </p>
@@ -166,7 +168,7 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
                 onDelete(task.id);
                 onClose();
               }}
-              className="px-4 py-2 bg-background border border-red-100 text-red-600 rounded-xl hover:bg-red-50 text-sm font-semibold transition-colors active:scale-95"
+              className="px-4 py-2 bg-background border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 text-sm font-semibold transition-colors active:scale-95"
             >
               {lang === "id" ? "Hapus" : "Delete"}
             </button>
@@ -240,7 +242,7 @@ function HolidayModal({ holiday, onClose, lang }) {
           <div className="mt-6 pt-4 border-t border-border flex justify-end">
             <button
               onClick={onClose}
-              className="px-5 py-2 bg-background border hover:bg-zinc-50 border-border text-foreground/90 rounded-xl text-sm font-semibold transition-colors active:scale-95 shadow-sm"
+              className="px-5 py-2 bg-background border hover:bg-zinc-50 dark:hover:bg-zinc-800 border-border text-foreground/90 rounded-xl text-sm font-semibold transition-colors active:scale-95 shadow-sm"
             >
               {lang === "id" ? "Tutup" : "Close"}
             </button>

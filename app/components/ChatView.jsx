@@ -6,6 +6,8 @@ import { Send } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { id, enUS } from "date-fns/locale";
 import { useGlobalContext } from "@/app/providers";
+import Avatar from "@/app/components/Avatar";
+
 
 // Kirim push notif chat ke semua member (fire & forget)
 async function broadcastChatPush({ senderName, content }) {
@@ -16,18 +18,7 @@ async function broadcastChatPush({ senderName, content }) {
   }).catch(() => { });
 }
 
-function Avatar({ user, size = "sm" }) {
-  const cls = size === "md" ? "w-8 h-8 text-sm" : "w-7 h-7 text-xs";
-  return (
-    <div
-      className={`${cls} rounded-full flex items-center justify-center text-white font-bold flex-shrink-0`}
-      style={{ backgroundColor: user?.color || "#64748b" }}
-      title={user?.full_name || user?.email}
-    >
-      {(user?.full_name || user?.email || "?").charAt(0).toUpperCase()}
-    </div>
-  );
-}
+
 
 function DateDivider({ dateStr, lang }) {
   const d = new Date(dateStr);
@@ -261,7 +252,7 @@ export default function ChatView({ session, userProfile, users }) {
             </div>
           ))}
           {users.length > 5 && (
-            <div className="w-7 h-7 rounded-full bg-zinc-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-muted-foreground ring-2 ring-white">
+            <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-700 border-2 border-white dark:border-zinc-600 flex items-center justify-center text-[10px] font-bold text-muted-foreground ring-2 ring-white dark:ring-zinc-600">
               +{users.length - 5}
             </div>
           )}
@@ -272,7 +263,7 @@ export default function ChatView({ session, userProfile, users }) {
       <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 scroll-smooth no-scrollbar relative">
         {messages.length === 0 && !loading && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground/80 animate-in fade-in zoom-in-95 duration-500">
-            <div className="w-16 h-16 bg-zinc-50 rounded-full flex items-center justify-center mb-4 border border-border shadow-sm">
+            <div className="w-16 h-16 bg-zinc-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4 border border-border shadow-sm">
               <span className="text-2xl">💭</span>
             </div>
             <p className="text-[13px] font-medium text-muted-foreground">

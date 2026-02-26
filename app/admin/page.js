@@ -20,17 +20,10 @@ import {
   Upload,
   Save,
 } from "lucide-react";
+import Avatar from "@/app/components/Avatar";
 
-function Avatar({ user }) {
-  return (
-    <div
-      className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-      style={{ backgroundColor: user?.color || "#64748b" }}
-    >
-      {(user?.full_name || user?.email || "?").charAt(0).toUpperCase()}
-    </div>
-  );
-}
+
+
 
 function Badge({ children, color }) {
   const styles = {
@@ -669,19 +662,23 @@ export default function AdminPage() {
         </div>
 
         {/* Info box */}
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-sm text-blue-700 space-y-1">
-          <p className="font-semibold">📌 Catatan</p>
+        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-2xl p-4 text-sm text-blue-700 dark:text-blue-300 space-y-1">
+          <p className="font-semibold">📌 {lang === "id" ? "Catatan" : "Notes"}</p>
           <ul className="list-disc list-inside space-y-1 text-xs leading-relaxed">
             <li>
-              Member yang di-<strong>Kick</strong> tidak bisa login, tapi
-              akunnya masih tersimpan dan bisa diaktifkan kembali.
+              {lang === "id"
+                ? <><strong>Kick</strong> menonaktifkan akun — mereka tidak bisa login, tapi akunnya masih tersimpan dan bisa diaktifkan kembali.</>
+                : <><strong>Kick</strong> deactivates the account — they can't log in, but the account is preserved and can be reactivated.</>}
             </li>
             <li>
-              Tombol <strong>Hapus</strong> muncul di akun nonaktif — menghapus
-              data login secara permanen dan tidak bisa dibatalkan.
+              {lang === "id"
+                ? <><strong>Hapus</strong> muncul di akun nonaktif — menghapus data login secara permanen dan tidak bisa dibatalkan.</>
+                : <><strong>Delete</strong> appears on inactive accounts — permanently removes login data and cannot be undone.</>}
             </li>
             <li>
-              Admin punya akses ke halaman ini dan bisa mengelola semua jadwal.
+              {lang === "id"
+                ? "Admin punya akses ke halaman ini dan bisa mengelola semua jadwal."
+                : "Admins have access to this page and can manage all tasks."}
             </li>
           </ul>
         </div>

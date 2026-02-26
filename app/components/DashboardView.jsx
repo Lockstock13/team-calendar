@@ -13,20 +13,9 @@ import {
   X,
 } from "lucide-react";
 import { useGlobalContext } from "@/app/providers";
+import Avatar from "@/app/components/Avatar";
 
-// --- Minimalist Avatar ---
-function Avatar({ user, size = "sm" }) {
-  const cls = size === "lg" ? "w-6 h-6 text-[10px]" : "w-5 h-5 text-[9px]";
-  return (
-    <div
-      className={`${cls} rounded-full flex items-center justify-center text-white font-medium flex-shrink-0 shadow-sm`}
-      style={{ backgroundColor: user?.color || "#6b7280" }}
-      title={user?.full_name || user?.email}
-    >
-      {(user?.full_name || user?.email || "?").charAt(0).toUpperCase()}
-    </div>
-  );
-}
+
 
 // --- Minimalist Badge ---
 function TypeBadge({ task, lang }) {
@@ -80,7 +69,7 @@ function TaskRow({ task, users, lang, onClick }) {
             <Avatar key={u.id} user={u} />
           ))}
           {assignees.length > 3 && (
-            <div className="w-5 h-5 rounded-full bg-zinc-100 border border-white flex items-center justify-center text-[8px] font-medium text-muted-foreground z-10">
+            <div className="w-5 h-5 rounded-full bg-zinc-100 dark:bg-zinc-700 border border-white dark:border-zinc-600 flex items-center justify-center text-[8px] font-medium text-muted-foreground z-10">
               +{assignees.length - 3}
             </div>
           )}
@@ -124,7 +113,7 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
   return (
     <div className="flex flex-col h-full bg-background/95 rounded-xl border border-border shadow-sm">
       {/* Header compact Notion-style */}
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-zinc-50/50 rounded-t-xl">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-800/50 rounded-t-xl">
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-muted-foreground/80" />
           <h2 className="text-[13px] font-medium tracking-tight text-foreground dark:text-zinc-100">
@@ -418,7 +407,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
                     <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
                       {lang === "id" ? "Catatan" : "Notes"}
                     </p>
-                    <div className="bg-zinc-50 p-3 rounded-lg border border-border">
+                    <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-border">
                       <p className="text-[13px] text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
                         {previewTask.description}
                       </p>
@@ -453,7 +442,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
               <div className="mt-6 pt-4 border-t border-border flex justify-end">
                 <button
                   onClick={() => setPreviewTask(null)}
-                  className="px-5 py-2 bg-background border hover:bg-zinc-50 border-border text-foreground/90 rounded-xl text-sm font-semibold transition-colors active:scale-95 shadow-sm"
+                  className="px-5 py-2 bg-background border hover:bg-zinc-50 dark:hover:bg-zinc-800 border-border text-foreground/90 rounded-xl text-sm font-semibold transition-colors active:scale-95 shadow-sm"
                 >
                   {lang === "id" ? "Tutup" : "Close"}
                 </button>

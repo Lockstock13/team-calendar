@@ -3,36 +3,28 @@
 import { useState } from "react";
 import { X, Check } from "lucide-react";
 import { useToast } from "@/app/components/ToastProvider";
+import { useGlobalContext } from "@/app/providers";
+import Avatar from "@/app/components/Avatar";
 
-const TASK_TYPES = [
+
+const getTaskTypes = (lang) => [
   {
     id: "regular",
     label: "📅 Regular",
-    desc: "Penugasan hari kerja",
-    border: "border-blue-300 bg-blue-50 text-blue-700",
+    desc: lang === "id" ? "Penugasan hari kerja" : "Workday assignment",
+    border: "border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800",
     active: "ring-blue-400",
   },
   {
     id: "libur_pengganti",
-    label: "🏖️ Libur Pengganti",
-    desc: "Hari libur pengganti",
-    border: "border-emerald-300 bg-emerald-50 text-emerald-700",
+    label: lang === "id" ? "🏖️ Libur Pengganti" : "🏖️ Replacement Leave",
+    desc: lang === "id" ? "Hari libur pengganti" : "Replacement leave day",
+    border: "border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800",
     active: "ring-emerald-400",
   },
 ];
 
-function Avatar({ user, selected }) {
-  return (
-    <div
-      className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 transition-all ${
-        selected ? "ring-primary scale-110" : "ring-background"
-      }`}
-      style={{ backgroundColor: user?.color || "#64748b" }}
-    >
-      {(user?.full_name || user?.email || "?").charAt(0).toUpperCase()}
-    </div>
-  );
-}
+
 
 export default function TaskForm({
   users,
@@ -42,6 +34,9 @@ export default function TaskForm({
   submitting = false,
 }) {
   const { addToast } = useToast();
+  const { language } = useGlobalContext();
+  const lang = language || "en";
+  const TASK_TYPES = getTaskTypes(lang);
 
   const getInitialType = () => {
     if (!editingTask) return "regular";
@@ -84,7 +79,7 @@ export default function TaskForm({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (data.assignee_ids.length === 0) {
-      addToast("Pilih minimal 1 fotografer.", "error");
+      addToast(lang === "id" ? "Pilih minimal 1 anggota." : "Select at least 1 assignee.", "error");
       return;
     }
     onSubmit(data);
@@ -104,7 +99,7 @@ export default function TaskForm({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-background z-10 rounded-t-2xl sm:rounded-t-2xl">
           <h2 className="font-semibold text-base">
-            {editingTask ? "Edit Jadwal" : "Tambah Jadwal"}
+            {editingTask ? (lang === "id" ? "Edit Jadwal" : "Edit Task") : (lang === "id" ? "Tambah Jadwal" : "Add Task")}
           </h2>
           <button
             type="button"
@@ -119,7 +114,7 @@ export default function TaskForm({
           {/* Task Type */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Tipe Jadwal
+              {lang === "id" ? "Tipe Jadwal" : "Task Type"}
             </label>
             <div className="grid grid-cols-2 gap-2">
               {TASK_TYPES.map((type) => (
@@ -127,11 +122,10 @@ export default function TaskForm({
                   key={type.id}
                   type="button"
                   onClick={() => handleTypeChange(type.id)}
-                  className={`p-3 border-2 rounded-xl text-left transition-all ${
-                    data.task_type === type.id
-                      ? `${type.border} ring-2 ${type.active} ring-offset-1`
-                      : "border-border hover:bg-muted"
-                  }`}
+                  className={`p-3 border-2 rounded-xl text-left transition-all ${data.task_type === type.id
+                    ? `${type.border} ring-2 ${type.active} ring-offset-1`
+                    : "border-border hover:bg-muted"
+                    }`}
                 >
                   <div className="text-sm font-semibold leading-snug">
                     {type.label}
@@ -147,11 +141,11 @@ export default function TaskForm({
           {/* Title */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Judul
+              {lang === "id" ? "Judul" : "Title"}
             </label>
             <input
               type="text"
-              placeholder={isLibur ? "Libur Pengganti" : "Judul tugas / event"}
+              placeholder={isLibur ? (lang === "id" ? "Libur Pengganti" : "Replacement Leave") : (lang === "id" ? "Judul tugas / event" : "Task title / event")}
               value={data.title}
               onChange={(e) => setData({ ...data, title: e.target.value })}
               className="w-full px-3 py-2.5 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
@@ -163,10 +157,10 @@ export default function TaskForm({
           {!isLibur && (
             <div className="space-y-2">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Catatan
+                {lang === "id" ? "Catatan" : "Notes"}
               </label>
               <textarea
-                placeholder="Lokasi, catatan, PIC, dll"
+                placeholder={lang === "id" ? "Lokasi, catatan, PIC, dll" : "Location, notes, PIC, etc."}
                 value={data.description}
                 onChange={(e) =>
                   setData({ ...data, description: e.target.value })
@@ -180,11 +174,11 @@ export default function TaskForm({
           {/* Dates */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Tanggal
+              {lang === "id" ? "Tanggal" : "Date"}
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Mulai</p>
+                <p className="text-xs text-muted-foreground mb-1">{lang === "id" ? "Mulai" : "Start"}</p>
                 <input
                   type="date"
                   value={data.start_date}
@@ -205,7 +199,7 @@ export default function TaskForm({
                 />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Selesai</p>
+                <p className="text-xs text-muted-foreground mb-1">{lang === "id" ? "Selesai" : "End"}</p>
                 <input
                   type="date"
                   value={data.end_date}
@@ -223,14 +217,14 @@ export default function TaskForm({
           {/* Photographer Picker */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Fotografer{" "}
+              {lang === "id" ? "Anggota" : "Assignees"}{" "}
               {data.assignee_ids.length > 0 &&
-                `(${data.assignee_ids.length} dipilih)`}
+                `(${data.assignee_ids.length} ${lang === "id" ? "dipilih" : "selected"})`}
             </label>
             <div className="border rounded-xl overflow-hidden divide-y max-h-52 overflow-y-auto">
               {users.length === 0 && (
                 <p className="text-sm text-muted-foreground p-4 text-center">
-                  Belum ada anggota
+                  {lang === "id" ? "Belum ada anggota" : "No members yet"}
                 </p>
               )}
               {users.map((user) => {
@@ -239,9 +233,8 @@ export default function TaskForm({
                   <div
                     key={user.id}
                     onClick={() => toggleAssignee(user.id)}
-                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
-                      selected ? "bg-primary/5" : "hover:bg-muted/50"
-                    }`}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${selected ? "bg-primary/5" : "hover:bg-muted/50"
+                      }`}
                   >
                     <Avatar user={user} selected={selected} />
                     <div className="flex-1 min-w-0">
@@ -253,11 +246,10 @@ export default function TaskForm({
                       </p>
                     </div>
                     <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                        selected
-                          ? "bg-primary border-primary"
-                          : "border-muted-foreground/30"
-                      }`}
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${selected
+                        ? "bg-primary border-primary"
+                        : "border-muted-foreground/30"
+                        }`}
                     >
                       {selected && (
                         <Check className="w-3 h-3 text-primary-foreground" />
@@ -277,7 +269,7 @@ export default function TaskForm({
               disabled={submitting}
               className="flex-1 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors disabled:opacity-40"
             >
-              Batal
+              {lang === "id" ? "Batal" : "Cancel"}
             </button>
             <button
               type="submit"
@@ -287,12 +279,12 @@ export default function TaskForm({
               {submitting ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Menyimpan...
+                  {lang === "id" ? "Menyimpan..." : "Saving..."}
                 </>
               ) : editingTask ? (
-                "Simpan Perubahan"
+                lang === "id" ? "Simpan Perubahan" : "Save Changes"
               ) : (
-                "Tambah Jadwal"
+                lang === "id" ? "Tambah Jadwal" : "Add Task"
               )}
             </button>
           </div>

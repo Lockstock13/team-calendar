@@ -4,18 +4,10 @@ import { format } from "date-fns";
 import { id, enUS } from "date-fns/locale";
 import { Clock, Check, Pencil, Trash2 } from "lucide-react";
 import { useGlobalContext } from "@/app/providers";
+import Avatar from "@/app/components/Avatar";
 
-function Avatar({ user }) {
-  return (
-    <div
-      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-background flex-shrink-0"
-      style={{ backgroundColor: user?.color || "#64748b" }}
-      title={user?.full_name || user?.email}
-    >
-      {(user?.full_name || user?.email || "?").charAt(0).toUpperCase()}
-    </div>
-  );
-}
+
+
 
 const getStatusData = (lang) => ({
   todo: {
@@ -192,8 +184,8 @@ export default function ListView({
                             onUpdateStatus(task.id, nextStatus(task.status))
                           }
                           className={`p-1.5 rounded-lg transition-colors ${task.status === "done"
-                              ? "text-green-600 bg-green-50 hover:bg-green-100"
-                              : "text-muted-foreground hover:bg-muted"
+                            ? "text-green-600 bg-green-50 hover:bg-green-100"
+                            : "text-muted-foreground hover:bg-muted"
                             }`}
                           title="Update status"
                         >
