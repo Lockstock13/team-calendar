@@ -7,6 +7,7 @@ import { format, isToday, isYesterday } from "date-fns";
 import { id, enUS } from "date-fns/locale";
 import { useGlobalContext } from "@/app/providers";
 import Avatar from "@/app/components/Avatar";
+import { ChatSkeleton } from "@/app/components/Skeletons";
 
 
 // Kirim push notif chat ke semua member (fire & forget)
@@ -100,21 +101,64 @@ export default function ChatView({ session, userProfile, users }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
+  const scrollContainerRef = useRef(null);
+
+  const PAGE_SIZE = 50;
 
   const scrollToBottom = (behavior = "smooth") => {
     bottomRef.current?.scrollIntoView({ behavior });
   };
 
-  // ── Fetch messages ──────────────────────────────────────────────────────────
+  // ── Fetch latest messages ──────────────────────────────────────────────────
   const fetchMessages = async () => {
     const { data } = await supabase
       .from("messages")
       .select("*")
-      .order("created_at", { ascending: true })
-      .limit(200);
-    if (data) setMessages(data);
+      .order("created_at", { ascending: false })
+      .limit(PAGE_SIZE);
+    if (data) {
+      const sorted = data.reverse(); // oldest first
+      setMessages(sorted);
+      setHasMore(data.length === PAGE_SIZE);
+    }
+  };
+
+  // ── Load earlier messages ─────────────────────────────────────────────────
+  const loadEarlier = async () => {
+    if (loadingMore || !hasMore || messages.length === 0) return;
+    setLoadingMore(true);
+
+    const oldestTs = messages[0]?.created_at;
+    const container = scrollContainerRef.current;
+    const prevHeight = container?.scrollHeight || 0;
+
+    const { data } = await supabase
+      .from("messages")
+      .select("*")
+      .lt("created_at", oldestTs)
+      .order("created_at", { ascending: false })
+      .limit(PAGE_SIZE);
+
+    if (data && data.length > 0) {
+      const older = data.reverse();
+      setMessages((prev) => [...older, ...prev]);
+      setHasMore(data.length === PAGE_SIZE);
+
+      // Preserve scroll position
+      requestAnimationFrame(() => {
+        if (container) {
+          container.scrollTop = container.scrollHeight - prevHeight;
+        }
+      });
+    } else {
+      setHasMore(false);
+    }
+
+    setLoadingMore(false);
   };
 
   // ── Realtime ────────────────────────────────────────────────────────────────
@@ -215,11 +259,7 @@ export default function ChatView({ session, userProfile, users }) {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
+    return <ChatSkeleton />;
   }
 
   return (
@@ -260,7 +300,22 @@ export default function ChatView({ session, userProfile, users }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 scroll-smooth no-scrollbar relative">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 scroll-smooth no-scrollbar relative">
+        {/* Load earlier button */}
+        {hasMore && messages.length > 0 && (
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={loadEarlier}
+              disabled={loadingMore}
+              className="text-xs text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted px-4 py-1.5 rounded-full transition-colors disabled:opacity-40 font-medium"
+            >
+              {loadingMore
+                ? (lang === "id" ? "Memuat..." : "Loading...")
+                : (lang === "id" ? "⬆ Pesan sebelumnya" : "⬆ Load earlier messages")}
+            </button>
+          </div>
+        )}
+
         {messages.length === 0 && !loading && (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground/80 animate-in fade-in zoom-in-95 duration-500">
             <div className="w-16 h-16 bg-zinc-50 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-4 border border-border shadow-sm">

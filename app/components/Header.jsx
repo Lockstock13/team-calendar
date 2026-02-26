@@ -14,6 +14,7 @@ import {
   Aperture,
   Moon,
   Sun,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -28,9 +29,10 @@ export default function Header({
   unreadChat = 0,
 }) {
   const pathname = usePathname();
-  const { language, appSettings } = useGlobalContext();
+  const { language, appSettings, searchQuery, setSearchQuery } = useGlobalContext();
   const lang = language || "en";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const { theme, setTheme } = useTheme();
 
   const isAdmin = userProfile?.role === "admin";
@@ -80,7 +82,7 @@ export default function Header({
 
   return (
     <>
-      <header className="border-b bg-background 80 backdrop-blur sticky top-0 z-10">
+      <header className="border-b bg-background/80 backdrop-blur sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           {/* Left: Logo + Nav */}
           <div className="flex items-center gap-5">
@@ -126,8 +128,38 @@ export default function Header({
             </nav>
           </div>
 
-          {/* Right: Admin + Profile + Logout */}
+          {/* Right: Search + Admin + Profile + Logout */}
           <div className="flex items-center gap-1">
+            {/* Search toggle (desktop) */}
+            <div className="hidden sm:flex items-center">
+              {showSearch ? (
+                <div className="flex items-center gap-1 bg-muted/50 rounded-lg px-2 py-1 mr-1 animate-in slide-in-from-right-2 duration-200">
+                  <Search className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                  <input
+                    autoFocus
+                    type="text"
+                    value={searchQuery || ""}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={lang === "id" ? "Cari jadwal..." : "Search tasks..."}
+                    className="bg-transparent text-sm w-36 focus:outline-none placeholder:text-muted-foreground/60"
+                  />
+                  <button
+                    onClick={() => { setSearchQuery(""); setShowSearch(false); }}
+                    className="p-0.5 hover:bg-muted rounded"
+                  >
+                    <X className="w-3 h-3 text-muted-foreground" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowSearch(true)}
+                  className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all"
+                  title={lang === "id" ? "Cari" : "Search"}
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+              )}
+            </div>
             {/* Mobile Profile/Theme Triggers */}
             <div className="sm:hidden flex items-center gap-1.5 mr-0.5">
               <button

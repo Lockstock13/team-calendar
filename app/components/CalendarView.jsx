@@ -253,16 +253,36 @@ function HolidayModal({ holiday, onClose, lang }) {
   );
 }
 
-// ─── Fetch Indonesian public holidays from Nager.Date ─────────────────────────
+// ─── Fetch Indonesian public holidays from Nager.Date (with localStorage cache) ─
 
 async function fetchHolidays(year) {
+  const CACHE_KEY = `holidays_${year}`;
+  const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+  try {
+    // Check localStorage cache first
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const { data, ts } = JSON.parse(cached);
+      if (Date.now() - ts < CACHE_TTL && Array.isArray(data)) {
+        return data;
+      }
+    }
+  } catch { /* ignore parse errors */ }
+
   try {
     const res = await fetch(
       `https://date.nager.at/api/v3/PublicHolidays/${year}/ID`,
-      { next: { revalidate: 86400 } },
     );
     if (!res.ok) return [];
-    return await res.json();
+    const data = await res.json();
+
+    // Store in localStorage
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+    } catch { /* quota exceeded — ignore */ }
+
+    return data;
   } catch {
     return [];
   }

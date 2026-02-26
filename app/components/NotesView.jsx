@@ -6,6 +6,7 @@ import { Pin, Plus } from "lucide-react";
 import { useGlobalContext } from "@/app/providers";
 import { useToast } from "./ToastProvider";
 import { useConfirm } from "./ConfirmProvider";
+import { NotesSkeleton } from "./Skeletons";
 
 // Modular Components
 import { getCategories } from "./notes/NoteConstants";
@@ -151,11 +152,7 @@ export default function NotesView({ session, userProfile }) {
   const hasMore = notes.length > visibleCount;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20 font-bold text-muted-foreground animate-pulse">
-        {lang === "id" ? "Memuat Catatan..." : "Loading Notes..."}
-      </div>
-    );
+    return <NotesSkeleton />;
   }
 
   return (

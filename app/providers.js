@@ -10,6 +10,8 @@ import { usePathname } from "next/navigation";
 import { useToast } from "@/app/components/ToastProvider";
 import { useConfirm } from "@/app/components/ConfirmProvider";
 import { ThemeProvider } from "next-themes";
+import { PageSkeleton } from "@/app/components/Skeletons";
+import { useTaskActions } from "@/app/hooks/useTaskActions";
 
 const GlobalContext = createContext({});
 
@@ -72,11 +74,8 @@ export default function Providers({ children }) {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState("");
   const [unreadChat, setUnreadChat] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
   const pathname = usePathname();
-
-  const [showForm, setShowForm] = useState(false);
-  const [editingTask, setEditingTask] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
   const { addToast } = useToast();
   const { confirm } = useConfirm();
   const [language, setLanguageState] = useState("en");
@@ -90,7 +89,6 @@ export default function Providers({ children }) {
     try {
       const { data, error } = await supabase.from("app_settings").select("*").single();
       if (error) {
-        // Table might not exist yet (new deployment) — use defaults silently
         console.warn("[settings] app_settings not available:", error.message, "— using defaults.");
         return;
       }
@@ -145,8 +143,29 @@ export default function Providers({ children }) {
       .channel("tasks_changes")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "tasks" },
-        () => fetchTasks(),
+        { event: "INSERT", schema: "public", table: "tasks" },
+        (payload) => {
+          setTasks((prev) => {
+            if (prev.find((t) => t.id === payload.new.id)) return prev;
+            return [...prev, payload.new];
+          });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "tasks" },
+        (payload) => {
+          setTasks((prev) =>
+            prev.map((t) => (t.id === payload.new.id ? payload.new : t)),
+          );
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "tasks" },
+        (payload) => {
+          setTasks((prev) => prev.filter((t) => t.id !== payload.old.id));
+        },
       )
       .on(
         "postgres_changes",
@@ -203,101 +222,18 @@ export default function Providers({ children }) {
     if (!error) setTasks(data || []);
   };
 
-  const handleTaskSubmit = async (formData) => {
-    if (!session) {
-      addToast("Sesi habis, silakan refresh halaman.", "error");
-      return;
-    }
-    if (submitting) return;
-    setSubmitting(true);
-
-    const assigneeIds = formData.assignee_ids;
-    const assigneeUsers = users.filter((u) => assigneeIds.includes(u.id));
-    const assigneeNames = assigneeUsers
-      .map((u) => u.full_name || u.email)
-      .join(", ");
-
-    const taskData = {
-      title: formData.title,
-      description: formData.description,
-      start_date: formData.start_date,
-      end_date: formData.end_date,
-      priority: formData.priority || "medium",
-      created_by: session.user.id,
-      assignee_ids: assigneeIds,
-      assigned_to_name: assigneeNames,
-      status: editingTask?.status || "todo",
-      is_weekend_task: false,
-      is_comday: formData.task_type === "libur_pengganti",
-      task_type: formData.task_type,
-    };
-
-    try {
-      let error;
-      if (editingTask) {
-        ({ error } = await supabase
-          .from("tasks")
-          .update(taskData)
-          .eq("id", editingTask.id));
-      } else {
-        ({ error } = await supabase.from("tasks").insert([taskData]));
-      }
-      if (error) throw error;
-
-      setShowForm(false);
-      setEditingTask(null);
-      addToast(
-        editingTask
-          ? "Jadwal berhasil diupdate ✓"
-          : "Jadwal berhasil ditambahkan ✓",
-        "success",
-      );
-
-      fetchTasks().catch(() => { });
-
-      fetch("/api/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          task: taskData,
-          assigneeIds,
-          actorName: userProfile?.full_name || session.user.email,
-          action: editingTask ? "updated" : "created",
-        }),
-      }).catch(() => { });
-    } catch (err) {
-      addToast("Gagal menyimpan: " + err.message, "error");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleEditTask = (task) => {
-    setEditingTask(task);
-    setShowForm(true);
-  };
-
-  const handleDeleteTask = async (taskId) => {
-    const ok = await confirm({
-      title: "Hapus Jadwal",
-      message:
-        "Apakah kamu yakin ingin menghapus jadwal ini? Tindakan ini tidak bisa dibatalkan.",
-      confirmText: "Hapus",
-      cancelText: "Batal",
-    });
-    if (!ok) return;
-
-    await supabase.from("tasks").delete().eq("id", taskId);
-    addToast("Jadwal sudah dihapus.", "info");
-    fetchTasks();
-  };
-
-  const handleUpdateTaskStatus = async (taskId, newStatus) => {
-    await supabase.from("tasks").update({ status: newStatus }).eq("id", taskId);
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)),
-    );
-  };
+  // ── Task CRUD (extracted to hook) ──────────────────────────────────────────
+  const {
+    showForm,
+    setShowForm,
+    editingTask,
+    setEditingTask,
+    submitting,
+    handleTaskSubmit,
+    handleEditTask,
+    handleDeleteTask,
+    handleUpdateStatus: handleUpdateTaskStatus,
+  } = useTaskActions({ session, userProfile, users, language });
 
   const handleAuth = async (mode, data) => {
     setAuthLoading(true);
@@ -335,42 +271,21 @@ export default function Providers({ children }) {
   const handleLogout = async () => supabase.auth.signOut();
 
   if (loading) {
-    return (
-      <div className="min-h-screen max-w-7xl mx-auto px-4 py-6 w-full opacity-50">
-        <div className="animate-pulse space-y-6">
-          {/* Header Skeleton */}
-          <div className="h-14 bg-zinc-200 rounded-2xl w-full"></div>
-
-          {/* Toolbar Skeleton */}
-          <div className="flex justify-between items-center mt-6">
-            <div className="space-y-2">
-              <div className="h-6 bg-zinc-200 rounded w-40"></div>
-              <div className="h-3 bg-zinc-200 rounded w-32"></div>
-            </div>
-            <div className="h-10 w-28 bg-zinc-200 rounded-xl"></div>
-          </div>
-
-          {/* Content Skeletons */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-            <div className="lg:col-span-2 h-[450px] bg-zinc-200 rounded-2xl"></div>
-            <div className="h-[450px] bg-zinc-200 rounded-2xl"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (inactiveBlock) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
         <div className="w-full max-w-sm bg-background border rounded-2xl p-8 text-center shadow-sm space-y-4">
-          <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto">
+          <div className="w-14 h-14 bg-red-100 dark:bg-red-950/30 rounded-2xl flex items-center justify-center mx-auto">
             <span className="text-2xl">🔒</span>
           </div>
-          <h2 className="font-bold text-lg">Akun Dinonaktifkan</h2>
+          <h2 className="font-bold text-lg">{language === "id" ? "Akun Dinonaktifkan" : "Account Deactivated"}</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            Akun kamu telah dinonaktifkan oleh admin. Hubungi admin untuk
-            mengaktifkan kembali.
+            {language === "id"
+              ? "Akun kamu telah dinonaktifkan oleh admin. Hubungi admin untuk mengaktifkan kembali."
+              : "Your account has been deactivated by an admin. Contact your admin to reactivate."}
           </p>
           <button
             onClick={() => {
@@ -379,7 +294,7 @@ export default function Providers({ children }) {
             }}
             className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium"
           >
-            Kembali ke Login
+            {language === "id" ? "Kembali ke Login" : "Back to Login"}
           </button>
         </div>
       </div>
@@ -424,6 +339,8 @@ export default function Providers({ children }) {
         handleTaskSubmit,
         language,
         setLanguage,
+        searchQuery,
+        setSearchQuery,
       }}
     >
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
