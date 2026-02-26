@@ -101,14 +101,14 @@ function formatDateRange(task, lang) {
   const localeObj = lang === "id" ? id : enUS;
   const start = task.start_date
     ? format(new Date(task.start_date + "T00:00:00"), "d MMM yyyy", {
-        locale: localeObj,
-      })
+      locale: localeObj,
+    })
     : "-";
   const end =
     task.end_date && task.end_date !== task.start_date
       ? format(new Date(task.end_date + "T00:00:00"), "d MMM yyyy", {
-          locale: localeObj,
-        })
+        locale: localeObj,
+      })
       : null;
   return end ? `${start} – ${end}` : start;
 }
@@ -132,8 +132,8 @@ function exportCSV(tasks, users, month, year, lang) {
     const localeObj = lang === "id" ? id : enUS;
     const dateStr = task.start_date
       ? format(new Date(task.start_date + "T00:00:00"), "d MMM yyyy", {
-          locale: localeObj,
-        })
+        locale: localeObj,
+      })
       : "-";
     const endStr =
       task.end_date && task.end_date !== task.start_date
@@ -189,7 +189,7 @@ function DailyTable({ tasks, users, lang }) {
   if (sorted.length === 0) return null;
 
   return (
-    <div className="bg-background 95 border rounded-xl overflow-hidden">
+    <div className="bg-background/95 border rounded-xl overflow-hidden">
       {/* Desktop table */}
       <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-[13px]">
@@ -228,22 +228,21 @@ function DailyTable({ tasks, users, lang }) {
                   ? assigneeList
                   : task.assigned_to_name
                     ? [
-                        {
-                          full_name: task.assigned_to_name,
-                          color: "#64748b",
-                          id: "fallback",
-                        },
-                      ]
+                      {
+                        full_name: task.assigned_to_name,
+                        color: "#64748b",
+                        id: "fallback",
+                      },
+                    ]
                     : [];
 
               return (
                 <tr
                   key={task.id}
-                  className={`hover:bg-muted/20 transition-colors ${
-                    task.is_comday || task.task_type === "libur_pengganti"
+                  className={`hover:bg-muted/20 transition-colors ${task.is_comday || task.task_type === "libur_pengganti"
                       ? "bg-emerald-50/40"
                       : ""
-                  }`}
+                    }`}
                 >
                   {/* No */}
                   <td className="px-4 py-3 text-muted-foreground tabular-nums">
@@ -253,10 +252,10 @@ function DailyTable({ tasks, users, lang }) {
                   <td className="px-4 py-3 text-sm font-medium tabular-nums whitespace-nowrap">
                     {task.start_date
                       ? format(
-                          new Date(task.start_date + "T00:00:00"),
-                          "EEE, d MMM yyyy",
-                          { locale: lang === "id" ? id : enUS },
-                        )
+                        new Date(task.start_date + "T00:00:00"),
+                        "EEE, d MMM yyyy",
+                        { locale: lang === "id" ? id : enUS },
+                      )
                       : "-"}
                     {task.end_date && task.end_date !== task.start_date && (
                       <span className="block text-xs text-muted-foreground font-normal">
@@ -321,11 +320,10 @@ function DailyTable({ tasks, users, lang }) {
           return (
             <div
               key={task.id}
-              className={`p-4 space-y-2 ${
-                task.is_comday || task.task_type === "libur_pengganti"
+              className={`p-4 space-y-2 ${task.is_comday || task.task_type === "libur_pengganti"
                   ? "bg-emerald-50/50"
                   : ""
-              }`}
+                }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2">
@@ -393,8 +391,8 @@ function TaskRow({ task, lang }) {
   const localeObj = lang === "id" ? id : enUS;
   const dateStr = task.start_date
     ? format(new Date(task.start_date + "T00:00:00"), "d MMM yyyy", {
-        locale: localeObj,
-      })
+      locale: localeObj,
+    })
     : "-";
   const endStr =
     task.end_date && task.end_date !== task.start_date
@@ -653,22 +651,20 @@ export default function ReportView({ tasks, users }) {
         <div className="flex items-center gap-1 bg-muted p-1 rounded-xl w-fit no-print">
           <button
             onClick={() => setViewType("table")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              viewType === "table"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${viewType === "table"
                 ? "bg-background shadow-sm text-foreground"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <LayoutList className="w-4 h-4" />
             {lang === "id" ? "Tabel Harian" : "Daily Table"}
           </button>
           <button
             onClick={() => setViewType("photographer")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-              viewType === "photographer"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${viewType === "photographer"
                 ? "bg-background shadow-sm text-foreground"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             <BarChart2 className="w-4 h-4" />
             {lang === "id" ? "Per Fotografer" : "By Assignee"}

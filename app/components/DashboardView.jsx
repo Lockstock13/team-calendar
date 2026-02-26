@@ -63,7 +63,7 @@ function TaskRow({ task, users, lang, onClick }) {
 
       <div className="flex-1 min-w-0 pr-4">
         <div className="flex items-center gap-2">
-          <p className="text-[13.5px] font-medium text-foreground/90/90 truncate tracking-tight group-hover:text-foreground font-semibold transition-colors">
+          <p className="text-[13.5px] font-medium text-foreground/90 truncate tracking-tight group-hover:text-foreground font-semibold transition-colors">
             {task.title}
           </p>
           <TypeBadge task={task} lang={lang} />
@@ -122,7 +122,7 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
   );
 
   return (
-    <div className="flex flex-col h-full bg-background 95 rounded-xl border border-border shadow-sm">
+    <div className="flex flex-col h-full bg-background/95 rounded-xl border border-border shadow-sm">
       {/* Header compact Notion-style */}
       <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-zinc-50/50 rounded-t-xl">
         <div className="flex items-center gap-2">
@@ -180,7 +180,7 @@ function MySchedulePanel({ tasks, users, currentUserId, lang, onTaskClick }) {
                     <div className="w-[1px] h-3.5 bg-zinc-200 mt-0.5 flex-shrink-0 group-hover:bg-zinc-300 transition-colors" />
                     {/* Title */}
                     <span
-                      className={`flex-1 text-[13px] font-medium tracking-tight ${isLibur ? "text-muted-foreground/80 line-through decoration-zinc-200" : "text-foreground/90/90 group-hover:text-foreground font-semibold"}`}
+                      className={`flex-1 text-[13px] font-medium tracking-tight ${isLibur ? "text-muted-foreground/80 line-through decoration-zinc-200" : "text-foreground/90 group-hover:text-foreground font-semibold"}`}
                     >
                       {task.title}
                     </span>
@@ -258,7 +258,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
       {/* Minimalist Stat Cards */}
       <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4">
         {/* Today */}
-        <div className="w-full sm:w-56 bg-background 95 border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
+        <div className="w-full sm:w-56 bg-background/95 border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
           <div className="flex items-center gap-2 text-muted-foreground/80 mb-3 group-hover:text-muted-foreground transition-colors">
             <Clock className="w-3.5 h-3.5" />
             <span className="text-[12px] font-medium tracking-wide uppercase">
@@ -276,7 +276,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
         </div>
 
         {/* This Month */}
-        <div className="w-full sm:w-56 bg-background 95 border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
+        <div className="w-full sm:w-56 bg-background/95 border border-border rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-border transition-colors group">
           <div className="flex items-center gap-2 text-muted-foreground/80 mb-3 group-hover:text-muted-foreground transition-colors">
             <Calendar className="w-3.5 h-3.5" />
             <span className="text-[12px] font-medium tracking-wide uppercase">
@@ -307,7 +307,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
               </h2>
             </div>
 
-            <div className="bg-background 95 border border-border rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-background/95 border border-border rounded-xl overflow-hidden shadow-sm">
               {todayTasks.length === 0 ? (
                 <div className="px-5 py-8 flex items-center justify-center flex-col text-muted-foreground/80 bg-transparent">
                   <span className="text-2xl mb-2">🌬️</span>
@@ -343,7 +343,7 @@ export default function DashboardView({ tasks, users, currentUserId }) {
                 </h2>
               </div>
 
-              <div className="bg-background 95 border border-border rounded-xl overflow-hidden shadow-sm">
+              <div className="bg-background/95 border border-border rounded-xl overflow-hidden shadow-sm">
                 <div className="p-1">
                   {tomorrowTasks.map((t) => (
                     <TaskRow

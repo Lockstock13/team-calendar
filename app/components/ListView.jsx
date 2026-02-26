@@ -146,13 +146,13 @@ export default function ListView({
 
                           {(task.is_comday ||
                             task.task_type === "libur_pengganti") && (
-                            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                              🏖️{" "}
-                              {lang === "id"
-                                ? "Libur Pengganti"
-                                : "Replacement Leave"}
-                            </span>
-                          )}
+                              <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                                🏖️{" "}
+                                {lang === "id"
+                                  ? "Libur Pengganti"
+                                  : "Replacement Leave"}
+                              </span>
+                            )}
 
                           <span
                             className={`text-xs px-2 py-0.5 rounded-full font-medium ${status.cls}`}
@@ -185,17 +185,16 @@ export default function ListView({
                         </div>
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* Actions — always visible on mobile (no hover), hover-reveal on desktop */}
+                      <div className="flex items-center gap-1 flex-shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() =>
                             onUpdateStatus(task.id, nextStatus(task.status))
                           }
-                          className={`p-1.5 rounded-lg transition-colors ${
-                            task.status === "done"
+                          className={`p-1.5 rounded-lg transition-colors ${task.status === "done"
                               ? "text-green-600 bg-green-50 hover:bg-green-100"
                               : "text-muted-foreground hover:bg-muted"
-                          }`}
+                            }`}
                           title="Update status"
                         >
                           <Check className="w-3.5 h-3.5" />

@@ -161,7 +161,7 @@ export default function NotesView({ session, userProfile }) {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-background 90 backdrop-blur-md p-3 sm:p-4 rounded-2xl border sticky top-14 sm:top-[72px] z-10 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-background/90 backdrop-blur-md p-3 sm:p-4 rounded-2xl border sticky top-14 sm:top-[72px] z-10 shadow-sm">
         {/* Categories scrollable on mobile */}
         <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap no-scrollbar -mx-1 px-1 sm:mx-0 sm:px-0">
           {categories.map((c) => {

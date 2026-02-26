@@ -319,6 +319,12 @@ export default function AdminPage() {
       return;
     }
 
+    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+    if (file.size > MAX_SIZE) {
+      addToast(lang === "id" ? "Ukuran file maks 2MB!" : "Max file size is 2MB!", "error");
+      return;
+    }
+
     addToast(lang === "id" ? "Mengunggah logo..." : "Uploading logo...", "info");
 
     try {

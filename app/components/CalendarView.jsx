@@ -387,7 +387,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
   return (
     <div className="w-full max-w-[1200px] mx-auto space-y-4 pb-10">
       {/* Calendar Wrap (Glassmorphism) */}
-      <div className="bg-background 90 backdrop-blur-sm border border-border rounded-xl p-2 sm:p-4 shadow-sm calendar-wrap">
+      <div className="bg-background/90 backdrop-blur-sm border border-border rounded-xl p-2 sm:p-4 shadow-sm calendar-wrap">
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
@@ -440,7 +440,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
       </div>
 
       {/* Bottom Controls (Legend + Filters) - Minimalist Pill Style */}
-      <div className="bg-background 90 backdrop-blur-sm border border-border rounded-xl p-3 sm:p-4 shadow-sm">
+      <div className="bg-background/90 backdrop-blur-sm border border-border rounded-xl p-3 sm:p-4 shadow-sm">
         {/* Filters */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <span className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest flex-shrink-0">

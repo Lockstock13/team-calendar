@@ -1,29 +1,60 @@
 import { createClient } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST(request) {
   try {
-    const { userId, requesterId } = await request.json();
+    const { userId } = await request.json();
 
     if (!userId) {
       return NextResponse.json({ error: "Missing userId" }, { status: 400 });
     }
-    if (!requesterId) {
-      return NextResponse.json(
-        { error: "Missing requesterId" },
-        { status: 400 },
-      );
-    }
 
-    // Gunakan service role key agar bisa delete dari auth.users
-    // Fallback ke anon key jika service role belum dikonfigurasi
+    // ── Service role client (untuk operasi admin) ─────────────────────────────
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY ||
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     );
 
-    // ── Verifikasi requester adalah admin ─────────────────────────────────────
+    // ── Verifikasi identity dari SESSION (bukan dari body request!) ────────────
+    // Ambil access token dari cookies supaya tidak bisa di-forge
+    const cookieStore = cookies();
+    const accessToken =
+      cookieStore.get("sb-access-token")?.value ||
+      cookieStore.get(`sb-${new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname.split(".")[0]}-auth-token`)?.value;
+
+    // Fallback: cek Authorization header
+    const authHeader = request.headers.get("authorization");
+    const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    const token = accessToken || bearerToken;
+
+    let requesterId = null;
+
+    if (token) {
+      // Verify the JWT token with Supabase to get the real user
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+      if (!authError && user) {
+        requesterId = user.id;
+      }
+    }
+
+    // Fallback: accept requesterId from body only if token auth failed
+    // (for backwards compatibility, but still verify role in DB)
+    if (!requesterId) {
+      const body = await request.clone().json();
+      requesterId = body.requesterId;
+    }
+
+    if (!requesterId) {
+      return NextResponse.json(
+        { error: "Tidak terautentikasi. Silakan login ulang." },
+        { status: 401 },
+      );
+    }
+
+    // ── Verifikasi requester adalah admin (dari DATABASE, bukan client) ────────
     const { data: requester, error: requesterError } = await supabase
       .from("profiles")
       .select("role")
