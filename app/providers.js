@@ -10,7 +10,15 @@ import { usePathname } from "next/navigation";
 import { useToast } from "@/app/components/ToastProvider";
 import { useConfirm } from "@/app/components/ConfirmProvider";
 import { ThemeProvider } from "next-themes";
-import { PageSkeleton } from "@/app/components/Skeletons";
+import {
+  DashboardSkeleton,
+  CalendarSkeleton,
+  ListSkeleton,
+  NotesSkeleton,
+  ReportSkeleton,
+  ChatSkeleton,
+  PageSkeleton,
+} from "@/app/components/Skeletons";
 import { useTaskActions } from "@/app/hooks/useTaskActions";
 
 const GlobalContext = createContext({});
@@ -232,7 +240,7 @@ export default function Providers({ children }) {
     handleEditTask,
     handleDeleteTask,
     handleUpdateStatus: handleUpdateTaskStatus,
-  } = useTaskActions({ session, userProfile, users, language });
+  } = useTaskActions({ session, userProfile, users, language, onSuccess: fetchTasks });
 
   const handleAuth = async (mode, data) => {
     setAuthLoading(true);
@@ -270,7 +278,47 @@ export default function Providers({ children }) {
   const handleLogout = async () => supabase.auth.signOut();
 
   if (loading) {
-    return <PageSkeleton />;
+    const renderSkeletonContent = () => {
+      if (pathname === "/dashboard" || pathname === "/") return <DashboardSkeleton />;
+      if (pathname === "/calendar") return <CalendarSkeleton />;
+      if (pathname === "/list") return <ListSkeleton />;
+      if (pathname === "/notes") return <NotesSkeleton />;
+      if (pathname === "/report") return <ReportSkeleton />;
+      if (pathname === "/chat") return <ChatSkeleton />;
+      return <PageSkeleton />;
+    };
+
+    return (
+      <GlobalContext.Provider value={{ language, appSettings, session: null }}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {appSettings?.primary_color && (
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `
+                  :root, .dark { 
+                    --primary: ${hexToHslString(appSettings.primary_color)}; 
+                    --primary-foreground: 0 0% 100%;
+                  }
+                `,
+              }}
+            />
+          )}
+          <div className="min-h-screen bg-muted/20">
+            <Header
+              session={null}
+              userProfile={null}
+              handleLogout={() => { }}
+              unreadChat={0}
+            />
+            {/* The wrapper mimicking PageContainer but without the title since skeletons handle layout spacing inside them or assume them */}
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 py-5 pb-6 sm:py-6">
+              {renderSkeletonContent()}
+            </main>
+            <MobileNav unreadChat={0} />
+          </div>
+        </ThemeProvider>
+      </GlobalContext.Provider>
+    );
   }
 
   if (inactiveBlock) {

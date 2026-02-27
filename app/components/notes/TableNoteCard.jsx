@@ -1,7 +1,8 @@
 import { useState, memo } from "react";
 import { Pin, PinOff, Pencil, Trash2, X, Table as TableIcon, Maximize2, Check, Plus } from "lucide-react";
 import { CAT_STYLE, parseTableContent } from "./NoteConstants";
-import { Avatar, CategoryPills } from "./NoteComponents";
+import { CategoryPills } from "./NoteComponents";
+import Avatar from "@/app/components/Avatar";
 import { useConfirm } from "../ConfirmProvider";
 
 function TableNoteCard({ note, currentUser, users, onUpdate, onDelete, lang, categories }) {
@@ -91,10 +92,10 @@ function TableNoteCard({ note, currentUser, users, onUpdate, onDelete, lang, cat
             <div
                 className={`bg-background border rounded-2xl overflow-hidden flex flex-col transition-shadow hover:shadow-md ${note.pinned ? "border-primary/40 ring-1 ring-primary/10" : ""}`}
             >
-                <div className="h-0.5 bg-emerald-400" />
+                <div className="h-0.5 bg-emerald-400 dark:bg-emerald-600" />
                 <div className="p-4 flex flex-col gap-3 flex-1">
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-2">
+                    {/* Header — title only */}
+                    <div className="flex items-start gap-2">
                         {editing ? (
                             <input
                                 type="text"
@@ -111,64 +112,6 @@ function TableNoteCard({ note, currentUser, users, onUpdate, onDelete, lang, cat
                                 <h3 className="text-sm font-semibold truncate">{note.title}</h3>
                             </div>
                         )}
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                            {editing ? (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={save}
-                                        disabled={saving || !title.trim()}
-                                        className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg disabled:opacity-40"
-                                    >
-                                        <Check className="w-3.5 h-3.5" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={cancel}
-                                        className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
-                                    >
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                </>
-                            ) : (
-                                canEdit && (
-                                    <>
-                                        <button
-                                            onClick={() => setExpanded(true)}
-                                            className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
-                                            title="Buka penuh"
-                                        >
-                                            <Maximize2 className="w-3.5 h-3.5" />
-                                        </button>
-                                        <button
-                                            onClick={togglePin}
-                                            className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
-                                            title={note.pinned ? "Unpin" : "Pin"}
-                                        >
-                                            {note.pinned ? (
-                                                <PinOff className="w-3.5 h-3.5" />
-                                            ) : (
-                                                <Pin className="w-3.5 h-3.5" />
-                                            )}
-                                        </button>
-                                        <button
-                                            onClick={() => setEditing(true)}
-                                            className="p-1.5 text-muted-foreground hover:bg-muted rounded-lg"
-                                            title="Edit"
-                                        >
-                                            <Pencil className="w-3.5 h-3.5" />
-                                        </button>
-                                        <button
-                                            onClick={() => onDelete(note.id)}
-                                            className="p-1.5 text-muted-foreground hover:bg-red-50 hover:text-red-500 rounded-lg"
-                                            title="Hapus"
-                                        >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                    </>
-                                )
-                            )}
-                        </div>
                     </div>
 
                     {editing && <CategoryPills value={category} onChange={setCategory} categories={categories} />}
@@ -233,7 +176,7 @@ function TableNoteCard({ note, currentUser, users, onUpdate, onDelete, lang, cat
                         )}
                     </div>
 
-                    {/* Footer */}
+                    {/* Meta footer */}
                     <div className="flex items-center justify-between pt-2 border-t mt-auto">
                         <div className="flex items-center gap-1.5">
                             {author && <Avatar user={author} />}
@@ -242,7 +185,7 @@ function TableNoteCard({ note, currentUser, users, onUpdate, onDelete, lang, cat
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                            <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
                                 <TableIcon className="w-2.5 h-2.5" /> TABEL
                             </span>
                             {!editing && (
@@ -253,6 +196,62 @@ function TableNoteCard({ note, currentUser, users, onUpdate, onDelete, lang, cat
                         </div>
                     </div>
                 </div>
+
+                {/* Action footer — full-width, big tap targets */}
+                {editing ? (
+                    <div className="flex border-t border-border/60 divide-x divide-border/60">
+                        <button
+                            type="button"
+                            onClick={save}
+                            disabled={saving || !title.trim()}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors active:scale-95 disabled:opacity-40"
+                        >
+                            <Check className="w-3.5 h-3.5" />
+                            {lang === "id" ? "Simpan" : "Save"}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={cancel}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold text-muted-foreground hover:bg-muted/60 transition-colors active:scale-95"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                            {lang === "id" ? "Batal" : "Cancel"}
+                        </button>
+                    </div>
+                ) : (
+                    canEdit && (
+                        <div className="flex border-t border-border/60 divide-x divide-border/60">
+                            <button
+                                onClick={() => setExpanded(true)}
+                                className="flex-1 flex items-center justify-center gap-1 py-2.5 text-xs font-medium text-muted-foreground hover:bg-muted/60 transition-colors active:scale-95"
+                            >
+                                <Maximize2 className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">{lang === "id" ? "Buka" : "Open"}</span>
+                            </button>
+                            <button
+                                onClick={togglePin}
+                                className={`flex-1 flex items-center justify-center gap-1 py-2.5 text-xs font-medium transition-colors active:scale-95 ${note.pinned ? "text-primary hover:bg-primary/10" : "text-muted-foreground hover:bg-muted/60"}`}
+                            >
+                                {note.pinned ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
+                                <span className="hidden sm:inline">{note.pinned ? "Unpin" : "Pin"}</span>
+                            </button>
+                            <button
+                                onClick={() => setEditing(true)}
+                                className="flex-1 flex items-center justify-center gap-1 py-2.5 text-xs font-medium text-muted-foreground hover:bg-muted/60 transition-colors active:scale-95"
+                            >
+                                <Pencil className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Edit</span>
+                            </button>
+                            <button
+                                onClick={() => onDelete(note.id)}
+                                className="flex-1 flex items-center justify-center gap-1 py-2.5 text-xs font-medium text-muted-foreground hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-500 transition-colors active:scale-95"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">{lang === "id" ? "Hapus" : "Delete"}</span>
+                            </button>
+                        </div>
+                    )
+                )}
             </div>
 
             {/* Focus Mode Table */}
@@ -280,12 +279,12 @@ function TableNoteCard({ note, currentUser, users, onUpdate, onDelete, lang, cat
                         className="bg-background rounded-3xl border shadow-2xl w-full max-w-6xl h-full max-h-[90vh] flex flex-col overflow-hidden animate-fade-in"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="h-1.5 bg-emerald-500" />
+                        <div className="h-1.5 bg-emerald-500 dark:bg-emerald-600" />
 
                         {/* Modal Header */}
                         <div className="flex items-center justify-between px-6 py-4 border-b bg-muted/5">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className="p-2 bg-emerald-100 rounded-xl">
+                                <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
                                     <TableIcon className="w-5 h-5 text-emerald-600" />
                                 </div>
                                 {editing ? (
@@ -303,7 +302,7 @@ function TableNoteCard({ note, currentUser, users, onUpdate, onDelete, lang, cat
                                 {editing ? (
                                     <button
                                         onClick={save}
-                                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200"
+                                        className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200 dark:shadow-none"
                                     >
                                         <Check className="w-4 h-4" /> {lang === "id" ? "Simpan" : "Save"}
                                     </button>

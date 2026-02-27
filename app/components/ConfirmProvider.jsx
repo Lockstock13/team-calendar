@@ -47,19 +47,38 @@ export function ConfirmProvider({ children }) {
                                 {config.message}
                             </p>
 
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => handleClose(false)}
-                                    className="flex-1 px-4 py-2.5 bg-muted hover:bg-muted/80 text-muted-foreground rounded-2xl text-sm font-bold transition-all active:scale-95"
-                                >
-                                    {config.cancelText || "Cancel"}
-                                </button>
-                                <button
-                                    onClick={() => handleClose(true)}
-                                    className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-sm font-bold transition-all shadow-lg shadow-red-200 active:scale-95"
-                                >
-                                    {config.confirmText || "Delete"}
-                                </button>
+                            <div className="flex gap-3 flex-wrap">
+                                {config.buttons ? (
+                                    config.buttons.map((btn, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleClose(btn.value)}
+                                            className={`flex-1 px-4 py-2.5 rounded-2xl text-[13px] font-bold transition-all active:scale-95 shadow-sm min-w-[120px] ${btn.variant === "danger"
+                                                ? "bg-red-600 hover:bg-red-700 text-white shadow-red-200"
+                                                : btn.variant === "primary"
+                                                    ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                                                    : "bg-muted hover:bg-muted/80 text-muted-foreground"
+                                                }`}
+                                        >
+                                            {btn.label}
+                                        </button>
+                                    ))
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={() => handleClose(false)}
+                                            className="flex-1 px-4 py-2.5 bg-muted hover:bg-muted/80 text-muted-foreground rounded-2xl text-[13px] font-bold transition-all active:scale-95"
+                                        >
+                                            {config.cancelText || "Cancel"}
+                                        </button>
+                                        <button
+                                            onClick={() => handleClose(true)}
+                                            className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-2xl text-[13px] font-bold transition-all shadow-lg shadow-red-200 active:scale-95"
+                                        >
+                                            {config.confirmText || "Delete"}
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
 

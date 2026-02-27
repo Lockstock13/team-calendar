@@ -1,16 +1,5 @@
 import { CAT_STYLE, MD_ACTIONS } from "./NoteConstants";
-
-export function Avatar({ user }) {
-    return (
-        <div
-            className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-            style={{ backgroundColor: user?.color || "#64748b" }}
-            title={user?.full_name || user?.email}
-        >
-            {(user?.full_name || user?.email || "?").charAt(0).toUpperCase()}
-        </div>
-    );
-}
+import Avatar from "@/app/components/Avatar";
 
 export function CategoryPills({ value, onChange, categories }) {
     return (

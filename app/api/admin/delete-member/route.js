@@ -31,7 +31,6 @@ export async function POST(request) {
     const token = accessToken || bearerToken;
 
     let requesterId = null;
-
     if (token) {
       // Verify the JWT token with Supabase to get the real user
       const { data: { user }, error: authError } = await supabase.auth.getUser(token);
@@ -40,16 +39,9 @@ export async function POST(request) {
       }
     }
 
-    // Fallback: accept requesterId from body only if token auth failed
-    // (for backwards compatibility, but still verify role in DB)
-    if (!requesterId) {
-      const body = await request.clone().json();
-      requesterId = body.requesterId;
-    }
-
     if (!requesterId) {
       return NextResponse.json(
-        { error: "Tidak terautentikasi. Silakan login ulang." },
+        { error: "Akses ditolak. Token tidak valid atau sesi berakhir." },
         { status: 401 },
       );
     }

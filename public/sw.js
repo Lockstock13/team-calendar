@@ -5,6 +5,11 @@ const CACHE_NAME = "stillphoto-v1";
 
 // ── Install: cache shell assets ───────────────────────────────────────────────
 self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(["/offline.html"]);
+    })
+  );
   // Skip waiting so the new SW activates immediately
   self.skipWaiting();
 });
@@ -99,12 +104,17 @@ self.addEventListener("fetch", (event) => {
     return; // let the browser handle it normally
   }
 
-  // For same-origin navigation requests: network first, fallback to cache
+  // For same-origin navigation requests: network first, fallback to cache or offline page
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request).catch(() =>
-        caches.match(event.request).then((r) => r || fetch(event.request)),
-      ),
+        caches.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          return caches.match("/offline.html");
+        })
+      )
     );
     return;
   }

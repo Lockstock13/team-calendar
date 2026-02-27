@@ -109,7 +109,7 @@ function ToastItem({ toast, onRemove, index, total }) {
 
     return (
         <div
-            className={`group pointer-events-auto relative w-full flex flex-col bg-background 80 backdrop-blur-xl border ${config.border} shadow-2xl rounded-2xl overflow-hidden transition-all duration-500 ease-out transform ${isShowing ? "translate-x-0 opacity-100 scale-100" : "translate-x-12 opacity-0 scale-90"
+            className={`group pointer-events-auto relative w-full flex flex-col bg-background/80 backdrop-blur-xl border ${config.border} shadow-2xl rounded-2xl overflow-hidden transition-all duration-500 ease-out transform ${isShowing ? "translate-x-0 opacity-100 scale-100" : "translate-x-12 opacity-0 scale-90"
                 }`}
             style={{
                 marginBottom: index === total - 1 ? 0 : -35,

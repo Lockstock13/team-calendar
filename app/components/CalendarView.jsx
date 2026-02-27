@@ -165,7 +165,7 @@ function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
           <div className="mt-6 pt-4 border-t border-border flex gap-2 justify-end">
             <button
               onClick={() => {
-                onDelete(task.id);
+                onDelete(task);
                 onClose();
               }}
               className="px-4 py-2 bg-background border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 text-sm font-semibold transition-colors active:scale-95"
@@ -253,10 +253,10 @@ function HolidayModal({ holiday, onClose, lang }) {
   );
 }
 
-// ─── Fetch Indonesian public holidays from Nager.Date (with localStorage cache) ─
+// ─── Fetch Indonesian public holidays from libur.deno.dev (with localStorage cache) ─
 
 async function fetchHolidays(year) {
-  const CACHE_KEY = `holidays_${year}`;
+  const CACHE_KEY = `holidays_libur_${year}`;
   const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
   try {
@@ -271,11 +271,17 @@ async function fetchHolidays(year) {
   } catch { /* ignore parse errors */ }
 
   try {
-    const res = await fetch(
-      `https://date.nager.at/api/v3/PublicHolidays/${year}/ID`,
-    );
+    const res = await fetch(`https://libur.deno.dev/api?year=${year}`);
     if (!res.ok) return [];
-    const data = await res.json();
+    const raw = await res.json();
+
+    // Normalize: API returns { date, name }
+    // Map to { date, name, localName } for compatibility with template below
+    const data = (Array.isArray(raw) ? raw : []).map((h) => ({
+      date: h.date,
+      name: h.name,
+      localName: h.name,
+    }));
 
     // Store in localStorage
     try {
@@ -298,8 +304,9 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
   const [selectedHoliday, setSelectedHoliday] = useState(null);
   const [filterUserId, setFilterUserId] = useState("");
   const [holidays, setHolidays] = useState([]);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // ── Fetch holidays for current year (+ next year) ──────────────────────────
+  // ── Fetch holidays for current year (+ next year) & check mobile ─────────
   useEffect(() => {
     const year = new Date().getFullYear();
     const months = new Date().getMonth(); // 0-based
@@ -308,6 +315,11 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
     Promise.all(years.map(fetchHolidays)).then((results) => {
       setHolidays(results.flat());
     });
+
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // ── Filtered tasks ──────────────────────────────────────────────────────────
@@ -340,34 +352,42 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
         String(next.getDate()).padStart(2, "0"),
       ].join("-");
 
-      const prefix =
-        task.is_comday || task.task_type === "libur_pengganti" ? "🏖️ " : "";
+      const isComday = task.is_comday || task.task_type === "libur_pengganti";
+      const isWeekend = task.is_weekend_task;
 
-      if (assigneeIds.length === 0) {
-        // No assignees — show once with neutral colour
+      // Base colors for the single compact mobile block event (we also use this as fallback)
+      // comday = pink pastel, weekend = purple, regular = neutral
+      let defaultBgColor = isComday ? "#fce7f3" : isWeekend ? "#a855f7" : "#f1f5f9";
+      let defaultBorderColor = isComday ? "#f9a8d4" : isWeekend ? "#a855f7" : "#cbd5e1";
+      let defaultTextColor = isComday ? "#be185d" : isWeekend ? "#ffffff" : "#334155";
+      const defaultClassNames = (isComday || isWeekend) ? [] : ["!bg-zinc-100", "dark:!bg-zinc-800", "!border-zinc-200", "dark:!border-zinc-700", "!text-zinc-800", "dark:!text-zinc-200"];
+
+      // If there are no assignees or if we are rendering for MOBILE, emit only one block
+      if (assigneeIds.length === 0 || isMobile) {
         return [
           {
             id: task.id,
-            title: prefix + task.title,
+            title: task.title,
             start: task.start_date,
             end: endStr,
             allDay: true,
-            backgroundColor: "#64748b",
-            borderColor: "#64748b",
-            textColor: "#fff",
-            extendedProps: { type: "task", task },
+            backgroundColor: defaultBgColor,
+            borderColor: defaultBorderColor,
+            textColor: defaultTextColor,
+            classNames: defaultClassNames,
+            extendedProps: { type: "task", task, assigneeIds, isComday, isWeekend },
           },
         ];
       }
 
-      // One event per assignee
+      // If DESKTOP and has assignees: map each assignee to its own event bar
       return assigneeIds.map((uid) => {
         const user = users.find((u) => u.id === uid);
-        const color =
-          task.is_comday || task.task_type === "libur_pengganti"
-            ? "#10b981"
-            : user?.color || "#64748b";
+        // comday = pink pastel, weekend = consistent purple, else = user color
+        const color = isComday ? "#f472b6" : isWeekend ? "#a855f7" : user?.color || "#64748b";
+        const textColor = isComday ? "#7c3aed" : "#fff";
         const name = user?.full_name || user?.email?.split("@")[0] || "?";
+        const prefix = isComday ? "🏖️ " : isWeekend ? "🌙 " : "";
 
         return {
           id: `${task.id}-${uid}`,
@@ -377,8 +397,8 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
           allDay: true,
           backgroundColor: color,
           borderColor: color,
-          textColor: "#fff",
-          extendedProps: { type: "task", task },
+          textColor: textColor,
+          extendedProps: { type: "task", task, assigneeIds: [], isComday, isWeekend },
         };
       });
     });
@@ -398,7 +418,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
     }));
 
     return [...holidayEvents, ...taskEvents];
-  }, [filtered, users, holidays]);
+  }, [filtered, users, holidays, isMobile]);
 
   // ── Day cell background tint for holidays ───────────────────────────────────
   const holidayDates = useMemo(
@@ -435,6 +455,8 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
             }
           }}
           height="auto"
+          dayMaxEvents={isMobile ? 3 : 4}
+          moreLinkClick="popover"
           dayCellClassNames={(arg) => {
             const day = arg.date.getDay();
             const dateStr = [
@@ -449,12 +471,38 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
           }}
           eventContent={(arg) => {
             const isHoliday = arg.event.extendedProps.type === "holiday";
+            if (isHoliday) {
+              return (
+                <div className="px-1 sm:px-1.5 py-0.5 text-[10px] sm:text-[11px] font-medium truncate italic leading-relaxed">
+                  {arg.event.title}
+                </div>
+              );
+            }
+
+            const { task, assigneeIds, isComday, isWeekend } = arg.event.extendedProps;
+
             return (
               <div
-                className={`px-1.5 py-0.5 text-xs font-medium truncate leading-relaxed ${isHoliday ? "italic" : ""
-                  }`}
+                className={`flex items-center gap-1 sm:gap-1.5 px-1 sm:px-1.5 py-0.5 text-[10.5px] sm:text-xs font-semibold sm:font-medium truncate leading-relaxed ${!isMobile ? "text-white" : ""}`}
               >
-                {arg.event.title}
+                {/* Mobile logic: Colored dots for assignees */}
+                {isMobile && assigneeIds?.length > 0 && (
+                  <div className="flex gap-0.5 flex-shrink-0">
+                    {assigneeIds.slice(0, 3).map(uid => {
+                      const u = users.find(x => x.id === uid);
+                      const color = u?.color || "#94a3b8";
+                      return (
+                        <div
+                          key={uid}
+                          className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shadow-[0_0_2px_rgba(0,0,0,0.2)]"
+                          style={{ backgroundColor: color }}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+                {/* Desktop logic uses original title text color since we inject color into background directly */}
+                <span className="truncate">{arg.event.title}</span>
               </div>
             );
           }}
@@ -518,15 +566,9 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
               </span>
             </div>
             <div className="flex items-center gap-1 sm:gap-1.5 flex-1 sm:flex-none justify-center sm:justify-start">
-              <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+              <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-pink-400 flex-shrink-0" />
               <span className="text-[8.5px] sm:text-[11px] font-semibold sm:font-medium text-muted-foreground/80 uppercase tracking-widest sm:tracking-widest truncate">
                 {lang === "id" ? "Pengganti" : "Replacement"}
-              </span>
-            </div>
-            <div className="flex items-center gap-1 sm:gap-1.5 flex-1 sm:flex-none justify-center sm:justify-start">
-              <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-zinc-400 flex-shrink-0" />
-              <span className="text-[8.5px] sm:text-[11px] font-semibold sm:font-medium text-muted-foreground/80 uppercase tracking-widest sm:tracking-widest truncate">
-                {lang === "id" ? "1 blok=1 tim" : "1 dot=1 team"}
               </span>
             </div>
           </div>

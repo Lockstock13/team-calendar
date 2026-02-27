@@ -7,10 +7,10 @@ export const getCategories = (lang) => [
 ];
 
 export const CAT_STYLE = {
-    umum: "bg-blue-50 text-blue-700 border-blue-200",
-    keuangan: "bg-yellow-50 text-yellow-700 border-yellow-200",
-    password: "bg-red-50 text-red-600 border-red-200",
-    lainnya: "bg-slate-50 text-slate-600 border-slate-200",
+    umum: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800",
+    keuangan: "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800",
+    password: "bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800",
+    lainnya: "bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800/50 dark:text-slate-300 dark:border-slate-700",
 };
 
 export const parseTableContent = (raw) => {

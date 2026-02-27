@@ -156,137 +156,150 @@ export default function NotesView({ session, userProfile }) {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-background/90 backdrop-blur-md p-3 sm:p-4 rounded-2xl border sticky top-14 sm:top-[72px] z-10 shadow-sm">
-        {/* Categories scrollable on mobile */}
-        <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap no-scrollbar -mx-1 px-1 sm:mx-0 sm:px-0">
-          {categories.map((c) => {
-            const count =
-              c.id === "all"
-                ? notes.length
-                : notes.filter((n) => n.category === c.id).length;
-            return (
-              <button
-                key={c.id}
-                onClick={() => setActiveTab(c.id)}
-                className={`flex-shrink-0 flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[13px] sm:text-sm font-semibold transition-all ${activeTab === c.id
-                  ? "bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 shadow-sm"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80 border border-transparent"
-                  }`}
-              >
-                <span>{c.emoji || "📁"}</span> {c.label}
-                <span className="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full ml-0.5">
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-2xl text-sm font-bold hover:opacity-90 transition-all shadow-xl shadow-primary/20 active:scale-95"
-        >
-          <Plus className="w-5 h-5 font-bold" />
-          {lang === "id" ? "Buat Catatan" : "Create Note"}
-        </button>
-      </div>
-
-      {/* New note form */}
-      {showForm && (
-        <NewNoteForm
-          currentUser={userProfile}
-          onSave={handleCreate}
-          onCancel={() => setShowForm(false)}
-          lang={lang}
-          categories={categories}
-        />
-      )}
-
-      {/* Empty state */}
-      {filtered.length === 0 && !showForm && (
-        <div className="text-center py-24 text-muted-foreground bg-background border border-dashed rounded-3xl animate-fade-in shadow-inner">
-          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
-            🗒️
+    <>
+      <div className="space-y-6 animate-fade-in">
+        {/* Toolbar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-background/90 backdrop-blur-md p-3 sm:p-4 rounded-2xl border sticky top-14 sm:top-[72px] z-10 shadow-sm">
+          {/* Categories scrollable on mobile */}
+          <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 sm:flex-wrap no-scrollbar -mx-1 px-1 sm:mx-0 sm:px-0">
+            {categories.map((c) => {
+              const count =
+                c.id === "all"
+                  ? notes.length
+                  : notes.filter((n) => n.category === c.id).length;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setActiveTab(c.id)}
+                  className={`flex-shrink-0 flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-[13px] sm:text-sm font-semibold transition-all ${activeTab === c.id
+                    ? "bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 shadow-sm"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80 border border-transparent"
+                    }`}
+                >
+                  <span>{c.emoji || "📁"}</span> {c.label}
+                  <span className="text-[10px] bg-black/10 px-1.5 py-0.5 rounded-full ml-0.5">
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          <p className="text-base font-bold text-foreground mb-1">
-            {lang === "id"
-              ? "Belum ada catatan di kategori ini"
-              : "No notes in this category"}
-          </p>
-          <p className="text-sm opacity-70 mb-6">
-            {lang === "id"
-              ? "Mulai dengan membuat catatan pertama kamu!"
-              : "Start by creating your first note!"}
-          </p>
+          {/* Desktop: Create Note button inside toolbar */}
           <button
             onClick={() => setShowForm(true)}
-            className="text-sm bg-primary/10 text-primary px-6 py-2 rounded-xl font-bold hover:bg-primary/20 transition-colors"
+            className="hidden sm:flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-2xl text-sm font-bold hover:opacity-90 transition-all shadow-xl shadow-primary/20 active:scale-95"
           >
-            {lang === "id" ? "Tambah Catatan Baru" : "Add New Note"}
+            <Plus className="w-5 h-5 font-bold" />
+            {lang === "id" ? "Buat Catatan" : "Create Note"}
           </button>
         </div>
-      )}
 
-      {/* Pinned Section */}
-      {pinned.length > 0 && (
-        <div className="space-y-4">
-          <p className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2 pl-2">
-            <Pin className="w-3.5 h-3.5 text-blue-500" />{" "}
-            {lang === "id" ? "Catatan Disematkan" : "Pinned Notes"}
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {pinned.map((note) => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                currentUser={userProfile}
-                users={users}
-                onUpdate={handleUpdate}
-                onDelete={handleDelete}
-                lang={lang}
-                categories={categories}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+        {/* New note form */}
+        {showForm && (
+          <NewNoteForm
+            currentUser={userProfile}
+            onSave={handleCreate}
+            onCancel={() => setShowForm(false)}
+            lang={lang}
+            categories={categories}
+          />
+        )}
 
-      {/* Grid Others */}
-      {unpinned.length > 0 && (
-        <div className="space-y-4">
-          {pinned.length > 0 && (
-            <p className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-2 sticky top-[140px] bg-muted/5 backdrop-blur-sm py-1 z-[5]">
-              {lang === "id" ? "Catatan Lainnya" : "Other Notes"}
-            </p>
-          )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {unpinned.map((note) => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                currentUser={userProfile}
-                users={users}
-                onUpdate={handleUpdate}
-                onDelete={handleDelete}
-                lang={lang}
-                categories={categories}
-              />
-            ))}
-          </div>
-
-          {hasMore && (
-            <div className="flex justify-center pt-8 pb-12">
-              <button
-                onClick={() => setVisibleCount((prev) => prev + 12)}
-                className="px-8 py-3 bg-background border-2 border-primary/20 text-primary rounded-2xl text-sm font-bold hover:bg-primary hover:text-white hover:border-primary transition-all shadow-md active:scale-95"
-              >
-                {lang === "id" ? "Muat Lebih Banyak" : "Load More"}
-              </button>
+        {/* Empty state */}
+        {filtered.length === 0 && !showForm && (
+          <div className="text-center py-24 text-muted-foreground bg-background border border-dashed rounded-3xl animate-fade-in shadow-inner">
+            <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
+              🗒️
             </div>
-          )}
-        </div>
-      )}
-    </div>
+            <p className="text-base font-bold text-foreground mb-1">
+              {lang === "id"
+                ? "Belum ada catatan di kategori ini"
+                : "No notes in this category"}
+            </p>
+            <p className="text-sm opacity-70 mb-6">
+              {lang === "id"
+                ? "Mulai dengan membuat catatan pertama kamu!"
+                : "Start by creating your first note!"}
+            </p>
+            <button
+              onClick={() => setShowForm(true)}
+              className="text-sm bg-primary/10 text-primary px-6 py-2 rounded-xl font-bold hover:bg-primary/20 transition-colors"
+            >
+              {lang === "id" ? "Tambah Catatan Baru" : "Add New Note"}
+            </button>
+          </div>
+        )}
+
+        {/* Pinned Section */}
+        {pinned.length > 0 && (
+          <div className="space-y-4">
+            <p className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2 pl-2">
+              <Pin className="w-3.5 h-3.5 text-blue-500" />{" "}
+              {lang === "id" ? "Catatan Disematkan" : "Pinned Notes"}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pinned.map((note) => (
+                <NoteCard
+                  key={note.id}
+                  note={note}
+                  currentUser={userProfile}
+                  users={users}
+                  onUpdate={handleUpdate}
+                  onDelete={handleDelete}
+                  lang={lang}
+                  categories={categories}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Grid Others */}
+        {unpinned.length > 0 && (
+          <div className="space-y-4">
+            {pinned.length > 0 && (
+              <p className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-2 sticky top-[140px] bg-muted/5 backdrop-blur-sm py-1 z-[5]">
+                {lang === "id" ? "Catatan Lainnya" : "Other Notes"}
+              </p>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {unpinned.map((note) => (
+                <NoteCard
+                  key={note.id}
+                  note={note}
+                  currentUser={userProfile}
+                  users={users}
+                  onUpdate={handleUpdate}
+                  onDelete={handleDelete}
+                  lang={lang}
+                  categories={categories}
+                />
+              ))}
+            </div>
+
+            {hasMore && (
+              <div className="flex justify-center pt-8 pb-12">
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + 12)}
+                  className="px-8 py-3 bg-background border-2 border-primary/20 text-primary rounded-2xl text-sm font-bold hover:bg-primary hover:text-white hover:border-primary transition-all shadow-md active:scale-95"
+                >
+                  {lang === "id" ? "Muat Lebih Banyak" : "Load More"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Mobile FAB — outside animated container so fixed positioning works correctly */}
+      <button
+        onClick={() => setShowForm(true)}
+        className="sm:hidden fixed bottom-6 right-5 z-50 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-2xl shadow-primary/40 flex items-center justify-center active:scale-90 transition-transform animate-pulse"
+        style={{ animationDuration: "2s" }}
+        aria-label={lang === "id" ? "Buat Catatan" : "Create Note"}
+      >
+        <Plus className="w-6 h-6" />
+      </button>
+    </>
   );
 }

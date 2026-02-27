@@ -34,6 +34,7 @@
         font-size: 15px;
         line-height: 1.6;
         letter-spacing: -0.01em;
+        overscroll-behavior-y: none;
     }
 }
 
@@ -385,4 +386,35 @@ select {
     button {
         -webkit-tap-highlight-color: transparent;
     }
+}
+
+/* ─── Print Utils ────────────────────────────────────────────────────────── */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    body {
+        background: white !important;
+        padding: 0 !important;
+    }
+
+    .calendar-wrap {
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    nav,
+    header,
+    .mobile-nav-marker {
+        display: none !important;
+    }
+}
+
+.print-only {
+    display: none;
 }

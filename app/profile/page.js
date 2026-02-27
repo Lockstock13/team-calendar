@@ -56,11 +56,11 @@ function Toggle({ checked, onChange, disabled = false }) {
       aria-checked={checked}
       onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed ${checked ? "bg-emerald-500" : "bg-muted-foreground/30"
+      className={`relative inline-flex h-6 w-10 items-center rounded-full transition-all duration-300 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed ${checked ? "bg-zinc-900 dark:bg-zinc-100" : "bg-zinc-200 dark:bg-zinc-800"
         }`}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${checked ? "translate-x-6" : "translate-x-1"
+        className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-zinc-900 shadow-md transition-all duration-300 ${checked ? "translate-x-5" : "translate-x-1"
           }`}
       />
     </button>
@@ -351,37 +351,55 @@ export default function ProfilePage() {
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-5">
         {/* ── Avatar preview ── */}
-        <div className="bg-background border rounded-2xl p-6 flex flex-col items-center gap-3">
+        <div className="bg-background border rounded-[2rem] p-10 flex flex-col items-center gap-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)] relative transition-all duration-300">
+          {/* Minimal top accent line */}
           <div
-            className="w-20 h-20 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-md transition-all"
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 rounded-b-full transition-all duration-500"
             style={{ backgroundColor: form.color || "#64748b" }}
-          >
-            {initial}
+          />
+
+          <div className="relative">
+            {/* Clean border ring */}
+            <div
+              className="absolute -inset-1.5 rounded-full border border-current opacity-10 transition-all duration-500"
+              style={{ color: form.color || "#64748b" }}
+            />
+            <div
+              className="relative w-24 h-24 rounded-full flex items-center justify-center text-white text-4xl font-semibold shadow-sm transition-all duration-500"
+              style={{ backgroundColor: form.color || "#64748b" }}
+            >
+              {initial}
+            </div>
           </div>
+
           <div className="text-center">
-            <p className="font-semibold text-base">
+            <h3 className="text-xl font-bold tracking-tight text-foreground">
               {form.full_name || (lang === "id" ? "(Belum ada nama)" : "(No Name)")}
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            </h3>
+            <p className="text-sm text-muted-foreground font-medium mt-1">
               {session?.user?.email}
             </p>
+
             {profile?.role === "admin" && (
-              <span className="inline-block mt-1.5 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
-                👑 Admin
-              </span>
+              <div className="mt-3 flex justify-center">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-bold uppercase tracking-widest border border-zinc-200 dark:border-zinc-700">
+                  <span className="text-[12px]">👑</span>
+                  Admin
+                </span>
+              </div>
             )}
           </div>
         </div>
 
         {/* ── Edit Info ── */}
-        <div className="bg-background border rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b">
-            <h2 className="font-semibold text-sm uppercase">{lang === "id" ? "INFORMASI AKUN" : "ACCOUNT INFORMATION"}</h2>
+        <div className="bg-background border rounded-[2rem] overflow-hidden shadow-sm">
+          <div className="px-6 py-5 border-b bg-muted/10">
+            <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground/80">{lang === "id" ? "INFORMASI AKUN" : "ACCOUNT INFORMATION"}</h2>
           </div>
-          <div className="p-5 space-y-4">
+          <div className="p-6 space-y-6">
             {/* Nama */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground tracking-wide">
+            <div className="space-y-2">
+              <label className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-wider ml-1">
                 {lang === "id" ? "Nama Lengkap" : "Full Name"}
               </label>
               <input
@@ -391,43 +409,61 @@ export default function ProfilePage() {
                   setForm({ ...form, full_name: e.target.value })
                 }
                 placeholder={lang === "id" ? "Nama kamu" : "Your name"}
-                className="w-full px-3 py-2.5 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/30 transition-all"
               />
             </div>
 
             {/* Warna */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-muted-foreground tracking-wide">
+            <div className="space-y-3">
+              <label className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-wider ml-1">
                 {lang === "id" ? "Warna Profil" : "Profile Color"}
               </label>
-              <div className="grid grid-cols-10 gap-2">
+              <div className="flex flex-wrap gap-2.5">
                 {COLORS.map((c) => (
                   <button
                     key={c}
                     type="button"
                     onClick={() => setForm({ ...form, color: c })}
-                    className="w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 focus:outline-none"
+                    className="w-8 h-8 rounded-full flex items-center justify-center transition-all hover:scale-110 active:scale-90 focus:outline-none relative"
                     style={{ backgroundColor: c }}
                     title={c}
                   >
                     {form.color === c && (
-                      <Check className="w-4 h-4 text-white drop-shadow" />
+                      <div className="absolute inset-0 rounded-full border-2 border-background shadow-[0_0_0_2px_rgba(0,0,0,0.1)] flex items-center justify-center">
+                        <Check className="w-4 h-4 text-white drop-shadow-sm" />
+                      </div>
                     )}
                   </button>
                 ))}
+
+                {/* Custom Color Circle */}
+                <div className="relative w-8 h-8 group">
+                  <input
+                    type="color"
+                    value={form.color || "#64748b"}
+                    onChange={(e) => setForm({ ...form, color: e.target.value })}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div
+                    className="w-full h-full rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted/10 group-hover:bg-muted/20 transition-all overflow-hidden"
+                    style={{ backgroundColor: form.color && !COLORS.includes(form.color) ? form.color : 'transparent' }}
+                  >
+                    {!COLORS.includes(form.color) && (
+                      <Check className="w-4 h-4 text-white drop-shadow-sm z-0" />
+                    )}
+                    {COLORS.includes(form.color) && (
+                      <span className="text-[10px] text-muted-foreground font-bold">+</span>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="color"
-                  value={form.color || "#64748b"}
-                  onChange={(e) => setForm({ ...form, color: e.target.value })}
-                  className="w-8 h-8 rounded-lg border cursor-pointer p-0.5 bg-background"
-                />
-                <span className="text-xs text-muted-foreground">
-                  {lang === "id" ? "Atau pilih warna custom" : "Or choose custom color"}
+
+              <div className="flex items-center gap-2 pt-1 opacity-60">
+                <span className="text-[10px] font-bold uppercase tracking-tight text-muted-foreground">
+                  {lang === "id" ? "PILIHAN:" : "SELECTED:"}
                 </span>
-                <code className="text-xs bg-muted px-2 py-0.5 rounded font-mono">
-                  {form.color}
+                <code className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono font-bold tracking-tight">
+                  {form.color.toUpperCase()}
                 </code>
               </div>
             </div>
@@ -435,22 +471,22 @@ export default function ProfilePage() {
             <button
               onClick={saveProfile}
               disabled={saving}
-              className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all ${saved
-                ? "bg-emerald-500 text-white"
-                : "bg-primary text-primary-foreground hover:opacity-90"
+              className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold tracking-tight transition-all active:scale-[0.98] ${saved
+                ? "bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.2)]"
+                : "bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 hover:opacity-90 shadow-md"
                 } disabled:opacity-50`}
             >
               {saved ? (
                 <>
-                  <Check className="w-4 h-4" />
-                  {lang === "id" ? "Tersimpan!" : "Saved!"}
+                  <Check className="w-5 h-5" />
+                  {lang === "id" ? "BERHASIL DISIMPAN" : "SAVED SUCCESSFULLY"}
                 </>
               ) : saving ? (
-                lang === "id" ? "Menyimpan..." : "Saving..."
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <Save className="w-4 h-4" />
-                  {lang === "id" ? "Simpan Perubahan" : "Save Changes"}
+                  <Save className="w-5 h-5" />
+                  {lang === "id" ? "SIMPAN PERUBAHAN" : "SAVE CHANGES"}
                 </>
               )}
             </button>
@@ -458,27 +494,27 @@ export default function ProfilePage() {
         </div>
 
         {/* ── Antarmuka / Pengaturan ── */}
-        <div className="bg-background border rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b flex items-center gap-2">
-            <Globe className="w-4 h-4 text-muted-foreground" />
-            <h2 className="font-semibold text-sm uppercase">
+        <div className="bg-background border rounded-[2rem] overflow-hidden shadow-sm">
+          <div className="px-6 py-5 border-b bg-muted/10 flex items-center gap-2">
+            <Globe className="w-4 h-4 text-muted-foreground/60" />
+            <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground/80">
               {lang === "id" ? "BAHASA ANTARMUKA" : "INTERFACE LANGUAGE"}
             </h2>
           </div>
-          <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium">
+          <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <p className="text-sm font-bold tracking-tight">
                 {lang === "id" ? "Pilihan Bahasa" : "Language Preference"}
               </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 {lang === "id" ? "Ubah bahasa teks aplikasi utama" : "Change the main application text language"}
               </p>
             </div>
-            <div className="flex bg-muted p-1 rounded-lg border">
+            <div className="flex bg-zinc-100 dark:bg-zinc-800/50 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700/50">
               <button
                 onClick={() => setLanguage("en")}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${lang === "en"
-                  ? "bg-background text-foreground shadow-sm"
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all active:scale-95 ${lang === "en"
+                  ? "bg-background text-foreground shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700"
                   : "text-muted-foreground hover:text-foreground"
                   }`}
               >
@@ -486,8 +522,8 @@ export default function ProfilePage() {
               </button>
               <button
                 onClick={() => setLanguage("id")}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${lang === "id"
-                  ? "bg-background text-foreground shadow-sm"
+                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all active:scale-95 ${lang === "id"
+                  ? "bg-background text-foreground shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700"
                   : "text-muted-foreground hover:text-foreground"
                   }`}
               >
@@ -498,66 +534,44 @@ export default function ProfilePage() {
         </div>
 
         {/* ── Notifikasi ── */}
-        <div className="bg-background border rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b">
-            <h2 className="font-semibold text-sm uppercase">{lang === "id" ? "NOTIFIKASI" : "NOTIFICATIONS"}</h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {lang === "id" ? "Pilih cara kamu ingin diberitahu saat ada jadwal baru atau perubahan." : "Choose how you want to be notified when there are new tasks or updates."}
+        <div className="bg-background border rounded-[2rem] overflow-hidden shadow-sm">
+          <div className="px-6 py-5 border-b bg-muted/10">
+            <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground/80">{lang === "id" ? "NOTIFIKASI" : "NOTIFICATIONS"}</h2>
+            <p className="text-[11px] font-medium text-muted-foreground/60 mt-1 uppercase tracking-tight">
+              {lang === "id" ? "Media update & pengingat" : "Media updates & reminders"}
             </p>
           </div>
 
-          <div className="px-5">
+          <div className="px-6 divide-y divide-zinc-100 dark:divide-zinc-800">
             {/* Push */}
-            <div className="py-3.5 border-b">
-              <div className="flex items-start gap-3">
+            <div className="py-5">
+              <div className="flex items-start gap-4">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${notif.notif_push
-                    ? "bg-blue-100 text-blue-600"
-                    : "bg-muted text-muted-foreground"
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${notif.notif_push
+                    ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
+                    : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600"
                     }`}
                 >
                   {pushLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <Smartphone className="w-4 h-4" />
+                    <Smartphone className="w-5 h-5" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-3">
-                    <div>
+                    <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">Push Notification</p>
+                        <p className="text-sm font-bold tracking-tight">Push Notification</p>
                         {!pushSupport.supported && (
-                          <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
-                            {lang === "id" ? "Tidak didukung" : "Not supported"}
+                          <span className="text-[9px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded-md">
+                            {lang === "id" ? "Offline" : "N/A"}
                           </span>
                         )}
-                        {pushSupport.supported &&
-                          typeof Notification !== "undefined" &&
-                          Notification.permission === "denied" && (
-                            <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
-                              {lang === "id" ? "Diblokir" : "Blocked"}
-                            </span>
-                          )}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                         {pushDescription}
                       </p>
-                      {pushMsg && (
-                        <p
-                          className={`text-xs mt-1.5 font-medium ${pushMsg.startsWith("✅")
-                            ? "text-emerald-600"
-                            : "text-amber-600"
-                            }`}
-                        >
-                          {pushMsg}
-                        </p>
-                      )}
-                      {pushSupport.supported && !notif.notif_push && (
-                        <p className="text-xs text-blue-500 mt-1">
-                          {lang === "id" ? "Aktif di browser ini. Ulangi di tiap perangkat / browser yang dipakai." : "Active on this browser. Repeat for each device/browser used."}
-                        </p>
-                      )}
                     </div>
                     <Toggle
                       checked={notif.notif_push}
@@ -570,38 +584,46 @@ export default function ProfilePage() {
                       }
                     />
                   </div>
+                  {pushMsg && (
+                    <p className={`text-[10px] mt-2 font-bold px-2 py-1 rounded-lg w-fit ${pushMsg.startsWith("✅")
+                      ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400"
+                      : "bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400"
+                      }`}>
+                      {pushMsg}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
 
             {/* Telegram */}
-            <div className="py-3.5 border-b">
-              <div className="flex items-start gap-3">
+            <div className="py-5">
+              <div className="flex items-start gap-4">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${notif.notif_telegram
-                    ? "bg-sky-100 text-sky-600"
-                    : "bg-muted text-muted-foreground"
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${notif.notif_telegram
+                    ? "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400"
+                    : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600"
                     }`}
                 >
-                  <MessageCircle className="w-4 h-4" />
+                  <MessageCircle className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
+                    <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">Telegram</p>
+                        <p className="text-sm font-bold tracking-tight">Telegram</p>
                         {!form.telegram_chat_id && notif.notif_telegram && (
-                          <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
-                            {lang === "id" ? "Chat ID belum diisi" : "Chat ID missing"}
+                          <span className="text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-md animate-pulse">
+                            {lang === "id" ? "MISSING ID" : "MISSING ID"}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      <p className="text-xs text-muted-foreground leading-relaxed">
                         {notif.notif_telegram
                           ? form.telegram_chat_id
-                            ? lang === "id" ? `Aktif — Chat ID: ${form.telegram_chat_id}` : `Active — Chat ID: ${form.telegram_chat_id}`
-                            : lang === "id" ? "Isi Telegram Chat ID di bawah agar berfungsi." : "Enter Telegram Chat ID below to enable."
-                          : lang === "id" ? "Notifikasi via Telegram dimatikan." : "Telegram notifications are disabled."}
+                            ? lang === "id" ? `Aktif: ID ${form.telegram_chat_id}` : `Active: ID ${form.telegram_chat_id}`
+                            : lang === "id" ? "Masukkan Chat ID di bawah." : "Enter Chat ID below."
+                          : lang === "id" ? "Notifikasi Telegram nonaktif." : "Telegram disabled."}
                       </p>
                     </div>
                     <Toggle
@@ -612,7 +634,7 @@ export default function ProfilePage() {
 
                   {/* Telegram Chat ID input — show when toggle is on */}
                   {notif.notif_telegram && (
-                    <div className="mt-3 space-y-1.5">
+                    <div className="mt-4 space-y-2">
                       <input
                         type="text"
                         value={form.telegram_chat_id}
@@ -620,21 +642,24 @@ export default function ProfilePage() {
                           setForm({ ...form, telegram_chat_id: e.target.value })
                         }
                         placeholder={lang === "id" ? "Contoh: 123456789" : "Example: 123456789"}
-                        className="w-full px-3 py-2 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
+                        className="w-full px-4 py-2.5 border border-border rounded-xl bg-background text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
                       />
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {lang === "id" ? "Dapatkan Chat ID via" : "Get Chat ID via"}{" "}
+                      <div className="flex items-center gap-1.5 px-1">
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          {lang === "id" ? "Gunakan" : "Use"}
+                        </span>
                         <a
                           href="https://t.me/userinfobot"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-500 hover:underline"
+                          className="text-[10px] bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 rounded font-bold hover:underline"
                         >
                           @userinfobot
-                        </a>{" "}
-                        {lang === "id" ? "di Telegram, lalu klik" : "on Telegram, then click"} <strong>{lang === "id" ? "Simpan Perubahan" : "Save Changes"}</strong>{" "}
-                        {lang === "id" ? "di atas." : "above."}
-                      </p>
+                        </a>
+                        <span className="text-[10px] text-muted-foreground font-medium">
+                          {lang === "id" ? "lalu simpan." : "then save."}
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -642,24 +667,24 @@ export default function ProfilePage() {
             </div>
 
             {/* Email */}
-            <div className="py-3.5">
-              <div className="flex items-start gap-3">
+            <div className="py-5">
+              <div className="flex items-start gap-4">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${notif.notif_email
-                    ? "bg-violet-100 text-violet-600"
-                    : "bg-muted text-muted-foreground"
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${notif.notif_email
+                    ? "bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400"
+                    : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600"
                     }`}
                 >
-                  <Mail className="w-4 h-4" />
+                  <Mail className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium">Email</p>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-bold tracking-tight">Email</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1">
                         {notif.notif_email
-                          ? (lang === "id" ? `Aktif — dikirim ke ${session?.user?.email}` : `Active — sent to ${session?.user?.email}`)
-                          : (lang === "id" ? "Notifikasi via email dimatikan." : "Email notifications are disabled.")}
+                          ? (lang === "id" ? `Kirim ke ${session?.user?.email}` : `Send to ${session?.user?.email}`)
+                          : (lang === "id" ? "Notifikasi email nonaktif." : "Email disabled.")}
                       </p>
                     </div>
                     <Toggle
@@ -672,67 +697,73 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Info box */}
-          <div className="mx-5 mb-5 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50 rounded-xl p-3 text-xs text-blue-700 dark:text-blue-300 space-y-1">
-            <p className="font-semibold uppercase">{lang === "id" ? "📌 INFO NOTIFIKASI" : "📌 NOTIFICATION INFO"}</p>
-            <ul className="list-disc list-inside space-y-0.5 leading-relaxed mt-1">
-              <li>
-                {lang === "id" ? "Notifikasi dikirim saat ada jadwal baru atau perubahan jadwal." : "Notifications are sent when there are new tasks or updates."}
-              </li>
-              <li>
-                {lang === "id" ? "Reminder harian dikirim setiap pagi jam" : "Daily reminders are sent every morning at"}{" "}
-                <strong>08.00 WIB</strong>.
-              </li>
-              <li>
-                {lang === "id" ? "Push Notification perlu diaktifkan di tiap browser/perangkat secara terpisah." : "Push Notifications must be enabled on each browser/device separately."}
-              </li>
-              <li>
-                {lang === "id" ? "iOS: tambahkan ke Home Screen dulu baru push aktif (Safari → Share → Add to Home Screen)." : "iOS: add to Home Screen first before enabling push (Safari → Share → Add to Home Screen)."}
-              </li>
+          {/* Minimal Info Box */}
+          <div className="m-6 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700/50 rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-1 h-3 bg-zinc-300 dark:bg-zinc-600 rounded-full" />
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                {lang === "id" ? "Ketentuan" : "Information"}
+              </p>
+            </div>
+            <ul className="space-y-1.5">
+              {[
+                lang === "id" ? "Notifikasi dikirim otomatis saat jadwal berubah." : "Auto-notifications on task updates.",
+                lang === "id" ? "Daily reminder dikirim setiap pukul 08.00 WIB." : "Daily reminders sent at 08:00 AM.",
+                lang === "id" ? "Penting: Tambahkan ke Home Screen untuk iOS." : "iOS: Must Add to Home Screen for Push."
+              ].map((text, i) => (
+                <li key={i} className="flex items-start gap-2 text-[11px] text-muted-foreground leading-snug">
+                  <span className="mt-1.5 w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600 flex-shrink-0" />
+                  {text}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
         {/* ── Ganti Password ── */}
-        <div className="bg-background border rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b">
-            <h2 className="font-semibold text-sm uppercase">{lang === "id" ? "GANTI PASSWORD" : "CHANGE PASSWORD"}</h2>
+        <div className="bg-background border rounded-[2rem] overflow-hidden shadow-sm">
+          <div className="px-6 py-5 border-b bg-muted/10">
+            <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground/80">{lang === "id" ? "GANTI PASSWORD" : "CHANGE PASSWORD"}</h2>
           </div>
-          <div className="p-5 space-y-3">
-            <input
-              type="password"
-              placeholder={lang === "id" ? "Password baru (min. 6 karakter)" : "New password (min. 6 chars)"}
-              value={passwords.new}
-              onChange={(e) =>
-                setPasswords({ ...passwords, new: e.target.value })
-              }
-              className="w-full px-3 py-2.5 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
-            />
-            <input
-              type="password"
-              placeholder={lang === "id" ? "Konfirmasi password baru" : "Confirm new password"}
-              value={passwords.confirm}
-              onChange={(e) =>
-                setPasswords({ ...passwords, confirm: e.target.value })
-              }
-              className="w-full px-3 py-2.5 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
-            />
+          <div className="p-6 space-y-4">
+            <div className="space-y-3">
+              <input
+                type="password"
+                placeholder={lang === "id" ? "Password baru (min. 6 karakter)" : "New password (min. 6 chars)"}
+                value={passwords.new}
+                onChange={(e) =>
+                  setPasswords({ ...passwords, new: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+              />
+              <input
+                type="password"
+                placeholder={lang === "id" ? "Konfirmasi password baru" : "Confirm new password"}
+                value={passwords.confirm}
+                onChange={(e) =>
+                  setPasswords({ ...passwords, confirm: e.target.value })
+                }
+                className="w-full px-4 py-3 border border-border rounded-2xl bg-background text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+              />
+            </div>
+
             {pwMsg && (
               <p
-                className={`text-xs px-3 py-2 rounded-lg ${pwMsg.startsWith("✅")
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-red-50 text-red-600"
+                className={`text-[10px] font-bold px-3 py-2 rounded-xl ${pwMsg.startsWith("✅")
+                  ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30"
+                  : "bg-red-50 text-red-600 dark:bg-red-950/30"
                   }`}
               >
                 {pwMsg}
               </p>
             )}
+
             <button
               onClick={changePassword}
               disabled={savingPw || !passwords.new}
-              className="w-full py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors disabled:opacity-50"
+              className="w-full py-3.5 border border-border rounded-2xl text-sm font-bold tracking-tight hover:bg-muted active:scale-[0.98] transition-all disabled:opacity-30"
             >
-              {savingPw ? (lang === "id" ? "Memproses..." : "Processing...") : (lang === "id" ? "Ubah Password" : "Change Password")}
+              {savingPw ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : (lang === "id" ? "UBAH PASSWORD SEKARANG" : "CHANGE PASSWORD NOW")}
             </button>
           </div>
         </div>

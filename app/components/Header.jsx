@@ -32,6 +32,11 @@ export default function Header({
   const lang = language || "en";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isAdmin = userProfile?.role === "admin";
   const initial = (userProfile?.full_name || session?.user?.email || "?")
@@ -130,12 +135,14 @@ export default function Header({
           <div className="flex items-center gap-1">
             {/* Mobile Profile/Theme Triggers */}
             <div className="sm:hidden flex items-center gap-1.5 mr-0.5">
-              <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="p-1.5 text-muted-foreground hover:text-foreground active:scale-95 transition-all"
-              >
-                {theme === "dark" ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
-              </button>
+              {mounted && (
+                <button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="p-1.5 text-muted-foreground hover:text-foreground active:scale-95 transition-all"
+                >
+                  {theme === "dark" ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+                </button>
+              )}
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
                 className="flex items-center justify-center hover:opacity-80 transition-opacity"
@@ -177,13 +184,15 @@ export default function Header({
                 </span>
               </Link>
 
-              <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all"
-                title={lang === "id" ? "Ganti Tema" : "Toggle Theme"}
-              >
-                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
+              {mounted && (
+                <button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all"
+                  title={lang === "id" ? "Ganti Tema" : "Toggle Theme"}
+                >
+                  {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                </button>
+              )}
 
               <button
                 onClick={handleLogout}
@@ -198,20 +207,20 @@ export default function Header({
       </header>
 
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-30 sm:hidden">
+        <div className="fixed inset-0 z-[100] sm:hidden">
           <button
             type="button"
-            className="absolute inset-0 bg-black/40"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             aria-label="Close menu"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <div className="absolute inset-x-0 bottom-0 bg-background rounded-t-2xl border-t shadow-2xl p-4 space-y-4">
+          <div className="absolute inset-x-0 bottom-0 bg-background rounded-t-3xl border-t shadow-2xl p-5 pb-32 space-y-5 animate-in slide-in-from-bottom duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold">
-                  {lang === "id" ? "Akun Saya" : "My Account"}
+                <p className="text-[10px] font-black tracking-[0.2em] uppercase text-muted-foreground/60 mb-1">
+                  {lang === "id" ? "AKUN SAYA" : "MY ACCOUNT"}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm font-bold tracking-tight">
                   {userProfile?.full_name || session?.user?.email}
                 </p>
               </div>

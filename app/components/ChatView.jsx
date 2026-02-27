@@ -49,27 +49,32 @@ function MessageBubble({ msg, isMine, showAvatar, user, lang }) {
 
   if (isMine) {
     return (
-      <div className={`flex flex-col items-end gap-1 mb-2 ${animClass}`}>
+      <div className={`flex flex-col items-end gap-0.5 mb-2 ${animClass}`}>
         <div className="flex items-end gap-2 group">
-          <span className="text-[10px] text-muted-foreground/80 opacity-0 group-hover:opacity-100 transition-opacity mb-2">
+          {/* Timestamp — hover on desktop, hidden inline on mobile */}
+          <span className="text-[10px] text-muted-foreground/80 sm:opacity-0 sm:group-hover:opacity-100 opacity-0 transition-opacity mb-1 hidden sm:block">
             {time}
           </span>
           <div
             className="max-w-[75%] sm:max-w-[65%] px-4 py-2.5 rounded-2xl rounded-br-sm text-[13px] leading-relaxed break-words shadow-sm"
             style={{
-              backgroundColor: user?.color || "#27272a", // defaults to slightly off-black if no color
+              backgroundColor: user?.color || "#27272a",
               color: "#fff",
             }}
           >
             {msg.content}
           </div>
         </div>
+        {/* Timestamp below bubble — mobile only */}
+        <span className="text-[10px] text-muted-foreground/60 sm:hidden pr-1">
+          {time}
+        </span>
       </div>
     );
   }
 
   return (
-    <div className={`flex flex-col items-start gap-1 mb-2 ${animClass}`}>
+    <div className={`flex flex-col items-start gap-0.5 mb-2 ${animClass}`}>
       {showAvatar && (
         <span className="text-[11px] font-medium text-muted-foreground ml-10">
           {user?.full_name || user?.email?.split("@")[0] || "?"}
@@ -86,10 +91,15 @@ function MessageBubble({ msg, isMine, showAvatar, user, lang }) {
         <div className="px-4 py-2.5 bg-background border border-border rounded-2xl rounded-bl-sm text-[13px] text-foreground leading-relaxed break-words shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] max-w-[75%] sm:max-w-[65%]">
           {msg.content}
         </div>
-        <span className="text-[10px] text-muted-foreground/80 opacity-0 group-hover:opacity-100 transition-opacity mb-2">
+        {/* Timestamp — hover on desktop, hidden inline on mobile */}
+        <span className="text-[10px] text-muted-foreground/80 sm:opacity-0 sm:group-hover:opacity-100 opacity-0 transition-opacity mb-1 hidden sm:block">
           {time}
         </span>
       </div>
+      {/* Timestamp below bubble — mobile only */}
+      <span className="text-[10px] text-muted-foreground/60 sm:hidden pl-10">
+        {time}
+      </span>
     </div>
   );
 }
@@ -275,8 +285,8 @@ export default function ChatView({ session, userProfile, users }) {
               Team Chat
             </h2>
             <div className="flex items-center gap-1.5 opacity-80">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative flex h-2 w-2 overflow-hidden rounded-full">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 pointer-events-none"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
               <p className="text-[11px] sm:text-[12px] text-muted-foreground font-medium">
@@ -370,7 +380,7 @@ export default function ChatView({ session, userProfile, users }) {
               placeholder={
                 lang === "id" ? "Ketik pesan..." : "Type a message..."
               }
-              maxLength={2000}
+              maxLength={1000}
               className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/80 focus:outline-none resize-none leading-relaxed max-h-32 no-scrollbar py-1"
               rows={1}
               style={{ minHeight: "28px" }}

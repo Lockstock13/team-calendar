@@ -53,13 +53,13 @@ const MONTHS_EN = [
 function TypeBadge({ task, lang }) {
   if (task.is_comday || task.task_type === "libur_pengganti") {
     return (
-      <span className="inline-flex items-center text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full whitespace-nowrap font-medium">
+      <span className="inline-flex items-center text-xs bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300 px-2 py-0.5 rounded-full whitespace-nowrap font-medium">
         🏖️ {lang === "id" ? "Libur Pengganti" : "Replacement Leave"}
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full whitespace-nowrap font-medium">
+    <span className="inline-flex items-center text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full whitespace-nowrap font-medium">
       📅 Regular
     </span>
   );
@@ -73,11 +73,11 @@ function StatusBadge({ status, lang }) {
     },
     in_progress: {
       label: lang === "id" ? "Berjalan" : "In Progress",
-      cls: "bg-amber-100 text-amber-700",
+      cls: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
     },
     done: {
       label: lang === "id" ? "Selesai" : "Done",
-      cls: "bg-emerald-100 text-emerald-700",
+      cls: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
     },
   };
   const s = map[status] || map.todo;
@@ -233,7 +233,7 @@ function DailyTable({ tasks, users, lang }) {
                 <tr
                   key={task.id}
                   className={`hover:bg-muted/20 transition-colors ${task.is_comday || task.task_type === "libur_pengganti"
-                    ? "bg-emerald-50/40 dark:bg-emerald-950/20"
+                    ? "bg-pink-50/40 dark:bg-pink-950/20"
                     : ""
                     }`}
                 >
@@ -304,71 +304,79 @@ function DailyTable({ tasks, users, lang }) {
       </div>
 
       {/* Mobile: card list */}
-      <div className="sm:hidden divide-y">
+      <div className="sm:hidden space-y-2 p-3">
         {sorted.map((task, i) => {
           const assigneeList = (task.assignee_ids || [])
             .map((uid) => users.find((u) => u.id === uid))
             .filter(Boolean);
+          const isComday = task.is_comday || task.task_type === "libur_pengganti";
+          const barColor = isComday ? "#f472b6" : "#6366f1";
 
           return (
             <div
               key={task.id}
-              className={`p-4 space-y-2 ${task.is_comday || task.task_type === "libur_pengganti"
-                ? "bg-emerald-50/50 dark:bg-emerald-950/20"
-                : ""
+              className={`flex gap-3 p-3 rounded-xl border ${isComday
+                  ? "bg-pink-50/50 dark:bg-pink-950/20 border-pink-100 dark:border-pink-900/40"
+                  : "bg-background border-border"
                 }`}
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-start gap-2">
-                  <span className="text-xs text-muted-foreground tabular-nums pt-0.5 w-5">
-                    {i + 1}.
-                  </span>
-                  <div>
-                    <p className="font-semibold text-sm leading-snug">
+              {/* Color bar */}
+              <div
+                className="w-1 self-stretch rounded-full flex-shrink-0"
+                style={{ backgroundColor: barColor }}
+              />
+
+              {/* Content */}
+              <div className="flex-1 min-w-0 space-y-1.5">
+                {/* Row 1: nomor + judul + type badge */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-1.5 min-w-0">
+                    <span className="text-[10px] text-muted-foreground tabular-nums pt-0.5 flex-shrink-0">
+                      {i + 1}.
+                    </span>
+                    <p className="font-semibold text-sm leading-snug truncate">
                       {task.title}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {formatDateRange(task, lang)}
-                    </p>
                   </div>
+                  <TypeBadge task={task} lang={lang} />
                 </div>
-                <TypeBadge task={task} lang={lang} />
-              </div>
 
-              {/* Petugas */}
-              {(assigneeList.length > 0 || task.assigned_to_name) && (
-                <div className="flex items-center gap-1.5 pl-7">
-                  {assigneeList.length > 0 ? (
-                    <>
-                      <div className="flex -space-x-1">
-                        {assigneeList.map((u) => (
-                          <Avatar key={u.id} user={u} />
-                        ))}
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {assigneeList
-                          .map((u) => u.full_name || u.email)
-                          .join(", ")}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">
-                      {task.assigned_to_name}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Catatan */}
-              {task.description && (
-                <p className="text-xs text-muted-foreground leading-relaxed pl-7 italic">
-                  {task.description}
+                {/* Row 2: tanggal */}
+                <p className="text-xs text-muted-foreground">
+                  📅 {formatDateRange(task, lang)}
                 </p>
-              )}
 
-              {/* Status */}
-              <div className="pl-7">
-                <StatusBadge status={task.status} lang={lang} />
+                {/* Row 3: petugas + status inline */}
+                <div className="flex items-center justify-between gap-2">
+                  {(assigneeList.length > 0 || task.assigned_to_name) && (
+                    <div className="flex items-center gap-1.5">
+                      {assigneeList.length > 0 ? (
+                        <>
+                          <div className="flex -space-x-1">
+                            {assigneeList.slice(0, 3).map((u) => (
+                              <Avatar key={u.id} user={u} />
+                            ))}
+                          </div>
+                          <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+                            {assigneeList.map((u) => u.full_name || u.email).join(", ")}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">
+                          {task.assigned_to_name}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <StatusBadge status={task.status} lang={lang} />
+                </div>
+
+                {/* Row 4: catatan (kalau ada) */}
+                {task.description && (
+                  <p className="text-xs text-muted-foreground italic leading-relaxed">
+                    {task.description}
+                  </p>
+                )}
               </div>
             </div>
           );
@@ -400,7 +408,7 @@ function TaskRow({ task, lang }) {
       </span>
       <span className="flex-1 font-medium truncate">{task.title}</span>
       {task.is_comday || task.task_type === "libur_pengganti" ? (
-        <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full whitespace-nowrap">
+        <span className="text-xs bg-pink-100 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300 px-2 py-0.5 rounded-full whitespace-nowrap">
           🏖️ {lang === "id" ? "Libur" : "Leave"}
         </span>
       ) : task.description ? (
@@ -452,7 +460,7 @@ function PhotographerRow({ user, tasks, maxCount, rank, lang }) {
                 {regular.length} {lang === "id" ? "tugas" : "tasks"}
               </span>
               {libur.length > 0 && (
-                <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-pink-100 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300 px-2 py-0.5 rounded-full">
                   {libur.length} {lang === "id" ? "libur" : "leave"}
                 </span>
               )}
@@ -545,13 +553,13 @@ export default function ReportView({ tasks, users }) {
   return (
     <div className="space-y-5 report-content">
       {/* ── Controls ── */}
-      <div className="flex items-center justify-between flex-wrap gap-3 no-print">
-        {/* Month / Year */}
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 no-print">
+        {/* Month / Year — full width on mobile */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <select
             value={month}
             onChange={(e) => setMonth(Number(e.target.value))}
-            className="px-3 py-2 border rounded-xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="flex-1 sm:flex-none px-3 py-2.5 border rounded-xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             {MONTHS.map((m, i) => (
               <option key={i} value={i}>
@@ -562,7 +570,7 @@ export default function ReportView({ tasks, users }) {
           <select
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
-            className="px-3 py-2 border rounded-xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="w-24 px-3 py-2.5 border rounded-xl bg-background text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             {years.map((y) => (
               <option key={y} value={y}>
@@ -577,16 +585,16 @@ export default function ReportView({ tasks, users }) {
           {!isEmpty && (
             <button
               onClick={() => exportCSV(monthTasks, users, month, year, lang)}
-              className="flex items-center gap-1.5 px-3 py-2 border rounded-xl text-sm font-medium hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-1.5 px-3 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors text-muted-foreground hover:text-foreground active:scale-95"
               title="Download CSV"
             >
               <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">CSV</span>
+              CSV
             </button>
           )}
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-medium hover:bg-muted transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors active:scale-95"
           >
             <Printer className="w-4 h-4" />
             Print
@@ -594,12 +602,14 @@ export default function ReportView({ tasks, users }) {
         </div>
       </div>
 
-      {/* ── Print header ── */}
-      <div className="print-only hidden">
-        <h1 className="text-xl font-bold">
-          {lang === "id" ? "Laporan Bulanan" : "Monthly Report"} —{" "}
-          {MONTHS[month]} {year}
+      {/* ── Print header (Visible only when printing) ── */}
+      <div className="print-only hidden pt-4 pb-8 border-b-2 border-zinc-900 mb-8">
+        <h1 className="text-3xl font-bold text-zinc-900">
+          {lang === "id" ? "LAPORAN BULANAN" : "MONTHLY REPORT"}
         </h1>
+        <p className="text-lg font-medium text-zinc-600 mt-1 uppercase tracking-widest">
+          {MONTHS[month]} {year}
+        </p>
         <p className="text-sm text-muted-foreground mt-1">
           Still Photo Team Calendar
         </p>
@@ -622,7 +632,7 @@ export default function ReportView({ tasks, users }) {
           {
             label: lang === "id" ? "Libur Pengganti" : "Replacement Leave",
             value: totalLibur,
-            cls: "text-emerald-600",
+            cls: "text-pink-600",
           },
           {
             label: lang === "id" ? "Fotografer Aktif" : "Active Assignees",
@@ -644,23 +654,25 @@ export default function ReportView({ tasks, users }) {
         <div className="flex items-center gap-1 bg-muted p-1 rounded-xl w-fit no-print">
           <button
             onClick={() => setViewType("table")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${viewType === "table"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${viewType === "table"
               ? "bg-background shadow-sm text-foreground"
               : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <LayoutList className="w-4 h-4" />
-            {lang === "id" ? "Tabel Harian" : "Daily Table"}
+            <span className="hidden xs:inline sm:hidden">{lang === "id" ? "Tabel" : "Table"}</span>
+            <span className="hidden sm:inline">{lang === "id" ? "Tabel Harian" : "Daily Table"}</span>
           </button>
           <button
             onClick={() => setViewType("photographer")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${viewType === "photographer"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${viewType === "photographer"
               ? "bg-background shadow-sm text-foreground"
               : "text-muted-foreground hover:text-foreground"
               }`}
           >
             <BarChart2 className="w-4 h-4" />
-            {lang === "id" ? "Per Fotografer" : "By Assignee"}
+            <span className="hidden xs:inline sm:hidden">{lang === "id" ? "Orang" : "Person"}</span>
+            <span className="hidden sm:inline">{lang === "id" ? "Per Fotografer" : "By Assignee"}</span>
           </button>
         </div>
       )}

@@ -9,7 +9,7 @@ import { useConfirm } from "@/app/components/ConfirmProvider";
  * Custom hook for task CRUD operations.
  * Extracted from providers.js to reduce its size and improve maintainability.
  */
-export function useTaskActions({ session, userProfile, users, language }) {
+export function useTaskActions({ session, userProfile, users, language, onSuccess }) {
     const [showForm, setShowForm] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
     const [submitting, setSubmitting] = useState(false);
@@ -34,6 +34,12 @@ export function useTaskActions({ session, userProfile, users, language }) {
             .map((u) => u.full_name || u.email)
             .join(", ");
 
+        const addDays = (dateStr, days) => {
+            const d = new Date(dateStr + "T00:00:00");
+            d.setDate(d.getDate() + days);
+            return d.toISOString().split("T")[0];
+        };
+
         const taskData = {
             title: formData.title,
             description: formData.description,
@@ -47,6 +53,8 @@ export function useTaskActions({ session, userProfile, users, language }) {
             is_weekend_task: false,
             is_comday: formData.task_type === "libur_pengganti",
             task_type: formData.task_type,
+            is_recurring: formData.is_recurring || false,
+            recurrence_id: editingTask?.recurrence_id || null,
         };
 
         try {
@@ -56,6 +64,34 @@ export function useTaskActions({ session, userProfile, users, language }) {
                     .from("tasks")
                     .update(taskData)
                     .eq("id", editingTask.id));
+            } else if (formData.is_recurring && formData.recurring_until) {
+                // HANDLE RECURRENCE
+                const tasksToInsert = [];
+                const recurrenceId = crypto.randomUUID();
+
+                let currentStart = formData.start_date;
+                let currentEnd = formData.end_date || formData.start_date;
+
+                // Calculate duration in days
+                const startD = new Date(currentStart + "T00:00:00");
+                const endD = new Date(currentEnd + "T00:00:00");
+                const durationDays = Math.round((endD - startD) / (1000 * 60 * 60 * 24));
+
+                while (currentStart <= formData.recurring_until) {
+                    tasksToInsert.push({
+                        ...taskData,
+                        start_date: currentStart,
+                        end_date: currentEnd,
+                        recurrence_id: recurrenceId,
+                        is_recurring: true
+                    });
+
+                    // Move to next week
+                    currentStart = addDays(currentStart, 7);
+                    currentEnd = addDays(currentStart, durationDays);
+                }
+
+                ({ error } = await supabase.from("tasks").insert(tasksToInsert));
             } else {
                 ({ error } = await supabase.from("tasks").insert([taskData]));
             }
@@ -69,6 +105,7 @@ export function useTaskActions({ session, userProfile, users, language }) {
                     : (lang === "id" ? "Jadwal berhasil ditambahkan ✓" : "Task added ✓"),
                 "success",
             );
+            if (onSuccess) onSuccess();
 
             // Fire-and-forget notification
             fetch("/api/notify", {
@@ -96,18 +133,49 @@ export function useTaskActions({ session, userProfile, users, language }) {
         setShowForm(true);
     };
 
-    const handleDeleteTask = async (taskId) => {
-        const ok = await confirm({
-            title: lang === "id" ? "Hapus Jadwal" : "Delete Task",
-            message: lang === "id"
-                ? "Apakah kamu yakin ingin menghapus jadwal ini? Tindakan ini tidak bisa dibatalkan."
-                : "Are you sure you want to delete this task? This cannot be undone.",
-            confirmText: lang === "id" ? "Hapus" : "Delete",
-            cancelText: lang === "id" ? "Batal" : "Cancel",
-        });
-        if (!ok) return;
+    const handleDeleteTask = async (taskOrId) => {
+        const task = typeof taskOrId === "object" ? taskOrId : null;
+        const taskId = task?.id || taskOrId;
+        const recurrenceId = task?.recurrence_id;
 
-        const { error } = await supabase.from("tasks").delete().eq("id", taskId);
+        let choice = true;
+        let deleteType = "single";
+
+        if (recurrenceId) {
+            deleteType = await confirm({
+                title: lang === "id" ? "Hapus Jadwal Berulang" : "Delete Recurring Task",
+                message: lang === "id"
+                    ? "Tentukan bagaimana kamu ingin menghapus jadwal ini."
+                    : "Choose how you want to delete this task.",
+                buttons: [
+                    { label: lang === "id" ? "Batal" : "Cancel", value: "cancel" },
+                    { label: lang === "id" ? "Yang Ini Saja" : "Just This One", value: "single", variant: "danger" },
+                    { label: lang === "id" ? "Semua Jadwal Berulang" : "All Linked Tasks", value: "all", variant: "danger" },
+                ]
+            });
+            if (deleteType === "cancel" || !deleteType) return;
+            choice = true;
+        } else {
+            choice = await confirm({
+                title: lang === "id" ? "Hapus Jadwal" : "Delete Task",
+                message: lang === "id"
+                    ? "Apakah kamu yakin ingin menghapus jadwal ini? Tindakan ini tidak bisa dibatalkan."
+                    : "Are you sure you want to delete this task? This cannot be undone.",
+                confirmText: lang === "id" ? "Hapus" : "Delete",
+                cancelText: lang === "id" ? "Batal" : "Cancel",
+            });
+        }
+
+        if (!choice) return;
+
+        let query = supabase.from("tasks").delete();
+        if (deleteType === "all" && recurrenceId) {
+            query = query.eq("recurrence_id", recurrenceId);
+        } else {
+            query = query.eq("id", taskId);
+        }
+
+        const { error } = await query;
         if (error) {
             addToast(
                 (lang === "id" ? "Gagal menghapus: " : "Failed to delete: ") + error.message,
@@ -118,6 +186,7 @@ export function useTaskActions({ session, userProfile, users, language }) {
                 lang === "id" ? "Jadwal dihapus ✓" : "Task deleted ✓",
                 "success",
             );
+            if (onSuccess) onSuccess();
         }
     };
 
@@ -132,6 +201,7 @@ export function useTaskActions({ session, userProfile, users, language }) {
                 lang === "id" ? `Status → ${newStatus} ✓` : `Status → ${newStatus} ✓`,
                 "success",
             );
+            if (onSuccess) onSuccess();
         }
     };
 
