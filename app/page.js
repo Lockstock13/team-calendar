@@ -41,7 +41,7 @@ const VALID_VIEW_MODES = [
 
 const normalizeViewMode = (value) =>
   VALID_VIEW_MODES.includes(value) ? value : "dashboard";
-const BOOT_FETCH_TIMEOUT_MS = 12000;
+const BOOT_FETCH_TIMEOUT_MS = 5000;
 
 const withTimeout = (promise, ms, label) =>
   Promise.race([
@@ -229,6 +229,10 @@ export default function Home() {
   }, []);
 
   const bootSession = async (session) => {
+    // Unblock UI immediately; fetch profile/data in background.
+    setSession(session);
+    setLoading(false);
+
     try {
       const { data: profile } = await withTimeout(
         supabase.from("profiles").select("*").eq("id", session.user.id).single(),
@@ -242,19 +246,15 @@ export default function Home() {
         return;
       }
 
-      setSession(session);
       setUserProfile(profile || null);
 
-      await Promise.allSettled([
+      Promise.allSettled([
         withTimeout(fetchTasks(), BOOT_FETCH_TIMEOUT_MS, "tasks"),
         withTimeout(fetchUsers(), BOOT_FETCH_TIMEOUT_MS, "users"),
       ]);
     } catch (err) {
       console.error("[auth] bootSession error:", err);
-      setSession(session);
       setUserProfile(null);
-    } finally {
-      setLoading(false);
     }
   };
 
