@@ -129,6 +129,7 @@ Jika project sudah existing (bukan fresh install), lanjut jalankan:
 
 ```
 supabase/migrations/2026-03-05-phase3-schema-reliability.sql
+supabase/migrations/2026-03-05-phase6-startup-query-performance.sql
 ```
 
 Checklist validasi setelah apply SQL:

@@ -37,3 +37,9 @@ Owner: App Team
 - [Done] Add regression checklist for mobile and desktop navigation.
 - [Done] Add baseline monitoring hooks with health endpoint (`/api/health/system`).
 - [Next] Add automated smoke run script for CI/staging.
+
+## Phase 6 - Startup Query Performance (In Progress)
+- [Done] Reduce startup query scope for tasks to a date-windowed initial fetch.
+- [Done] Add lazy full tasks sync for report/history-heavy view.
+- [Done] Add client-side snapshot cache (tasks/users) for instant refresh rendering.
+- [Done] Add DB indexes for startup query paths (`tasks.start_date`, `tasks.created_by`, `profiles.is_active`).

@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   created_at  TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE INDEX IF NOT EXISTS profiles_is_active_idx
+  ON public.profiles (is_active);
+
 
 -- ─── 2. TASKS TABLE ─────────────────────────────────────────
 
@@ -36,6 +39,12 @@ CREATE TABLE IF NOT EXISTS public.tasks (
   created_by       UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at       TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE INDEX IF NOT EXISTS tasks_start_date_idx
+  ON public.tasks (start_date);
+
+CREATE INDEX IF NOT EXISTS tasks_created_by_idx
+  ON public.tasks (created_by);
 
 
 -- ─── 3. TRIGGER: auto-create profile on signup ──────────────

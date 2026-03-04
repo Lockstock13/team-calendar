@@ -1,5 +1,15 @@
 # Update Log
 
+## 2026-03-05 - Phase 6 started (Startup Query Performance)
+- Optimized startup task fetch strategy in `app/page.js`:
+  - lightweight initial tasks query (date-windowed),
+  - lazy full task sync only when report view is opened,
+  - faster realtime refresh path based on loaded scope.
+- Added client-side startup cache for tasks/users to show dashboard data instantly after refresh.
+- Added DB performance migration:
+  - `supabase/migrations/2026-03-05-phase6-startup-query-performance.sql`
+  - indexes: `tasks_start_date_idx`, `tasks_created_by_idx`, `profiles_is_active_idx`.
+
 ## 2026-03-05 - Phase 1 continued (UI Feedback Consistency)
 - Replaced native browser `confirm()` in notes delete flow with app-level `ConfirmDialog`.
 - Added toast feedback for notes delete success and failure in `app/components/NotesView.jsx`.

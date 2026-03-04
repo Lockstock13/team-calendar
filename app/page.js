@@ -44,6 +44,8 @@ const normalizeViewMode = (value) =>
 const BOOT_FETCH_TIMEOUT_MS = 5000;
 const TASKS_CACHE_KEY = "tasks_cache_v1";
 const USERS_CACHE_KEY = "users_cache_v1";
+const TASKS_WINDOW_PAST_DAYS = 120;
+const TASKS_WINDOW_FUTURE_DAYS = 365;
 
 const withTimeout = (promise, ms, label) =>
   Promise.race([
@@ -71,6 +73,14 @@ const writeJsonCache = (key, value) => {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {}
 };
+
+const addDays = (date, delta) => {
+  const d = new Date(date);
+  d.setDate(d.getDate() + delta);
+  return d;
+};
+
+const toISODate = (date) => date.toISOString().slice(0, 10);
 
 // Generate warna fallback yang lebih elegan untuk Avatar
 const generateColor = (str) => {
@@ -113,6 +123,7 @@ export default function Home() {
   const [unreadChat, setUnreadChat] = useState(0);
   const [autoShowNoteForm, setAutoShowNoteForm] = useState(false);
   const [dialog, setDialog] = useState(null); // { type, title, message, onConfirm? }
+  const fullTasksLoadedRef = useRef(false);
 
   // ─── Ref to always read latest viewMode inside realtime callbacks ──────────
   // Without this, closures in useEffect capture the *initial* value of viewMode
@@ -233,7 +244,7 @@ export default function Home() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tasks" },
-        () => fetchTasks(),
+        () => fetchTasks({ full: fullTasksLoadedRef.current }),
       )
       .on(
         "postgres_changes",
@@ -260,7 +271,7 @@ export default function Home() {
 
     // Fetch data utama langsung (jangan tunggu profile dulu).
     Promise.allSettled([
-      withTimeout(fetchTasks(), BOOT_FETCH_TIMEOUT_MS, "tasks"),
+      withTimeout(fetchTasks({ full: false }), BOOT_FETCH_TIMEOUT_MS, "tasks"),
       withTimeout(fetchUsers(), BOOT_FETCH_TIMEOUT_MS, "users"),
     ]).catch(() => {});
 
@@ -357,12 +368,19 @@ export default function Home() {
     }
   };
 
-  const fetchTasks = async () => {
+  const fetchTasks = async ({ full = false } = {}) => {
     try {
-      const { data, error } = await supabase
-        .from("tasks")
-        .select("*")
-        .order("start_date", { ascending: true });
+      let query = supabase.from("tasks").select("*");
+      if (!full) {
+        const now = new Date();
+        query = query
+          .gte("start_date", toISODate(addDays(now, -TASKS_WINDOW_PAST_DAYS)))
+          .lte("start_date", toISODate(addDays(now, TASKS_WINDOW_FUTURE_DAYS)));
+      }
+
+      const { data, error } = await query.order("start_date", {
+        ascending: true,
+      });
 
       if (error) {
         console.error(error);
@@ -371,10 +389,19 @@ export default function Home() {
       const nextTasks = data || [];
       setTasks(nextTasks);
       writeJsonCache(TASKS_CACHE_KEY, nextTasks);
+      if (full) fullTasksLoadedRef.current = true;
     } catch (err) {
       console.error("[data] fetchTasks error:", err);
     }
   };
+
+  // Lazy full sync: only needed for report/history heavy view.
+  useEffect(() => {
+    if (!session) return;
+    if (viewMode !== "report") return;
+    if (fullTasksLoadedRef.current) return;
+    fetchTasks({ full: true });
+  }, [viewMode, session]);
 
   // ─── Task CRUD ────────────────────────────────────────────────────────────────
 
