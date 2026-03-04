@@ -41,6 +41,15 @@ const VALID_VIEW_MODES = [
 
 const normalizeViewMode = (value) =>
   VALID_VIEW_MODES.includes(value) ? value : "dashboard";
+const BOOT_FETCH_TIMEOUT_MS = 12000;
+
+const withTimeout = (promise, ms, label) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timeout`)), ms),
+    ),
+  ]);
 
 // Generate warna fallback yang lebih elegan untuk Avatar
 const generateColor = (str) => {
@@ -155,10 +164,20 @@ export default function Home() {
   // ─── Auth ────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session) await bootSession(session);
-      else setLoading(false);
-    });
+    const initSession = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session) await bootSession(session);
+        else setLoading(false);
+      } catch (err) {
+        console.error("[auth] getSession error:", err);
+        setLoading(false);
+      }
+    };
+
+    initSession();
 
     // Realtime: unread chat badge
     // Uses viewModeRef (not viewMode directly) to avoid stale closure bug.
@@ -183,6 +202,7 @@ export default function Home() {
         setTasks([]);
         setUsers([]);
         setInactiveBlock(false);
+        setLoading(false);
       }
     });
 
@@ -209,23 +229,33 @@ export default function Home() {
   }, []);
 
   const bootSession = async (session) => {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
-      .single();
+    try {
+      const { data: profile } = await withTimeout(
+        supabase.from("profiles").select("*").eq("id", session.user.id).single(),
+        BOOT_FETCH_TIMEOUT_MS,
+        "profile",
+      );
 
-    // Blokir user non-aktif
-    if (profile && profile.is_active === false) {
-      setInactiveBlock(true);
+      // Blokir user non-aktif
+      if (profile && profile.is_active === false) {
+        setInactiveBlock(true);
+        return;
+      }
+
+      setSession(session);
+      setUserProfile(profile || null);
+
+      await Promise.allSettled([
+        withTimeout(fetchTasks(), BOOT_FETCH_TIMEOUT_MS, "tasks"),
+        withTimeout(fetchUsers(), BOOT_FETCH_TIMEOUT_MS, "users"),
+      ]);
+    } catch (err) {
+      console.error("[auth] bootSession error:", err);
+      setSession(session);
+      setUserProfile(null);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setSession(session);
-    setUserProfile(profile);
-    await Promise.all([fetchTasks(), fetchUsers()]);
-    setLoading(false);
   };
 
   const handleAuth = async (mode, data) => {
@@ -283,33 +313,40 @@ export default function Home() {
   // ─── Data ─────────────────────────────────────────────────────────────────────
 
   const fetchUsers = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, email, full_name, color, role")
-      .neq("is_active", false);
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, email, full_name, color, role")
+        .neq("is_active", false);
 
-    if (!error && data) {
-      setUsers(
-        data.map((u) => ({
-          ...u,
-          color: u.color || generateColor(u.id),
-        })),
-      );
+      if (!error && data) {
+        setUsers(
+          data.map((u) => ({
+            ...u,
+            color: u.color || generateColor(u.id),
+          })),
+        );
+      }
+    } catch (err) {
+      console.error("[data] fetchUsers error:", err);
     }
   };
 
   const fetchTasks = async () => {
-    const { data, error } = await supabase
-      .from("tasks")
-      .select("*")
-      .order("start_date", { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from("tasks")
+        .select("*")
+        .order("start_date", { ascending: true });
 
-    if (error) {
-      console.error(error);
-      // JANGAN reset tasks ke [] — biarkan data lama tetap tampil
-      return;
+      if (error) {
+        console.error(error);
+        return;
+      }
+      setTasks(data || []);
+    } catch (err) {
+      console.error("[data] fetchTasks error:", err);
     }
-    setTasks(data || []);
   };
 
   // ─── Task CRUD ────────────────────────────────────────────────────────────────
@@ -678,3 +715,4 @@ export default function Home() {
     </div>
   );
 }
+
