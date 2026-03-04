@@ -42,6 +42,8 @@ const VALID_VIEW_MODES = [
 const normalizeViewMode = (value) =>
   VALID_VIEW_MODES.includes(value) ? value : "dashboard";
 const BOOT_FETCH_TIMEOUT_MS = 5000;
+const TASKS_CACHE_KEY = "tasks_cache_v1";
+const USERS_CACHE_KEY = "users_cache_v1";
 
 const withTimeout = (promise, ms, label) =>
   Promise.race([
@@ -50,6 +52,25 @@ const withTimeout = (promise, ms, label) =>
       setTimeout(() => reject(new Error(`${label} timeout`)), ms),
     ),
   ]);
+
+const readJsonCache = (key, fallback) => {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+const writeJsonCache = (key, value) => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
+};
 
 // Generate warna fallback yang lebih elegan untuk Avatar
 const generateColor = (str) => {
@@ -232,6 +253,10 @@ export default function Home() {
     // Unblock UI immediately; fetch profile/data in background.
     setSession(session);
     setLoading(false);
+    const cachedTasks = readJsonCache(TASKS_CACHE_KEY, []);
+    const cachedUsers = readJsonCache(USERS_CACHE_KEY, []);
+    if (cachedTasks.length) setTasks(cachedTasks);
+    if (cachedUsers.length) setUsers(cachedUsers);
 
     // Fetch data utama langsung (jangan tunggu profile dulu).
     Promise.allSettled([
@@ -320,12 +345,12 @@ export default function Home() {
         .neq("is_active", false);
 
       if (!error && data) {
-        setUsers(
-          data.map((u) => ({
-            ...u,
-            color: u.color || generateColor(u.id),
-          })),
-        );
+        const mapped = data.map((u) => ({
+          ...u,
+          color: u.color || generateColor(u.id),
+        }));
+        setUsers(mapped);
+        writeJsonCache(USERS_CACHE_KEY, mapped);
       }
     } catch (err) {
       console.error("[data] fetchUsers error:", err);
@@ -343,7 +368,9 @@ export default function Home() {
         console.error(error);
         return;
       }
-      setTasks(data || []);
+      const nextTasks = data || [];
+      setTasks(nextTasks);
+      writeJsonCache(TASKS_CACHE_KEY, nextTasks);
     } catch (err) {
       console.error("[data] fetchTasks error:", err);
     }
