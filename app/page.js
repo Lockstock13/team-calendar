@@ -233,29 +233,29 @@ export default function Home() {
     setSession(session);
     setLoading(false);
 
-    try {
-      const { data: profile } = await withTimeout(
-        supabase.from("profiles").select("*").eq("id", session.user.id).single(),
-        BOOT_FETCH_TIMEOUT_MS,
-        "profile",
-      );
+    // Fetch data utama langsung (jangan tunggu profile dulu).
+    Promise.allSettled([
+      withTimeout(fetchTasks(), BOOT_FETCH_TIMEOUT_MS, "tasks"),
+      withTimeout(fetchUsers(), BOOT_FETCH_TIMEOUT_MS, "users"),
+    ]).catch(() => {});
 
-      // Blokir user non-aktif
-      if (profile && profile.is_active === false) {
-        setInactiveBlock(true);
-        return;
-      }
-
-      setUserProfile(profile || null);
-
-      Promise.allSettled([
-        withTimeout(fetchTasks(), BOOT_FETCH_TIMEOUT_MS, "tasks"),
-        withTimeout(fetchUsers(), BOOT_FETCH_TIMEOUT_MS, "users"),
-      ]);
-    } catch (err) {
-      console.error("[auth] bootSession error:", err);
-      setUserProfile(null);
-    }
+    // Profile tetap dicek terpisah untuk role/inactive guard.
+    withTimeout(
+      supabase.from("profiles").select("*").eq("id", session.user.id).single(),
+      BOOT_FETCH_TIMEOUT_MS,
+      "profile",
+    )
+      .then(({ data: profile }) => {
+        if (profile && profile.is_active === false) {
+          setInactiveBlock(true);
+          return;
+        }
+        setUserProfile(profile || null);
+      })
+      .catch((err) => {
+        console.error("[auth] bootSession error:", err);
+        setUserProfile(null);
+      });
   };
 
   const handleAuth = async (mode, data) => {
