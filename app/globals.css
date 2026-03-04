@@ -1,0 +1,488 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 222.2 84% 4.9%;
+        --border: 214.3 31.8% 91.4%;
+        --primary: 222.2 47.4% 11.2%;
+        --primary-foreground: 210 40% 98%;
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+    }
+    .dark {
+        --background: 220 16% 12%;
+        --foreground: 210 30% 94%;
+        --border: 220 14% 20%;
+        --primary: 210 30% 94%;
+        --primary-foreground: 220 16% 12%;
+        --muted: 220 14% 17%;
+        --muted-foreground: 215 15% 58%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground font-sans;
+    }
+}
+
+/* ─── FullCalendar overrides (PHASE 2: Responsive) ──────────────────────────── */
+
+/* Weekend cell background */
+.fc-weekend-cell {
+    background-color: hsl(var(--muted) / 0.5) !important;
+}
+
+/* Holiday cell background tint */
+.fc-holiday-cell {
+    background-color: #fff1f2 !important;
+}
+.dark .fc-holiday-cell {
+    background-color: hsl(0 40% 16%) !important;
+}
+
+/* Rounder events - responsive sizing */
+.fc-event {
+    border-radius: 6px !important;
+    border: none !important;
+    cursor: pointer;
+    padding: 0 !important;
+}
+
+/* Mobile: smaller font */
+.fc-event {
+    font-size: 0.6rem !important;
+}
+
+@media (min-width: 640px) {
+    .fc-event {
+        font-size: 0.72rem !important;
+    }
+}
+
+@media (min-width: 1024px) {
+    .fc-event {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* Remove default event padding so our custom content controls it */
+.fc-event-main {
+    padding: 0 !important;
+}
+
+/* Day number style - responsive */
+.fc-daygrid-day-number {
+    font-weight: 500;
+    padding: 4px 6px !important;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .fc-daygrid-day-number {
+        font-size: 0.8rem;
+        padding: 6px 8px !important;
+    }
+}
+
+/* Today highlight */
+.fc-day-today {
+    background-color: hsl(var(--primary) / 0.04) !important;
+}
+.dark .fc-day-today {
+    background-color: hsl(var(--primary) / 0.08) !important;
+}
+
+.fc-day-today .fc-daygrid-day-number {
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    font-size: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .fc-day-today .fc-daygrid-day-number {
+        width: 26px;
+        height: 26px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Header (Mon, Tue, …) - responsive */
+.fc-col-header-cell {
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 4px 0 !important;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.65rem;
+}
+
+@media (min-width: 640px) {
+    .fc-col-header-cell {
+        font-size: 0.75rem !important;
+        padding: 8px 0 !important;
+    }
+}
+
+.fc-col-header-cell-cushion {
+    color: inherit !important;
+    text-decoration: none !important;
+}
+
+/* Nav buttons - responsive */
+.fc-button-primary {
+    background-color: hsl(var(--background)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    color: hsl(var(--foreground)) !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    box-shadow: none !important;
+    transition: all 0.2s !important;
+    padding: 4px 10px !important;
+    font-size: 0.7rem !important;
+    min-height: 32px;
+}
+
+@media (min-width: 640px) {
+    .fc-button-primary {
+        padding: 5px 12px !important;
+        font-size: 0.8rem !important;
+        min-height: 36px;
+    }
+}
+
+.fc-button-primary:hover {
+    background-color: hsl(var(--muted)) !important;
+}
+
+.fc-button-primary:not(:disabled).fc-button-active,
+.fc-button-primary:not(:disabled):active {
+    background-color: hsl(var(--primary)) !important;
+    color: hsl(var(--primary-foreground)) !important;
+    border-color: hsl(var(--primary)) !important;
+}
+
+.fc-button-group {
+    gap: 3px;
+}
+
+.fc-toolbar-title {
+    font-weight: 700 !important;
+    font-size: 0.9rem;
+}
+
+@media (min-width: 640px) {
+    .fc-toolbar-title {
+        font-size: 1rem !important;
+    }
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+    border-color: hsl(var(--border)) !important;
+}
+
+.fc-scrollgrid {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.fc-more-link {
+    font-size: 0.65rem !important;
+    color: hsl(var(--muted-foreground)) !important;
+}
+
+@media (min-width: 640px) {
+    .fc-more-link {
+        font-size: 0.7rem !important;
+    }
+}
+
+/* Improve FullCalendar mobile scrolling */
+@media (max-width: 640px) {
+    .fc-scrollgrid-sync-inner {
+        min-width: auto;
+    }
+
+    .fc-daygrid-day-frame {
+        min-height: 60px;
+    }
+}
+
+/* ─── Enhanced mobile form controls ───────────────────────────────────────── */
+
+/* Ensure minimum touch targets on all form inputs */
+@media (max-width: 640px) {
+    input[type="text"],
+    input[type="date"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+        min-height: 44px !important;
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+
+    button {
+        min-height: 44px !important;
+    }
+}
+
+/* Better spacing for mobile links and buttons */
+@media (max-width: 640px) {
+    a,
+    button {
+        min-width: 44px;
+    }
+}
+
+/* ─── Prose / Markdown rendering ────────────────────────────────────────────── */
+
+.prose {
+    color: hsl(var(--foreground));
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
+.prose h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0.75rem 0 0.4rem;
+}
+.prose h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0.75rem 0 0.4rem;
+}
+.prose h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0.5rem 0 0.3rem;
+}
+.prose p {
+    margin: 0.4rem 0;
+}
+.prose ul,
+.prose ol {
+    padding-left: 1.25rem;
+    margin: 0.4rem 0;
+}
+.prose ul {
+    list-style-type: disc;
+}
+.prose ol {
+    list-style-type: decimal;
+}
+.prose li {
+    margin: 0.2rem 0;
+}
+.prose li input[type="checkbox"] {
+    margin-right: 0.35rem;
+}
+.prose strong {
+    font-weight: 700;
+}
+.prose em {
+    font-style: italic;
+}
+.prose del {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+.prose code {
+    font-family: ui-monospace, monospace;
+    font-size: 0.8rem;
+    background: hsl(var(--muted));
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+}
+.prose pre {
+    background: hsl(var(--muted));
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    overflow-x: auto;
+    margin: 0.5rem 0;
+}
+.prose pre code {
+    background: none;
+    padding: 0;
+    font-size: 0.8rem;
+}
+.prose blockquote {
+    border-left: 3px solid hsl(var(--border));
+    padding-left: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0.5rem 0;
+    font-style: italic;
+}
+.prose a {
+    color: hsl(var(--primary));
+    text-decoration: underline;
+}
+.prose table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.8rem;
+    margin: 0.5rem 0;
+}
+.prose th {
+    background: hsl(var(--muted));
+    font-weight: 600;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid hsl(var(--border));
+    text-align: left;
+}
+.prose td {
+    padding: 0.35rem 0.6rem;
+    border: 1px solid hsl(var(--border));
+}
+.prose hr {
+    border: none;
+    border-top: 1px solid hsl(var(--border));
+    margin: 0.75rem 0;
+}
+
+/* ─── P0: Safe area support for notched phones (iPhone X+) ────────────────── */
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* ─── P0: Chat container — dynamic viewport height ───────────────────────── */
+
+.chat-container {
+    height: calc(100vh - 200px);
+}
+
+@media (max-width: 639px) {
+    .chat-container {
+        height: calc(100vh - 260px);
+        height: calc(100dvh - 260px);
+    }
+}
+
+@media (min-width: 640px) {
+    .chat-container {
+        height: calc(100vh - 200px);
+        height: calc(100dvh - 200px);
+    }
+}
+
+/* ─── P0: Hide scrollbar but keep scrolling ───────────────────────────────── */
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* ─── P0: Toast slide-in animation ────────────────────────────────────────── */
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-toast-in {
+    animation: toastIn 0.3s ease-out;
+}
+
+/* ─── P0: FAB popup item animations (staggered slide-in) ─────────────────── */
+
+@keyframes fabItemIn {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.animate-fab-item-1 {
+    animation: fabItemIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fab-item-2 {
+    animation: fabItemIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.06s forwards;
+    opacity: 0;
+}
+
+/* ─── Notion-like scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* ─── Dialog slide-up animation ─────────────────────────────────────────────── */
+
+@keyframes dialogIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.animate-dialog-in {
+    animation: dialogIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Smooth view transitions ─────────────────────────────────────────────── */
+@keyframes viewIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-view-in {
+    animation: viewIn 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-view-in {
+        animation: none;
+    }
+}
