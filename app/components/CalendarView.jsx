@@ -11,182 +11,9 @@ import { useGlobalContext } from "@/app/providers";
 import { useToast } from "@/app/components/ToastProvider";
 import { supabase } from "@/lib/supabase";
 import Avatar from "@/app/components/Avatar";
+import TaskDetailModal from "@/app/components/TaskDetailModal";
 
 
-// ─── Event Detail Modal ────────────────────────────────────────────────────────
-
-function EventDetailModal({ task, users, onClose, onEdit, onDelete, lang }) {
-  if (!task) return null;
-
-  const assignees = (task.assignee_ids || [])
-    .map((uid) => users.find((u) => u.id === uid))
-    .filter(Boolean);
-
-  const statusLabel = {
-    todo: lang === "id" ? "Belum Mulai" : "Not Started",
-    in_progress: lang === "id" ? "Sedang Berjalan" : "In Progress",
-    done: lang === "id" ? "Selesai" : "Done",
-  };
-
-  const priorityLabel = {
-    low: lang === "id" ? "🟢 Rendah" : "🟢 Low",
-    medium: lang === "id" ? "🟡 Sedang" : "🟡 Medium",
-    high: lang === "id" ? "🔴 Tinggi" : "🔴 High",
-  };
-
-  const accentColor =
-    task.is_comday || task.task_type === "libur_pengganti"
-      ? "#10b981"
-      : task.is_weekend_task
-        ? "#a855f7"
-        : assignees[0]?.color || "#64748b";
-
-  return (
-    <div
-      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
-      onClick={onClose}
-    >
-      <div
-        className="bg-background rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Colour stripe */}
-        <div className="h-1.5" style={{ backgroundColor: accentColor }} />
-
-        <div className="p-6">
-          {/* Title + badges */}
-          <div className="flex items-start justify-between gap-3 mb-5">
-            <div className="flex-1">
-              <div className="flex flex-wrap gap-1.5 mb-2.5">
-                {(task.is_comday || task.task_type === "libur_pengganti") && (
-                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-sm font-medium border border-emerald-100/50">
-                    🏖️ {lang === "id" ? "Libur Pengganti" : "Replacement Leave"}
-                  </span>
-                )}
-                {task.is_weekend_task && !task.is_comday && (
-                  <span className="text-[10px] bg-purple-50 text-purple-600 px-2 py-0.5 rounded-sm font-medium border border-purple-100/50">
-                    🌙 Weekend
-                  </span>
-                )}
-                {task.priority && (
-                  <span className="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-sm font-medium border border-border">
-                    {priorityLabel[task.priority] || task.priority}
-                  </span>
-                )}
-              </div>
-              <h3 className="text-lg font-bold text-foreground leading-tight">
-                {task.title}
-              </h3>
-            </div>
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 p-1.5 text-muted-foreground/80 hover:bg-zinc-100 hover:text-zinc-600 rounded-full transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Detail rows */}
-          <div className="space-y-4 pt-1">
-            <div>
-              <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
-                {lang === "id" ? "Tanggal" : "Date"}
-              </p>
-              <span className="text-[14px] font-medium text-foreground">
-                {format(
-                  new Date(task.start_date + "T00:00:00"),
-                  "EEEE, d MMMM yyyy",
-                  { locale: lang === "id" ? id : enUS },
-                )}
-                {task.end_date &&
-                  task.end_date !== task.start_date &&
-                  ` – ${format(
-                    new Date(task.end_date + "T00:00:00"),
-                    "EEEE, d MMMM yyyy",
-                    { locale: lang === "id" ? id : enUS },
-                  )}`}
-              </span>
-            </div>
-
-            <div>
-              <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
-                Status
-              </p>
-              <span className="text-[14px] font-medium text-foreground">
-                {statusLabel[task.status] || task.status}
-              </span>
-            </div>
-
-            {task.description && (
-              <div className="pt-1">
-                <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
-                  {lang === "id" ? "Catatan" : "Notes"}
-                </p>
-                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-border">
-                  <p className="text-[13px] text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
-                    {task.description}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="pt-1">
-              <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
-                {lang === "id" ? "Tim Penugasan" : "Assigned Team"}
-              </p>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {assignees.length > 0 ? (
-                  assignees.map((u) => (
-                    <div
-                      key={u.id}
-                      className="flex items-center gap-2 bg-background border border-border pl-1 pr-3 py-1 rounded-full shadow-sm"
-                    >
-                      <div
-                        className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-medium"
-                        style={{ backgroundColor: u.color || "#64748b" }}
-                      >
-                        {(u.full_name || u.email).charAt(0).toUpperCase()}
-                      </div>
-                      <span className="text-[12px] font-medium text-foreground/90">
-                        {u.full_name || u.email.split("@")[0]}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <span className="text-sm text-muted-foreground/80 italic">
-                    {task.assigned_to_name || "—"}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="mt-6 pt-4 border-t border-border flex gap-2 justify-end">
-            <button
-              onClick={() => {
-                onDelete(task);
-                onClose();
-              }}
-              className="px-4 py-2 bg-background border border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/30 text-sm font-semibold transition-colors active:scale-95"
-            >
-              {lang === "id" ? "Hapus" : "Delete"}
-            </button>
-            <button
-              onClick={() => {
-                onEdit(task);
-                onClose();
-              }}
-              className="px-5 py-2 bg-zinc-900 text-white rounded-xl hover:bg-zinc-800 text-sm font-semibold transition-colors shadow-sm active:scale-95"
-            >
-              Edit
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── Holiday Detail Modal ──────────────────────────────────────────────────────
 
@@ -194,11 +21,11 @@ function HolidayModal({ holiday, onClose, lang }) {
   if (!holiday) return null;
   return (
     <div
-      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="bg-background rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-sm relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto"
+        className="bg-background rounded-2xl shadow-2xl w-full max-w-sm relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="h-1.5 bg-red-400" />
@@ -577,7 +404,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
 
       {/* Task detail modal */}
       {selectedTask && (
-        <EventDetailModal
+        <TaskDetailModal
           task={selectedTask}
           users={users}
           lang={lang}

@@ -9,12 +9,22 @@ CREATE TABLE IF NOT EXISTS public.app_settings (
   app_name        TEXT NOT NULL DEFAULT 'Team Calendar',
   logo_url        TEXT,
   primary_color   TEXT DEFAULT '#0ea5e9', -- Default Tailwind sky-500
+  daily_reminder_enabled BOOLEAN NOT NULL DEFAULT true,
+  daily_reminder_time TIME NOT NULL DEFAULT '06:00',
+  daily_reminder_timezone TEXT NOT NULL DEFAULT 'Asia/Jakarta',
+  daily_reminder_last_sent_date DATE,
   updated_at      TIMESTAMPTZ DEFAULT now(),
   updated_by      UUID REFERENCES public.profiles(id) ON DELETE SET NULL
 );
 
+ALTER TABLE public.app_settings
+  ADD COLUMN IF NOT EXISTS daily_reminder_enabled BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS daily_reminder_time TIME NOT NULL DEFAULT '06:00',
+  ADD COLUMN IF NOT EXISTS daily_reminder_timezone TEXT NOT NULL DEFAULT 'Asia/Jakarta',
+  ADD COLUMN IF NOT EXISTS daily_reminder_last_sent_date DATE;
+
 -- Ensure there is only ever ONE row in this table.
-INSERT INTO public.app_settings (id, app_name) 
+INSERT INTO public.app_settings (id, app_name)
 SELECT '00000000-0000-0000-0000-000000000001'::uuid, 'Stay Focused Team'
 WHERE NOT EXISTS (SELECT 1 FROM public.app_settings);
 
@@ -55,7 +65,7 @@ CREATE POLICY "app_settings: admin insert"
 
 -- ─── 3. CREATE STORAGE BUCKET FOR ASSETS (LOGOS) ────────────
 -- Enable the storage extension if not already enabled
-INSERT INTO storage.buckets (id, name, public) 
+INSERT INTO storage.buckets (id, name, public)
 VALUES ('assets', 'assets', true)
 ON CONFLICT (id) DO NOTHING;
 

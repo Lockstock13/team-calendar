@@ -251,13 +251,20 @@ export default function ListView({
                         <div className="flex border-t border-border/60 divide-x divide-border/60">
                           <button
                             onClick={() => onUpdateStatus(task.id, nextStatus(task.status))}
+                            aria-label={
+                              task.status === "done"
+                                ? (lang === "id" ? "Tandai selesai" : "Mark done")
+                                : task.status === "in_progress"
+                                  ? (lang === "id" ? "Lanjutkan status" : "Advance status")
+                                  : (lang === "id" ? "Mulai tugas" : "Start task")
+                            }
                             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium transition-colors active:scale-95 ${task.status === "done"
                               ? "text-green-600 bg-green-50/60 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30"
                               : "text-muted-foreground hover:bg-muted/60"
                               }`}
                           >
                             <Check className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">
+                            <span className="truncate">
                               {task.status === "done"
                                 ? (lang === "id" ? "Selesai" : "Done")
                                 : task.status === "in_progress"
@@ -267,17 +274,19 @@ export default function ListView({
                           </button>
                           <button
                             onClick={() => onEdit(task)}
+                            aria-label={lang === "id" ? "Edit jadwal" : "Edit task"}
                             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-muted-foreground hover:bg-muted/60 transition-colors active:scale-95"
                           >
                             <Pencil className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">Edit</span>
+                            <span className="truncate">Edit</span>
                           </button>
                           <button
                             onClick={() => onDelete(task)}
+                            aria-label={lang === "id" ? "Hapus jadwal" : "Delete task"}
                             className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-muted-foreground hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-500 transition-colors active:scale-95"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">{lang === "id" ? "Hapus" : "Delete"}</span>
+                            <span className="truncate">{lang === "id" ? "Hapus" : "Delete"}</span>
                           </button>
                         </div>
                       </div>

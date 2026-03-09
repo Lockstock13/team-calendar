@@ -26,8 +26,11 @@ export default function PageContainer({
         {/* Toolbar */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-bold text-lg uppercase tracking-wide">{title}</h1>
-            <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+            <h1 className="text-xl font-semibold text-foreground">{title}</h1>
+            <p
+              className="text-sm text-muted-foreground/80"
+              suppressHydrationWarning
+            >
               {format(new Date(), "EEEE, d MMMM yyyy", {
                 locale: lang === "id" ? idLocale : enUS,
               })}
@@ -51,9 +54,7 @@ export default function PageContainer({
         </div>
 
         {/* Content */}
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
+        <ErrorBoundary>{children}</ErrorBoundary>
       </main>
     </PullToRefresh>
   );

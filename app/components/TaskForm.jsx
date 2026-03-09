@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { X, Check } from "lucide-react";
@@ -6,25 +6,24 @@ import { useToast } from "@/app/components/ToastProvider";
 import { useGlobalContext } from "@/app/providers";
 import Avatar from "@/app/components/Avatar";
 
-
 const getTaskTypes = (lang) => [
   {
     id: "regular",
-    label: "📅 Regular",
+    label: "📌 Regular",
     desc: lang === "id" ? "Penugasan hari kerja" : "Workday assignment",
-    border: "border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800",
+    border:
+      "border-blue-300 bg-blue-50 text-blue-700 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800",
     active: "ring-blue-400",
   },
   {
     id: "libur_pengganti",
     label: lang === "id" ? "🏖️ Libur Pengganti" : "🏖️ Replacement Leave",
     desc: lang === "id" ? "Hari libur pengganti" : "Replacement leave day",
-    border: "border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800",
+    border:
+      "border-emerald-300 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800",
     active: "ring-emerald-400",
   },
 ];
-
-
 
 export default function TaskForm({
   users,
@@ -81,11 +80,21 @@ export default function TaskForm({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (data.assignee_ids.length === 0) {
-      addToast(lang === "id" ? "Pilih minimal 1 anggota." : "Select at least 1 assignee.", "error");
+      addToast(
+        lang === "id"
+          ? "Pilih minimal 1 anggota."
+          : "Select at least 1 assignee.",
+        "error",
+      );
       return;
     }
     if (data.is_recurring && !data.recurring_until) {
-      addToast(lang === "id" ? "Pilih tanggal berakhir pengulangan." : "Select recurrence end date.", "error");
+      addToast(
+        lang === "id"
+          ? "Pilih tanggal berakhir pengulangan."
+          : "Select recurrence end date.",
+        "error",
+      );
       return;
     }
     onSubmit(data);
@@ -105,7 +114,13 @@ export default function TaskForm({
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b sticky top-0 bg-background z-10 rounded-t-2xl sm:rounded-t-2xl">
           <h2 className="font-semibold text-base">
-            {editingTask ? (lang === "id" ? "Edit Jadwal" : "Edit Task") : (lang === "id" ? "Tambah Jadwal" : "Add Task")}
+            {editingTask
+              ? lang === "id"
+                ? "Edit Jadwal"
+                : "Edit Task"
+              : lang === "id"
+                ? "Tambah Jadwal"
+                : "Add Task"}
           </h2>
           <button
             type="button"
@@ -116,7 +131,10 @@ export default function TaskForm({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 sm:space-y-5">
+        <form
+          onSubmit={handleSubmit}
+          className="p-4 sm:p-5 space-y-4 sm:space-y-5"
+        >
           {/* Task Type */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -128,10 +146,11 @@ export default function TaskForm({
                   key={type.id}
                   type="button"
                   onClick={() => handleTypeChange(type.id)}
-                  className={`p-3 border-2 rounded-xl text-left transition-all ${data.task_type === type.id
-                    ? `${type.border} ring-2 ${type.active} ring-offset-1`
-                    : "border-border hover:bg-muted"
-                    }`}
+                  className={`p-3 border-2 rounded-xl text-left transition-all ${
+                    data.task_type === type.id
+                      ? `${type.border} ring-2 ${type.active} ring-offset-1`
+                      : "border-border hover:bg-muted"
+                  }`}
                 >
                   <div className="text-sm font-semibold leading-snug">
                     {type.label}
@@ -151,7 +170,15 @@ export default function TaskForm({
             </label>
             <input
               type="text"
-              placeholder={isLibur ? (lang === "id" ? "Libur Pengganti" : "Replacement Leave") : (lang === "id" ? "Judul tugas / event" : "Task title / event")}
+              placeholder={
+                isLibur
+                  ? lang === "id"
+                    ? "Libur Pengganti"
+                    : "Replacement Leave"
+                  : lang === "id"
+                    ? "Judul tugas / event"
+                    : "Task title / event"
+              }
               value={data.title}
               onChange={(e) => setData({ ...data, title: e.target.value })}
               className="w-full px-3 py-2.5 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
@@ -159,14 +186,18 @@ export default function TaskForm({
             />
           </div>
 
-          {/* Description — hide for libur pengganti */}
+          {/* Description - hide for libur pengganti */}
           {!isLibur && (
             <div className="space-y-2">
               <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 {lang === "id" ? "Catatan" : "Notes"}
               </label>
               <textarea
-                placeholder={lang === "id" ? "Lokasi, catatan, PIC, dll" : "Location, notes, PIC, etc."}
+                placeholder={
+                  lang === "id"
+                    ? "Lokasi, catatan, PIC, dll"
+                    : "Location, notes, PIC, etc."
+                }
                 value={data.description}
                 onChange={(e) =>
                   setData({ ...data, description: e.target.value })
@@ -184,7 +215,9 @@ export default function TaskForm({
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{lang === "id" ? "Mulai" : "Start"}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {lang === "id" ? "Mulai" : "Start"}
+                </p>
                 <input
                   type="date"
                   value={data.start_date}
@@ -205,7 +238,9 @@ export default function TaskForm({
                 />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">{lang === "id" ? "Selesai" : "End"}</p>
+                <p className="text-xs text-muted-foreground mb-1">
+                  {lang === "id" ? "Selesai" : "End"}
+                </p>
                 <input
                   type="date"
                   value={data.end_date}
@@ -220,19 +255,27 @@ export default function TaskForm({
             </div>
           </div>
 
-          {/* Recurrence — Only for NEW tasks */}
+          {/* Recurrence - Only for NEW tasks */}
           {!editingTask && (
             <div className="bg-muted/30 border border-border/50 rounded-2xl p-4 space-y-4">
               <div
                 className="flex items-center justify-between cursor-pointer group"
-                onClick={() => setData({ ...data, is_recurring: !data.is_recurring })}
+                onClick={() =>
+                  setData({ ...data, is_recurring: !data.is_recurring })
+                }
               >
                 <div className="flex items-center gap-2">
-                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${data.is_recurring ? 'bg-primary border-primary' : 'border-muted-foreground/30 group-hover:border-primary'}`}>
-                    {data.is_recurring && <Check className="w-3 h-3 text-white" />}
+                  <div
+                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${data.is_recurring ? "bg-primary border-primary" : "border-muted-foreground/30 group-hover:border-primary"}`}
+                  >
+                    {data.is_recurring && (
+                      <Check className="w-3 h-3 text-white" />
+                    )}
                   </div>
                   <span className="text-sm font-medium">
-                    {lang === "id" ? "Ulangi Jadwal Tiap Minggu?" : "Repeat this Task Weekly?"}
+                    {lang === "id"
+                      ? "Ulangi Jadwal Tiap Minggu?"
+                      : "Repeat this Task Weekly?"}
                   </span>
                 </div>
               </div>
@@ -245,12 +288,14 @@ export default function TaskForm({
                   <input
                     type="date"
                     value={data.recurring_until}
-                    onChange={(e) => setData({ ...data, recurring_until: e.target.value })}
+                    onChange={(e) =>
+                      setData({ ...data, recurring_until: e.target.value })
+                    }
                     className="w-full px-3 py-2.5 border rounded-xl bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition"
                     min={data.end_date || data.start_date}
                     required={data.is_recurring}
                   />
-                  <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
+                  <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
                     {lang === "id"
                       ? "📝 Jadwal akan dibuat setiap 7 hari sekali sampai tanggal yang dipilih."
                       : "📝 Task will be duplicated every 7 days until the selected date."}
@@ -279,8 +324,9 @@ export default function TaskForm({
                   <div
                     key={user.id}
                     onClick={() => toggleAssignee(user.id)}
-                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${selected ? "bg-primary/5" : "hover:bg-muted/50"
-                      }`}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                      selected ? "bg-primary/5" : "hover:bg-muted/50"
+                    }`}
                   >
                     <Avatar user={user} selected={selected} />
                     <div className="flex-1 min-w-0">
@@ -292,10 +338,11 @@ export default function TaskForm({
                       </p>
                     </div>
                     <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${selected
-                        ? "bg-primary border-primary"
-                        : "border-muted-foreground/30"
-                        }`}
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                        selected
+                          ? "bg-primary border-primary"
+                          : "border-muted-foreground/30"
+                      }`}
                     >
                       {selected && (
                         <Check className="w-3 h-3 text-primary-foreground" />
@@ -328,9 +375,15 @@ export default function TaskForm({
                   {lang === "id" ? "Menyimpan..." : "Saving..."}
                 </>
               ) : editingTask ? (
-                lang === "id" ? "Simpan Perubahan" : "Save Changes"
+                lang === "id" ? (
+                  "Simpan Perubahan"
+                ) : (
+                  "Save Changes"
+                )
+              ) : lang === "id" ? (
+                "Tambah Jadwal"
               ) : (
-                lang === "id" ? "Tambah Jadwal" : "Add Task"
+                "Add Task"
               )}
             </button>
           </div>

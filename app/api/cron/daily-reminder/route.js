@@ -7,27 +7,73 @@ import { sendDailyReminderEmail } from "@/lib/email";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
-// ─── Auth guard ───────────────────────────────────────────────────────────────
-// Kalau CRON_SECRET tidak diset → allow semua (termasuk browser test)
-// Kalau CRON_SECRET diset → harus ada header Authorization: Bearer <secret>
-
 function isAuthorized(request) {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true;
+  if (!secret) return false;
   const auth = request.headers.get("authorization");
   return auth === `Bearer ${secret}`;
 }
 
-// ─── GET /api/cron/daily-reminder ─────────────────────────────────────────────
-// Vercel schedule: "30 22 * * *" → 22:30 UTC = 05:30 WIB
-// Test manual: buka URL langsung di browser
+function getLocalDateTimeParts(timeZone) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(new Date());
+  const lookup = Object.fromEntries(
+    parts.filter((p) => p.type !== "literal").map((p) => [p.type, p.value]),
+  );
+
+  return {
+    date: `${lookup.year}-${lookup.month}-${lookup.day}`,
+    time: `${lookup.hour}:${lookup.minute}`,
+  };
+}
+
+function parseHHmmToMinutes(value) {
+  const [h, m] = String(value || "").split(":");
+  const hour = Number(h);
+  const minute = Number(m);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+  return hour * 60 + minute;
+}
+
+function shouldRunNow({
+  nowTime,
+  targetTime,
+  lastSentDate,
+  todayDate,
+  windowMinutes = 10,
+}) {
+  if (lastSentDate === todayDate) return false;
+  const nowMinutes = parseHHmmToMinutes(nowTime);
+  const targetMinutes = parseHHmmToMinutes(targetTime);
+  if (nowMinutes === null || targetMinutes === null) return false;
+  return nowMinutes >= targetMinutes && nowMinutes < targetMinutes + windowMinutes;
+}
+
+function normalizeHHmm(value) {
+  if (!value) return "06:00";
+  return String(value).slice(0, 5);
+}
+
+function escapeTelegramHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 export async function GET(request) {
   if (!isAuthorized(request)) {
-    return NextResponse.json(
-      { error: "Unauthorized — set CRON_SECRET di env vars" },
-      { status: 401 },
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -37,45 +83,70 @@ export async function GET(request) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     );
 
-    // ── Tanggal hari ini dalam WIB (UTC+7) ───────────────────────────────────
-    // PENTING: server jalan di UTC. Cron jam 22:30 UTC = 05:30 WIB hari berikutnya.
-    // Kalau pakai now.toISOString() langsung → dapat tanggal UTC (kemarin) → tasks tidak ketemu.
-    // Fix: tambah 7 jam ke UTC biar dapat tanggal WIB yang benar.
-    const now = new Date();
-    const wibNow = new Date(now.getTime() + 7 * 60 * 60 * 1000);
-    const todayStr = wibNow.toISOString().split("T")[0];
-    const debug = {
-      utc_now: now.toISOString(),
-      wib_now: wibNow.toISOString(),
-      querying_date: todayStr,
-    };
+    const { data: appSettings } = await supabase
+      .from("app_settings")
+      .select(
+        "id, daily_reminder_enabled, daily_reminder_time, daily_reminder_timezone, daily_reminder_last_sent_date",
+      )
+      .single();
+
+    const reminderEnabled = appSettings?.daily_reminder_enabled !== false;
+    const reminderTime = normalizeHHmm(appSettings?.daily_reminder_time);
+    const reminderTimezone =
+      appSettings?.daily_reminder_timezone || "Asia/Jakarta";
+    const lastSentDate = appSettings?.daily_reminder_last_sent_date || null;
+
+    const localNow = getLocalDateTimeParts(reminderTimezone);
+    const runNow = reminderEnabled
+      ? shouldRunNow({
+          nowTime: localNow.time,
+          targetTime: reminderTime,
+          lastSentDate,
+          todayDate: localNow.date,
+        })
+      : false;
+
+    if (!runNow) {
+      return NextResponse.json({
+        ok: true,
+        skipped: true,
+        reason: reminderEnabled
+          ? "not-scheduled-window-or-already-sent"
+          : "reminder-disabled",
+        schedule: {
+          enabled: reminderEnabled,
+          time: reminderTime,
+          timezone: reminderTimezone,
+          last_sent_date: lastSentDate,
+        },
+        now: localNow,
+      });
+    }
+
+    const todayStr = localNow.date;
     const dateLabel = format(
       new Date(todayStr + "T00:00:00"),
       "EEEE, d MMMM yyyy",
       { locale: id },
     );
 
-    // ── Ambil semua jadwal hari ini (kecuali libur pengganti) ─────────────────
     const { data: todayTasks, error: taskError } = await supabase
       .from("tasks")
-      .select("id, title, start_date, assigned_to_name, task_type")
+      .select("id, title, description, start_date, assigned_to_name, task_type")
       .eq("start_date", todayStr)
       .neq("task_type", "libur_pengganti")
       .order("title", { ascending: true });
 
     if (taskError) {
-      console.error("[cron] task fetch error:", taskError.message);
       return NextResponse.json({ error: taskError.message }, { status: 500 });
     }
 
-    // ── Ambil SEMUA member aktif ──────────────────────────────────────────────
     const { data: allMembers, error: memberError } = await supabase
       .from("profiles")
       .select("*")
       .neq("is_active", false);
 
     if (memberError) {
-      console.error("[cron] member fetch error:", memberError.message);
       return NextResponse.json({ error: memberError.message }, { status: 500 });
     }
 
@@ -89,25 +160,12 @@ export async function GET(request) {
     }
 
     const stats = { push: 0, telegram: 0, email: 0, pushExpired: [] };
-    const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
 
-    // ── Tidak ada jadwal hari ini ─────────────────────────────────────────────
     if (!todayTasks?.length) {
-      console.log(`[cron] ${todayStr}: tidak ada jadwal hari ini.`);
-
-      // Ambil semua tasks tanpa filter tanggal untuk debug
-      const { data: allTasksSample } = await supabase
-        .from("tasks")
-        .select("id, title, start_date, task_type")
-        .order("start_date", { ascending: false })
-        .limit(5);
-
-      console.log(`[cron] debug — 5 tasks terbaru:`, allTasksSample);
-
-      // Kirim notif "tidak ada jadwal" ke semua member
       const emptyPayload = {
-        title: `☀️ ${dateLabel}`,
-        body: "Tidak ada jadwal hari ini. Selamat istirahat! 🎉",
+        title: `Jadwal ${dateLabel}`,
+        body: "Tidak ada jadwal hari ini.",
         url: "/",
         tag: `daily-${todayStr}`,
       };
@@ -115,8 +173,9 @@ export async function GET(request) {
       for (const member of allMembers) {
         if (member.notif_push === true && member.push_subscription) {
           const result = await sendPush(member.push_subscription, emptyPayload);
-          if (result.ok) stats.push++;
-          else if (result.expired) {
+          if (result.ok) {
+            stats.push++;
+          } else if (result.expired) {
             stats.pushExpired.push(member.id);
             await supabase
               .from("profiles")
@@ -126,57 +185,49 @@ export async function GET(request) {
         }
       }
 
+      if (appSettings?.id) {
+        await supabase
+          .from("app_settings")
+          .update({ daily_reminder_last_sent_date: todayStr })
+          .eq("id", appSettings.id);
+      }
+
       return NextResponse.json({
         ok: true,
         date: todayStr,
         tasks: 0,
         notified: stats,
-        debug,
-        recent_tasks_in_db: allTasksSample?.map((t) => ({
-          title: t.title,
-          start_date: t.start_date,
-          task_type: t.task_type,
-        })),
       });
     }
-
-    // ── Format daftar jadwal untuk notif ──────────────────────────────────────
-    const taskLines = todayTasks
-      .map((t) => {
-        const assignee = t.assigned_to_name ? ` · ${t.assigned_to_name}` : "";
-        const note = t.description ? ` (${t.description})` : "";
-        return `• ${t.title}${assignee}${note}`;
-      })
-      .join("\n");
 
     const taskLinesTelegram = todayTasks
       .map((t) => {
         const assignee = t.assigned_to_name
-          ? ` · <i>${t.assigned_to_name}</i>`
+          ? ` - <i>${escapeTelegramHtml(t.assigned_to_name)}</i>`
           : "";
-        const note = t.description ? `\n  📝 ${t.description}` : "";
-        return `• <b>${t.title}</b>${assignee}${note}`;
+        const note = t.description
+          ? `\n  Catatan: ${escapeTelegramHtml(t.description)}`
+          : "";
+        return `- <b>${escapeTelegramHtml(t.title)}</b>${assignee}${note}`;
       })
       .join("\n");
 
     const pushBody = todayTasks
       .map(
         (t) =>
-          `${t.title}${t.assigned_to_name ? " · " + t.assigned_to_name : ""}`,
+          `${t.title}${t.assigned_to_name ? " - " + t.assigned_to_name : ""}`,
       )
       .join(" | ");
 
-    // ── Kirim ke setiap member aktif ──────────────────────────────────────────
     for (const member of allMembers) {
       const name = member.full_name || member.email || "Tim";
       const wantsPush = member.notif_push === true;
       const wantsTelegram = member.notif_telegram !== false;
       const wantsEmail = member.notif_email === true;
 
-      // Web Push
       if (wantsPush && member.push_subscription) {
         const result = await sendPush(member.push_subscription, {
-          title: `☀️ Jadwal Hari Ini — ${dateLabel}`,
+          title: `Jadwal Hari Ini - ${dateLabel}`,
           body: pushBody,
           url: "/",
           tag: `daily-${todayStr}`,
@@ -193,16 +244,15 @@ export async function GET(request) {
         }
       }
 
-      // Telegram personal
-      if (wantsTelegram && member.telegram_chat_id && BOT_TOKEN) {
+      if (wantsTelegram && member.telegram_chat_id && botToken) {
         const msg =
-          `☀️ <b>Jadwal Hari Ini</b>\n` +
-          `📅 ${dateLabel}\n\n` +
-          `Halo <b>${name}</b>! Berikut jadwal tim hari ini:\n\n` +
+          `<b>Jadwal Hari Ini</b>\n` +
+          `${escapeTelegramHtml(dateLabel)}\n\n` +
+          `Halo <b>${escapeTelegramHtml(name)}</b>, berikut jadwal tim hari ini:\n\n` +
           taskLinesTelegram;
 
         try {
-          await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -212,12 +262,9 @@ export async function GET(request) {
             }),
           });
           stats.telegram++;
-        } catch (err) {
-          console.error("[cron] Telegram personal error:", err.message);
-        }
+        } catch (_err) {}
       }
 
-      // Email
       if (wantsEmail && member.email) {
         const sent = await sendDailyReminderEmail({
           to: member.email,
@@ -229,16 +276,15 @@ export async function GET(request) {
       }
     }
 
-    // ── Telegram group broadcast ──────────────────────────────────────────────
     const groupChatId = process.env.TELEGRAM_CHAT_ID;
-    if (groupChatId && BOT_TOKEN) {
+    if (groupChatId && botToken) {
       const groupMsg =
-        `☀️ <b>Jadwal Hari Ini</b> — ${dateLabel}\n\n` +
+        `<b>Jadwal Hari Ini</b> - ${escapeTelegramHtml(dateLabel)}\n\n` +
         `${todayTasks.length} jadwal:\n\n` +
         taskLinesTelegram;
 
       try {
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -247,31 +293,29 @@ export async function GET(request) {
             parse_mode: "HTML",
           }),
         });
-      } catch (err) {
-        console.error("[cron] Telegram group error:", err.message);
-      }
+      } catch (_err) {}
     }
 
-    console.log(
-      `[cron] ${todayStr}: ${todayTasks.length} tasks → push:${stats.push} telegram:${stats.telegram} email:${stats.email}`,
-    );
+    if (appSettings?.id) {
+      await supabase
+        .from("app_settings")
+        .update({ daily_reminder_last_sent_date: todayStr })
+        .eq("id", appSettings.id);
+    }
 
     return NextResponse.json({
       ok: true,
       date: todayStr,
-      utc_now: new Date().toISOString(),
-      wib_now: wibNow.toISOString(),
+      schedule: {
+        enabled: reminderEnabled,
+        time: reminderTime,
+        timezone: reminderTimezone,
+      },
       tasks: todayTasks.length,
-      task_list: todayTasks.map((t) => ({
-        title: t.title,
-        date: t.start_date,
-        assignee: t.assigned_to_name,
-      })),
       members: allMembers.length,
       notified: stats,
     });
   } catch (err) {
-    console.error("[cron] daily-reminder error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

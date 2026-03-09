@@ -9,17 +9,17 @@ import { useGlobalContext } from "@/app/providers";
 import Avatar from "@/app/components/Avatar";
 import { ChatSkeleton } from "@/app/components/Skeletons";
 
-
 // Kirim push notif chat ke semua member (fire & forget)
-async function broadcastChatPush({ senderName, content }) {
+async function broadcastChatPush({ senderName, content, accessToken }) {
   fetch("/api/notify-chat", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken || ""}`,
+    },
     body: JSON.stringify({ senderName, content }),
-  }).catch(() => { });
+  }).catch(() => {});
 }
-
-
 
 function DateDivider({ dateStr, lang }) {
   const d = new Date(dateStr);
@@ -229,6 +229,7 @@ export default function ChatView({ session, userProfile, users }) {
       broadcastChatPush({
         senderName: userProfile?.full_name || session.user.email,
         content,
+        accessToken: session.access_token,
       });
     } else {
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
@@ -273,16 +274,16 @@ export default function ChatView({ session, userProfile, users }) {
   }
 
   return (
-    <div className="flex flex-col bg-background/70 backdrop-blur-3xl border border-border rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-[calc(100vh-140px)] sm:h-[calc(100vh-120px)] min-h-[420px]">
+    <div className="flex flex-col bg-background/70 backdrop-blur-3xl border border-border rounded-[1.5rem] sm:rounded-[2rem] overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-[calc(100vh-148px)] sm:h-[calc(100vh-132px)] min-h-[420px]">
       {/* Header */}
-      <div className="px-6 py-4 bg-background/50 backdrop-blur-md border-b border-border flex items-center justify-between flex-shrink-0 z-10">
-        <div className="flex items-center gap-3.5">
+      <div className="px-4 sm:px-6 py-3.5 sm:py-4 bg-background/50 backdrop-blur-md border-b border-border flex items-center justify-between flex-shrink-0 z-10">
+        <div className="flex items-center gap-3">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-zinc-100 dark:bg-zinc-800 border border-border flex items-center justify-center text-muted-foreground shadow-sm">
             <span className="text-sm sm:text-base">💬</span>
           </div>
           <div className="flex flex-col">
             <h2 className="font-bold text-[15px] sm:text-[16px] text-foreground tracking-tight leading-none mb-1">
-              Team Chat
+              {lang === "id" ? "Obrolan Tim" : "Team Chat"}
             </h2>
             <div className="flex items-center gap-1.5 opacity-80">
               <span className="relative flex h-2 w-2 overflow-hidden rounded-full">
@@ -290,27 +291,30 @@ export default function ChatView({ session, userProfile, users }) {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
               <p className="text-[11px] sm:text-[12px] text-muted-foreground font-medium">
-                Real-time sync
+                {lang === "id" ? "Sinkron real-time" : "Real-time sync"}
               </p>
             </div>
           </div>
         </div>
         <div className="flex -space-x-2">
-          {users.slice(0, 5).map((u) => (
+          {users.slice(0, 4).map((u) => (
             <div key={u.id} className="ring-2 ring-white rounded-full">
               <Avatar user={u} />
             </div>
           ))}
-          {users.length > 5 && (
+          {users.length > 4 && (
             <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-700 border-2 border-white dark:border-zinc-600 flex items-center justify-center text-[10px] font-bold text-muted-foreground ring-2 ring-white dark:ring-zinc-600">
-              +{users.length - 5}
+              +{users.length - 4}
             </div>
           )}
         </div>
       </div>
 
       {/* Messages */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 scroll-smooth no-scrollbar relative">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 sm:py-6 scroll-smooth no-scrollbar relative"
+      >
         {/* Load earlier button */}
         {hasMore && messages.length > 0 && (
           <div className="flex justify-center mb-4">
@@ -320,8 +324,12 @@ export default function ChatView({ session, userProfile, users }) {
               className="text-xs text-muted-foreground hover:text-foreground bg-muted/50 hover:bg-muted px-4 py-1.5 rounded-full transition-colors disabled:opacity-40 font-medium"
             >
               {loadingMore
-                ? (lang === "id" ? "Memuat..." : "Loading...")
-                : (lang === "id" ? "⬆ Pesan sebelumnya" : "⬆ Load earlier messages")}
+                ? lang === "id"
+                  ? "Memuat..."
+                  : "Loading..."
+                : lang === "id"
+                  ? "⬆ Pesan sebelumnya"
+                  : "⬆ Load earlier messages"}
             </button>
           </div>
         )}
@@ -333,7 +341,7 @@ export default function ChatView({ session, userProfile, users }) {
             </div>
             <p className="text-[13px] font-medium text-muted-foreground">
               {lang === "id"
-                ? "Belum ada pesan. Say Hi!"
+                ? "Belum ada pesan. Sapa tim dulu."
                 : "No messages yet. Say Hi!"}
             </p>
           </div>
@@ -366,7 +374,7 @@ export default function ChatView({ session, userProfile, users }) {
       </div>
 
       {/* Input */}
-      <div className="px-4 py-4 sm:p-5 bg-background/60 backdrop-blur-md border-t border-border flex-shrink-0 z-10">
+      <div className="px-4 sm:px-6 py-3.5 sm:py-4 bg-background/60 backdrop-blur-md border-t border-border flex-shrink-0 z-10">
         <div className="flex items-end gap-3 max-w-4xl mx-auto">
           <div className="hidden sm:block mb-[5px]">
             <Avatar user={userProfile} size="md" />
@@ -388,10 +396,11 @@ export default function ChatView({ session, userProfile, users }) {
             <button
               onClick={sendMessage}
               disabled={!input.trim() || sending}
-              className={`p-2.5 rounded-full flex-shrink-0 self-end mb-[2px] shadow-sm transition-all duration-300 ${!input.trim() || sending
-                ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-300 dark:text-zinc-600 cursor-not-allowed border border-border"
-                : "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 hover:scale-[1.05] active:scale-[0.95]"
-                }`}
+              className={`p-2.5 rounded-full flex-shrink-0 self-end mb-[2px] shadow-sm transition-all duration-300 ${
+                !input.trim() || sending
+                  ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-300 dark:text-zinc-600 cursor-not-allowed border border-border"
+                  : "bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 hover:scale-[1.05] active:scale-[0.95]"
+              }`}
             >
               <Send className="w-4 h-4 ml-[1px]" />
             </button>

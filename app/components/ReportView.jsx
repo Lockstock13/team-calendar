@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
@@ -14,7 +14,6 @@ import {
 import { useGlobalContext } from "@/app/providers";
 import { enUS } from "date-fns/locale";
 import Avatar from "@/app/components/Avatar";
-
 
 const MONTHS_ID = [
   "Januari",
@@ -46,9 +45,7 @@ const MONTHS_EN = [
   "December",
 ];
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function TypeBadge({ task, lang }) {
   if (task.is_comday || task.task_type === "libur_pengganti") {
@@ -60,7 +57,7 @@ function TypeBadge({ task, lang }) {
   }
   return (
     <span className="inline-flex items-center text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full whitespace-nowrap font-medium">
-      📅 Regular
+      📌 {lang === "id" ? "Reguler" : "Regular"}
     </span>
   );
 }
@@ -94,19 +91,19 @@ function formatDateRange(task, lang) {
   const localeObj = lang === "id" ? id : enUS;
   const start = task.start_date
     ? format(new Date(task.start_date + "T00:00:00"), "d MMM yyyy", {
-      locale: localeObj,
-    })
+        locale: localeObj,
+      })
     : "-";
   const end =
     task.end_date && task.end_date !== task.start_date
       ? format(new Date(task.end_date + "T00:00:00"), "d MMM yyyy", {
-        locale: localeObj,
-      })
+          locale: localeObj,
+        })
       : null;
-  return end ? `${start} – ${end}` : start;
+  return end ? `${start} - ${end}` : start;
 }
 
-// ─── Export CSV ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Export CSV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function exportCSV(tasks, users, month, year, lang) {
   const MONTHS = lang === "id" ? MONTHS_ID : MONTHS_EN;
@@ -125,8 +122,8 @@ function exportCSV(tasks, users, month, year, lang) {
     const localeObj = lang === "id" ? id : enUS;
     const dateStr = task.start_date
       ? format(new Date(task.start_date + "T00:00:00"), "d MMM yyyy", {
-        locale: localeObj,
-      })
+          locale: localeObj,
+        })
       : "-";
     const endStr =
       task.end_date && task.end_date !== task.start_date
@@ -168,7 +165,7 @@ function exportCSV(tasks, users, month, year, lang) {
   URL.revokeObjectURL(url);
 }
 
-// ─── Tabel Harian ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Tabel Harian â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function DailyTable({ tasks, users, lang }) {
   const sorted = useMemo(
@@ -188,25 +185,25 @@ function DailyTable({ tasks, users, lang }) {
         <table className="w-full text-[13px]">
           <thead>
             <tr className="border-b bg-muted/30">
-              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest w-8">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-8">
                 No
               </th>
-              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest w-40">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-40">
                 {lang === "id" ? "Tanggal" : "Date"}
               </th>
-              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
                 {lang === "id" ? "Tugas" : "Task"}
               </th>
-              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest w-44">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-44">
                 {lang === "id" ? "Petugas" : "Assignee"}
               </th>
-              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest w-36">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-36">
                 {lang === "id" ? "Tipe" : "Type"}
               </th>
-              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest w-28">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-28">
                 Status
               </th>
-              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+              <th className="text-left px-3 py-2.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
                 {lang === "id" ? "Catatan / Info" : "Notes"}
               </th>
             </tr>
@@ -221,21 +218,22 @@ function DailyTable({ tasks, users, lang }) {
                   ? assigneeList
                   : task.assigned_to_name
                     ? [
-                      {
-                        full_name: task.assigned_to_name,
-                        color: "#64748b",
-                        id: "fallback",
-                      },
-                    ]
+                        {
+                          full_name: task.assigned_to_name,
+                          color: "#64748b",
+                          id: "fallback",
+                        },
+                      ]
                     : [];
 
               return (
                 <tr
                   key={task.id}
-                  className={`hover:bg-muted/20 transition-colors ${task.is_comday || task.task_type === "libur_pengganti"
-                    ? "bg-pink-50/40 dark:bg-pink-950/20"
-                    : ""
-                    }`}
+                  className={`hover:bg-muted/20 transition-colors ${
+                    task.is_comday || task.task_type === "libur_pengganti"
+                      ? "bg-pink-50/40 dark:bg-pink-950/20"
+                      : ""
+                  }`}
                 >
                   {/* No */}
                   <td className="px-4 py-3 text-muted-foreground tabular-nums">
@@ -245,10 +243,10 @@ function DailyTable({ tasks, users, lang }) {
                   <td className="px-4 py-3 text-sm font-medium tabular-nums whitespace-nowrap">
                     {task.start_date
                       ? format(
-                        new Date(task.start_date + "T00:00:00"),
-                        "EEE, d MMM yyyy",
-                        { locale: lang === "id" ? id : enUS },
-                      )
+                          new Date(task.start_date + "T00:00:00"),
+                          "EEE, d MMM yyyy",
+                          { locale: lang === "id" ? id : enUS },
+                        )
                       : "-"}
                     {task.end_date && task.end_date !== task.start_date && (
                       <span className="block text-xs text-muted-foreground font-normal">
@@ -293,7 +291,7 @@ function DailyTable({ tasks, users, lang }) {
                   {/* Catatan */}
                   <td className="px-4 py-3 text-xs text-muted-foreground leading-relaxed max-w-[180px]">
                     {task.description || (
-                      <span className="italic opacity-50">—</span>
+                      <span className="italic opacity-50">-</span>
                     )}
                   </td>
                 </tr>
@@ -309,16 +307,18 @@ function DailyTable({ tasks, users, lang }) {
           const assigneeList = (task.assignee_ids || [])
             .map((uid) => users.find((u) => u.id === uid))
             .filter(Boolean);
-          const isComday = task.is_comday || task.task_type === "libur_pengganti";
+          const isComday =
+            task.is_comday || task.task_type === "libur_pengganti";
           const barColor = isComday ? "#f472b6" : "#6366f1";
 
           return (
             <div
               key={task.id}
-              className={`flex gap-3 p-3 rounded-xl border ${isComday
+              className={`flex gap-3 p-3 rounded-xl border ${
+                isComday
                   ? "bg-pink-50/50 dark:bg-pink-950/20 border-pink-100 dark:border-pink-900/40"
                   : "bg-background border-border"
-                }`}
+              }`}
             >
               {/* Color bar */}
               <div
@@ -358,7 +358,9 @@ function DailyTable({ tasks, users, lang }) {
                             ))}
                           </div>
                           <span className="text-xs text-muted-foreground truncate max-w-[120px]">
-                            {assigneeList.map((u) => u.full_name || u.email).join(", ")}
+                            {assigneeList
+                              .map((u) => u.full_name || u.email)
+                              .join(", ")}
                           </span>
                         </>
                       ) : (
@@ -386,14 +388,14 @@ function DailyTable({ tasks, users, lang }) {
   );
 }
 
-// ─── Per-fotografer view (existing, cleaned up) ───────────────────────────────
+// â”€â”€â”€ Per-fotografer view (existing, cleaned up) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function TaskRow({ task, lang }) {
   const localeObj = lang === "id" ? id : enUS;
   const dateStr = task.start_date
     ? format(new Date(task.start_date + "T00:00:00"), "d MMM yyyy", {
-      locale: localeObj,
-    })
+        locale: localeObj,
+      })
     : "-";
   const endStr =
     task.end_date && task.end_date !== task.start_date
@@ -507,7 +509,7 @@ function PhotographerRow({ user, tasks, maxCount, rank, lang }) {
   );
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function ReportView({ tasks, users }) {
   const { language } = useGlobalContext();
@@ -551,10 +553,10 @@ export default function ReportView({ tasks, users }) {
   const isEmpty = monthTasks.length === 0;
 
   return (
-    <div className="space-y-5 report-content">
-      {/* ── Controls ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 no-print">
-        {/* Month / Year — full width on mobile */}
+    <div className="space-y-4 sm:space-y-5 report-content">
+      {/* â”€â”€ Controls â”€â”€ */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-3 no-print">
+        {/* Month / Year â€” full width on mobile */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <select
             value={month}
@@ -586,7 +588,7 @@ export default function ReportView({ tasks, users }) {
             <button
               onClick={() => exportCSV(monthTasks, users, month, year, lang)}
               className="flex items-center gap-1.5 px-3 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors text-muted-foreground hover:text-foreground active:scale-95"
-              title="Download CSV"
+              title={lang === "id" ? "Unduh CSV" : "Download CSV"}
             >
               <Download className="w-4 h-4" />
               CSV
@@ -597,12 +599,12 @@ export default function ReportView({ tasks, users }) {
             className="flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium hover:bg-muted transition-colors active:scale-95"
           >
             <Printer className="w-4 h-4" />
-            Print
+            {lang === "id" ? "Cetak" : "Print"}
           </button>
         </div>
       </div>
 
-      {/* ── Print header (Visible only when printing) ── */}
+      {/* â”€â”€ Print header (Visible only when printing) â”€â”€ */}
       <div className="print-only hidden pt-4 pb-8 border-b-2 border-zinc-900 mb-8">
         <h1 className="text-3xl font-bold text-zinc-900">
           {lang === "id" ? "LAPORAN BULANAN" : "MONTHLY REPORT"}
@@ -616,7 +618,7 @@ export default function ReportView({ tasks, users }) {
         <hr className="my-3" />
       </div>
 
-      {/* ── Summary cards ── */}
+      {/* â”€â”€ Summary cards â”€â”€ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           {
@@ -640,7 +642,10 @@ export default function ReportView({ tasks, users }) {
             cls: "text-orange-600",
           },
         ].map(({ label, value, cls }) => (
-          <div key={label} className="bg-background border rounded-2xl p-4">
+          <div
+            key={label}
+            className="bg-background border rounded-2xl p-3.5 sm:p-4"
+          >
             <p className={`text-3xl font-bold tabular-nums ${cls}`}>{value}</p>
             <p className="text-xs text-muted-foreground font-medium mt-1">
               {label}
@@ -649,37 +654,47 @@ export default function ReportView({ tasks, users }) {
         ))}
       </div>
 
-      {/* ── View toggle ── */}
+      {/* â”€â”€ View toggle â”€â”€ */}
       {!isEmpty && (
         <div className="flex items-center gap-1 bg-muted p-1 rounded-xl w-fit no-print">
           <button
             onClick={() => setViewType("table")}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${viewType === "table"
-              ? "bg-background shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              viewType === "table"
+                ? "bg-background shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <LayoutList className="w-4 h-4" />
-            <span className="hidden xs:inline sm:hidden">{lang === "id" ? "Tabel" : "Table"}</span>
-            <span className="hidden sm:inline">{lang === "id" ? "Tabel Harian" : "Daily Table"}</span>
+            <span className="hidden xs:inline sm:hidden">
+              {lang === "id" ? "Tabel" : "Table"}
+            </span>
+            <span className="hidden sm:inline">
+              {lang === "id" ? "Tabel Harian" : "Daily Table"}
+            </span>
           </button>
           <button
             onClick={() => setViewType("photographer")}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${viewType === "photographer"
-              ? "bg-background shadow-sm text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-              }`}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              viewType === "photographer"
+                ? "bg-background shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
           >
             <BarChart2 className="w-4 h-4" />
-            <span className="hidden xs:inline sm:hidden">{lang === "id" ? "Orang" : "Person"}</span>
-            <span className="hidden sm:inline">{lang === "id" ? "Per Fotografer" : "By Assignee"}</span>
+            <span className="hidden xs:inline sm:hidden">
+              {lang === "id" ? "Orang" : "Person"}
+            </span>
+            <span className="hidden sm:inline">
+              {lang === "id" ? "Per Fotografer" : "By Assignee"}
+            </span>
           </button>
         </div>
       )}
 
-      {/* ── Empty state ── */}
+      {/* â”€â”€ Empty state â”€â”€ */}
       {isEmpty && (
-        <div className="text-center py-16 bg-background border rounded-2xl text-muted-foreground">
+        <div className="text-center py-12 sm:py-14 bg-background border rounded-2xl text-muted-foreground">
           <span className="text-4xl block mb-3">📊</span>
           <p className="text-sm">
             {lang === "id" ? "Tidak ada jadwal di" : "No tasks in"}{" "}
@@ -688,10 +703,10 @@ export default function ReportView({ tasks, users }) {
         </div>
       )}
 
-      {/* ── Tabel Harian ── */}
+      {/* â”€â”€ Tabel Harian â”€â”€ */}
       {!isEmpty && viewType === "table" && (
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+        <div className="space-y-2.5 sm:space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground">
             {lang === "id" ? "Jadwal" : "Tasks"} {MONTHS[month]} {year}
           </h2>
 
@@ -715,10 +730,10 @@ export default function ReportView({ tasks, users }) {
         </div>
       )}
 
-      {/* ── Per Fotografer ── */}
+      {/* â”€â”€ Per Fotografer â”€â”€ */}
       {!isEmpty && viewType === "photographer" && (
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+        <div className="space-y-2.5 sm:space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground">
             {lang === "id"
               ? "Beban Kerja Per Fotografer"
               : "Workload By Assignee"}

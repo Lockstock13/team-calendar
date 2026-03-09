@@ -1,4 +1,4 @@
-import "./globals.css";
+﻿import "./globals.css";
 import { Inter } from "next/font/google";
 import PushInit from "./components/PushInit";
 import Providers from "./providers";
@@ -25,7 +25,6 @@ export const viewport = {
   themeColor: "#1e293b",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export default function RootLayout({ children }) {
@@ -56,7 +55,7 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body className={inter.className}>
-        {/* Registers /sw.js silently — no permission prompt here */}
+        {/* Registers /sw.js silently - no permission prompt here */}
         <PushInit />
         <ConfirmProvider>
           <ToastProvider>

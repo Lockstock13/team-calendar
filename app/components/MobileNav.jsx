@@ -15,7 +15,7 @@ import { useGlobalContext } from "@/app/providers";
 
 export default function MobileNav({ unreadChat = 0 }) {
   const pathname = usePathname();
-  const { language } = useGlobalContext();
+  const { language, appSettings } = useGlobalContext();
   const lang = language || "en";
   const [mounted, setMounted] = useState(false);
 
@@ -59,16 +59,23 @@ export default function MobileNav({ unreadChat = 0 }) {
     {
       id: "chat",
       path: "/chat",
-      label: "Chat",
+      label: lang === "id" ? "Obrolan" : "Chat",
       icon: MessageCircle,
       badge: unreadChat,
     },
   ];
 
+  const filteredItems = items.filter((item) => {
+    if (item.id === "chat") return appSettings?.enable_chat !== false;
+    if (item.id === "notes") return appSettings?.enable_notes !== false;
+    if (item.id === "report") return appSettings?.enable_report !== false;
+    return true;
+  });
+
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 sm:hidden bg-background border-t">
-      <div className="grid grid-cols-6 h-14">
-        {items.map(({ id, path, label, icon: Icon, badge }) => {
+    <nav className="fixed bottom-0 inset-x-0 z-50 sm:hidden bg-background border-t pb-safe">
+      <div className="flex items-center justify-evenly h-14 px-1 max-w-lg mx-auto w-full">
+        {filteredItems.map(({ id, path, label, icon: Icon, badge }) => {
           const isActive =
             pathname === path || (path === "/dashboard" && pathname === "/");
 
@@ -76,20 +83,18 @@ export default function MobileNav({ unreadChat = 0 }) {
             <Link
               key={id}
               href={path}
-              className={`flex flex-col items-center justify-center transition-colors ${isActive
-                ? "text-primary"
-                : "text-muted-foreground"
+              className={`flex-1 flex flex-col items-center justify-center h-full transition-colors ${isActive ? "text-primary" : "text-muted-foreground"
                 }`}
             >
               <div className="relative">
-                <Icon className="w-5 h-5" />
+                <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
                 {badge > 0 && (
                   <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-background">
                     {badge > 99 ? "99+" : badge}
                   </span>
                 )}
               </div>
-              <span className="text-[10px] font-medium mt-0.5">{label}</span>
+              <span className={`text-[10px] font-medium mt-0.5 transition-all ${isActive ? 'font-bold' : ''}`}>{label}</span>
             </Link>
           );
         })}

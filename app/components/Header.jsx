@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Calendar,
   LayoutDashboard,
@@ -47,7 +47,7 @@ export default function Header({
     {
       id: "dashboard",
       path: "/dashboard",
-      label: "Dashboard",
+      label: lang === "id" ? "Beranda" : "Dashboard",
       icon: LayoutDashboard,
     },
     {
@@ -77,11 +77,18 @@ export default function Header({
     {
       id: "chat",
       path: "/chat",
-      label: "Chat",
+      label: lang === "id" ? "Obrolan" : "Chat",
       icon: MessageCircle,
       badge: unreadChat,
     },
   ];
+
+  const filteredNavItems = navItems.filter((item) => {
+    if (item.id === "chat") return appSettings?.enable_chat !== false;
+    if (item.id === "notes") return appSettings?.enable_notes !== false;
+    if (item.id === "report") return appSettings?.enable_report !== false;
+    return true;
+  });
 
   return (
     <>
@@ -92,7 +99,11 @@ export default function Header({
             <div className="flex items-center gap-2">
               {appSettings?.logo_url ? (
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-muted/30 overflow-hidden">
-                  <img src={appSettings.logo_url} alt="Logo" className="w-full h-full object-contain" />
+                  <img
+                    src={appSettings.logo_url}
+                    alt="Logo"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               ) : (
                 <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
@@ -105,7 +116,7 @@ export default function Header({
             </div>
 
             <nav className="hidden sm:flex gap-0.5">
-              {navItems.map(({ id, path, label, icon: Icon, badge }) => {
+              {filteredNavItems.map(({ id, path, label, icon: Icon, badge }) => {
                 const isActive =
                   pathname === path ||
                   (path === "/dashboard" && pathname === "/");
@@ -114,14 +125,14 @@ export default function Header({
                     key={id}
                     href={path}
                     className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
                       }`}
                   >
                     <Icon className="w-4 h-4" />
                     <span className="hidden sm:inline">{label}</span>
                     {badge > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center leading-none">
                         {badge > 99 ? "99+" : badge}
                       </span>
                     )}
@@ -140,7 +151,11 @@ export default function Header({
                   onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                   className="p-1.5 text-muted-foreground hover:text-foreground active:scale-95 transition-all"
                 >
-                  {theme === "dark" ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+                  {theme === "dark" ? (
+                    <Sun className="w-[18px] h-[18px]" />
+                  ) : (
+                    <Moon className="w-[18px] h-[18px]" />
+                  )}
                 </button>
               )}
               <button
@@ -164,7 +179,9 @@ export default function Header({
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all"
                 >
                   <Shield className="w-4 h-4" />
-                  <span className="hidden sm:inline">Admin</span>
+                  <span className="hidden sm:inline">
+                    {lang === "id" ? "Admin" : "Admin"}
+                  </span>
                 </Link>
               )}
 
@@ -190,7 +207,11 @@ export default function Header({
                   className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-all"
                   title={lang === "id" ? "Ganti Tema" : "Toggle Theme"}
                 >
-                  {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  {theme === "dark" ? (
+                    <Sun className="w-4 h-4" />
+                  ) : (
+                    <Moon className="w-4 h-4" />
+                  )}
                 </button>
               )}
 
@@ -217,7 +238,7 @@ export default function Header({
           <div className="absolute inset-x-0 bottom-0 bg-background rounded-t-3xl border-t shadow-2xl p-5 pb-32 space-y-5 animate-in slide-in-from-bottom duration-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-black tracking-[0.2em] uppercase text-muted-foreground/60 mb-1">
+                <p className="text-[11px] font-black tracking-[0.2em] uppercase text-muted-foreground/60 mb-1">
                   {lang === "id" ? "AKUN SAYA" : "MY ACCOUNT"}
                 </p>
                 <p className="text-sm font-bold tracking-tight">
@@ -255,7 +276,7 @@ export default function Header({
                 className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium hover:bg-muted"
               >
                 <Shield className="w-4 h-4" />
-                <span>Admin</span>
+                <span>{lang === "id" ? "Admin" : "Admin"}</span>
               </Link>
             )}
 

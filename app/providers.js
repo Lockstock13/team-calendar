@@ -28,10 +28,23 @@ export const useGlobalContext = () => useContext(GlobalContext);
 // Helper for color generation
 const generateColor = (str) => {
   const colors = [
-    "#ef4444", "#f97316", "#f59e0b", "#84cc16", "#22c55e",
-    "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9", "#3b82f6",
-    "#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899",
-    "#f43f5e", "#64748b",
+    "#ef4444",
+    "#f97316",
+    "#f59e0b",
+    "#84cc16",
+    "#22c55e",
+    "#10b981",
+    "#14b8a6",
+    "#06b6d4",
+    "#0ea5e9",
+    "#3b82f6",
+    "#6366f1",
+    "#8b5cf6",
+    "#a855f7",
+    "#d946ef",
+    "#ec4899",
+    "#f43f5e",
+    "#64748b",
   ];
   let hash = 0;
   for (let i = 0; i < str.length; i++)
@@ -42,7 +55,9 @@ const generateColor = (str) => {
 // Convert hex to HSL for Tailwind CSS variable
 const hexToHslString = (hex) => {
   if (!hex) return "222.2 47.4% 11.2%"; // default primary
-  let r = 0, g = 0, b = 0;
+  let r = 0,
+    g = 0,
+    b = 0;
   if (hex.length === 4) {
     r = parseInt(hex[1] + hex[1], 16);
     g = parseInt(hex[2] + hex[2], 16);
@@ -52,9 +67,14 @@ const hexToHslString = (hex) => {
     g = parseInt(hex.slice(3, 5), 16);
     b = parseInt(hex.slice(5, 7), 16);
   }
-  r /= 255; g /= 255; b /= 255;
-  const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let h, s, l = (max + min) / 2;
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  const max = Math.max(r, g, b),
+    min = Math.min(r, g, b);
+  let h,
+    s,
+    l = (max + min) / 2;
 
   if (max === min) {
     h = s = 0;
@@ -62,9 +82,15 @@ const hexToHslString = (hex) => {
     const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
     switch (max) {
-      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: h = (b - r) / d + 2; break;
-      case b: h = (r - g) / d + 4; break;
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
     }
     h /= 6;
   }
@@ -90,18 +116,42 @@ export default function Providers({ children }) {
     app_name: "Team Calendar",
     logo_url: null,
     primary_color: "#0ea5e9",
+    enable_chat: true,
+    enable_notes: true,
+    enable_report: true,
   });
 
   const fetchSettings = async () => {
     try {
-      const { data, error } = await supabase.from("app_settings").select("*").single();
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("*")
+        .single();
       if (error) {
-        console.warn("[settings] app_settings not available:", error.message, "— using defaults.");
+        console.warn(
+          "[settings] app_settings not available:",
+          error.message,
+          "— using defaults.",
+        );
         return;
       }
-      if (data) setAppSettings(data);
+      if (data) {
+        setAppSettings({
+          ...data,
+          app_name: data.app_name || "Team Calendar",
+          logo_url: data.logo_url || null,
+          primary_color: data.primary_color || "#0ea5e9",
+          enable_chat: data.enable_chat ?? true,
+          enable_notes: data.enable_notes ?? true,
+          enable_report: data.enable_report ?? true,
+        });
+      }
     } catch (err) {
-      console.warn("[settings] Failed to fetch app settings:", err.message, "— using defaults.");
+      console.warn(
+        "[settings] Failed to fetch app settings:",
+        err.message,
+        "— using defaults.",
+      );
     }
   };
 
@@ -115,6 +165,14 @@ export default function Providers({ children }) {
     setLanguageState(lang);
     localStorage.setItem("app_lang", lang);
   };
+
+  // Clear unread chat badge when entering chat.
+  // Keep hook near top-level so hook order stays stable.
+  useEffect(() => {
+    if (pathname === "/chat" && unreadChat > 0) {
+      setUnreadChat(0);
+    }
+  }, [pathname, unreadChat]);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -240,7 +298,13 @@ export default function Providers({ children }) {
     handleEditTask,
     handleDeleteTask,
     handleUpdateStatus: handleUpdateTaskStatus,
-  } = useTaskActions({ session, userProfile, users, language, onSuccess: fetchTasks });
+  } = useTaskActions({
+    session,
+    userProfile,
+    users,
+    language,
+    onSuccess: fetchTasks,
+  });
 
   const handleAuth = async (mode, data) => {
     setAuthLoading(true);
@@ -279,7 +343,8 @@ export default function Providers({ children }) {
 
   if (loading) {
     const renderSkeletonContent = () => {
-      if (pathname === "/dashboard" || pathname === "/") return <DashboardSkeleton />;
+      if (pathname === "/dashboard" || pathname === "/")
+        return <DashboardSkeleton />;
       if (pathname === "/calendar") return <CalendarSkeleton />;
       if (pathname === "/list") return <ListSkeleton />;
       if (pathname === "/notes") return <NotesSkeleton />;
@@ -295,8 +360,8 @@ export default function Providers({ children }) {
             <style
               dangerouslySetInnerHTML={{
                 __html: `
-                  :root, .dark { 
-                    --primary: ${hexToHslString(appSettings.primary_color)}; 
+                  :root, .dark {
+                    --primary: ${hexToHslString(appSettings.primary_color)};
                     --primary-foreground: 0 0% 100%;
                   }
                 `,
@@ -328,7 +393,9 @@ export default function Providers({ children }) {
           <div className="w-14 h-14 bg-red-100 dark:bg-red-950/30 rounded-2xl flex items-center justify-center mx-auto">
             <span className="text-2xl">🔒</span>
           </div>
-          <h2 className="font-bold text-lg">{language === "id" ? "Akun Dinonaktifkan" : "Account Deactivated"}</h2>
+          <h2 className="font-bold text-lg">
+            {language === "id" ? "Akun Dinonaktifkan" : "Account Deactivated"}
+          </h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {language === "id"
               ? "Akun kamu telah dinonaktifkan oleh admin. Hubungi admin untuk mengaktifkan kembali."
@@ -360,11 +427,6 @@ export default function Providers({ children }) {
     );
   }
 
-  // Clear unread chat badge when entering chat
-  if (pathname === "/chat" && unreadChat > 0) {
-    setUnreadChat(0);
-  }
-
   return (
     <GlobalContext.Provider
       value={{
@@ -390,14 +452,16 @@ export default function Providers({ children }) {
     >
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         {appSettings?.primary_color && (
-          <style dangerouslySetInnerHTML={{
-            __html: `
-              :root, .dark { 
-                --primary: ${hexToHslString(appSettings.primary_color)}; 
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+              :root, .dark {
+                --primary: ${hexToHslString(appSettings.primary_color)};
                 --primary-foreground: 0 0% 100%;
               }
-            `
-          }} />
+            `,
+            }}
+          />
         )}
         <div className="min-h-screen bg-muted/20">
           <Header

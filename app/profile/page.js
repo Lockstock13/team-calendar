@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
@@ -46,7 +46,7 @@ const COLORS = [
   "#1e293b",
 ];
 
-// ─── Small helpers ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Small helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Toggle({ checked, onChange, disabled = false }) {
   return (
@@ -56,12 +56,16 @@ function Toggle({ checked, onChange, disabled = false }) {
       aria-checked={checked}
       onClick={() => !disabled && onChange(!checked)}
       disabled={disabled}
-      className={`relative inline-flex h-6 w-10 items-center rounded-full transition-all duration-300 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed ${checked ? "bg-zinc-900 dark:bg-zinc-100" : "bg-zinc-200 dark:bg-zinc-800"
-        }`}
+      className={`relative inline-flex h-6 w-10 items-center rounded-full transition-all duration-300 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed ${
+        checked
+          ? "bg-zinc-900 dark:bg-zinc-100"
+          : "bg-zinc-200 dark:bg-zinc-800"
+      }`}
     >
       <span
-        className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-zinc-900 shadow-md transition-all duration-300 ${checked ? "translate-x-5" : "translate-x-1"
-          }`}
+        className={`inline-block h-4 w-4 transform rounded-full bg-white dark:bg-zinc-900 shadow-md transition-all duration-300 ${
+          checked ? "translate-x-5" : "translate-x-1"
+        }`}
       />
     </button>
   );
@@ -102,7 +106,7 @@ function NotifRow({
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -142,7 +146,7 @@ export default function ProfilePage() {
       ? getPushSupport()
       : { supported: false, reason: "ssr" };
 
-  // ── Load session + profile ──────────────────────────────────────────────────
+  // â”€â”€ Load session + profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -175,7 +179,7 @@ export default function ProfilePage() {
     });
   }, []);
 
-  // ── Save profile ────────────────────────────────────────────────────────────
+  // â”€â”€ Save profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const saveProfile = async () => {
     if (!session) return;
@@ -198,7 +202,7 @@ export default function ProfilePage() {
     }
   };
 
-  // ── Change password ─────────────────────────────────────────────────────────
+  // â”€â”€ Change password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const changePassword = async () => {
     if (passwords.new.length < 6) {
@@ -223,7 +227,7 @@ export default function ProfilePage() {
     }
   };
 
-  // ── Push notification toggle ────────────────────────────────────────────────
+  // â”€â”€ Push notification toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const handlePushToggle = async (enable) => {
     if (!pushSupport.supported) return;
@@ -251,7 +255,7 @@ export default function ProfilePage() {
           applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
         });
 
-        // Simpan langsung via Supabase client (pakai auth session → RLS lolos)
+        // Simpan langsung via Supabase client (pakai auth session -> RLS lolos)
         const { error } = await supabase
           .from("profiles")
           .update({
@@ -291,7 +295,7 @@ export default function ProfilePage() {
     }
   };
 
-  // ── Telegram / Email toggle (just update DB preference) ────────────────────
+  // â”€â”€ Telegram / Email toggle (just update DB preference) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const handleNotifToggle = async (key, value) => {
     if (!session) return;
@@ -311,7 +315,7 @@ export default function ProfilePage() {
     }
   };
 
-  // ── Derived ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Derived â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const initial = (form.full_name || session?.user?.email || "?")
     .charAt(0)
@@ -345,12 +349,14 @@ export default function ProfilePage() {
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <h1 className="font-bold uppercase tracking-wide">{lang === "id" ? "Profil Saya" : "My Profile"}</h1>
+          <h1 className="text-base font-semibold">
+            {lang === "id" ? "Profil Saya" : "My Profile"}
+          </h1>
         </div>
       </header>
 
       <main className="max-w-lg mx-auto px-4 py-6 space-y-5">
-        {/* ── Avatar preview ── */}
+        {/* â”€â”€ Avatar preview â”€â”€ */}
         <div className="bg-background border rounded-[2rem] p-10 flex flex-col items-center gap-5 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)] relative transition-all duration-300">
           {/* Minimal top accent line */}
           <div
@@ -373,8 +379,9 @@ export default function ProfilePage() {
           </div>
 
           <div className="text-center">
-            <h3 className="text-xl font-bold tracking-tight text-foreground">
-              {form.full_name || (lang === "id" ? "(Belum ada nama)" : "(No Name)")}
+            <h3 className="text-xl font-semibold text-foreground">
+              {form.full_name ||
+                (lang === "id" ? "(Belum ada nama)" : "(No Name)")}
             </h3>
             <p className="text-sm text-muted-foreground font-medium mt-1">
               {session?.user?.email}
@@ -382,7 +389,7 @@ export default function ProfilePage() {
 
             {profile?.role === "admin" && (
               <div className="mt-3 flex justify-center">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-bold uppercase tracking-widest border border-zinc-200 dark:border-zinc-700">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[11px] font-semibold border border-zinc-200 dark:border-zinc-700">
                   <span className="text-[12px]">👑</span>
                   Admin
                 </span>
@@ -391,15 +398,17 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* ── Edit Info ── */}
+        {/* â”€â”€ Edit Info â”€â”€ */}
         <div className="bg-background border rounded-[2rem] overflow-hidden shadow-sm">
           <div className="px-6 py-5 border-b bg-muted/10">
-            <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground/80">{lang === "id" ? "INFORMASI AKUN" : "ACCOUNT INFORMATION"}</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground/85">
+              {lang === "id" ? "Informasi Akun" : "Account Information"}
+            </h2>
           </div>
           <div className="p-6 space-y-6">
             {/* Nama */}
             <div className="space-y-2">
-              <label className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-wider ml-1">
+              <label className="text-xs font-medium text-muted-foreground/70 ml-1">
                 {lang === "id" ? "Nama Lengkap" : "Full Name"}
               </label>
               <input
@@ -415,7 +424,7 @@ export default function ProfilePage() {
 
             {/* Warna */}
             <div className="space-y-3">
-              <label className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-wider ml-1">
+              <label className="text-xs font-medium text-muted-foreground/70 ml-1">
                 {lang === "id" ? "Warna Profil" : "Profile Color"}
               </label>
               <div className="flex flex-wrap gap-2.5">
@@ -441,28 +450,37 @@ export default function ProfilePage() {
                   <input
                     type="color"
                     value={form.color || "#64748b"}
-                    onChange={(e) => setForm({ ...form, color: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, color: e.target.value })
+                    }
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   />
                   <div
                     className="w-full h-full rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted/10 group-hover:bg-muted/20 transition-all overflow-hidden"
-                    style={{ backgroundColor: form.color && !COLORS.includes(form.color) ? form.color : 'transparent' }}
+                    style={{
+                      backgroundColor:
+                        form.color && !COLORS.includes(form.color)
+                          ? form.color
+                          : "transparent",
+                    }}
                   >
                     {!COLORS.includes(form.color) && (
                       <Check className="w-4 h-4 text-white drop-shadow-sm z-0" />
                     )}
                     {COLORS.includes(form.color) && (
-                      <span className="text-[10px] text-muted-foreground font-bold">+</span>
+                      <span className="text-xs text-muted-foreground font-bold">
+                        +
+                      </span>
                     )}
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 pt-1 opacity-60">
-                <span className="text-[10px] font-bold uppercase tracking-tight text-muted-foreground">
-                  {lang === "id" ? "PILIHAN:" : "SELECTED:"}
+                <span className="text-xs font-medium text-muted-foreground">
+                  {lang === "id" ? "Pilihan:" : "Selected:"}
                 </span>
-                <code className="text-[10px] bg-muted px-2 py-0.5 rounded font-mono font-bold tracking-tight">
+                <code className="text-xs bg-muted px-2 py-0.5 rounded font-mono font-bold tracking-tight">
                   {form.color.toUpperCase()}
                 </code>
               </div>
@@ -471,61 +489,66 @@ export default function ProfilePage() {
             <button
               onClick={saveProfile}
               disabled={saving}
-              className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-bold tracking-tight transition-all active:scale-[0.98] ${saved
-                ? "bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.2)]"
-                : "bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 hover:opacity-90 shadow-md"
-                } disabled:opacity-50`}
+              className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl text-sm font-semibold transition-all active:scale-[0.98] ${
+                saved
+                  ? "bg-emerald-500 text-white shadow-[0_4px_12px_rgba(16,185,129,0.2)]"
+                  : "bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 hover:opacity-90 shadow-md"
+              } disabled:opacity-50`}
             >
               {saved ? (
                 <>
                   <Check className="w-5 h-5" />
-                  {lang === "id" ? "BERHASIL DISIMPAN" : "SAVED SUCCESSFULLY"}
+                  {lang === "id" ? "Berhasil disimpan" : "Saved successfully"}
                 </>
               ) : saving ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
                   <Save className="w-5 h-5" />
-                  {lang === "id" ? "SIMPAN PERUBAHAN" : "SAVE CHANGES"}
+                  {lang === "id" ? "Simpan perubahan" : "Save changes"}
                 </>
               )}
             </button>
           </div>
         </div>
 
-        {/* ── Antarmuka / Pengaturan ── */}
+        {/* â”€â”€ Antarmuka / Pengaturan â”€â”€ */}
         <div className="bg-background border rounded-[2rem] overflow-hidden shadow-sm">
           <div className="px-6 py-5 border-b bg-muted/10 flex items-center gap-2">
             <Globe className="w-4 h-4 text-muted-foreground/60" />
-            <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground/80">
-              {lang === "id" ? "BAHASA ANTARMUKA" : "INTERFACE LANGUAGE"}
+            <h2 className="text-sm font-semibold text-muted-foreground/85">
+              {lang === "id" ? "Bahasa Antarmuka" : "Interface Language"}
             </h2>
           </div>
           <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <p className="text-sm font-bold tracking-tight">
+              <p className="text-sm font-semibold">
                 {lang === "id" ? "Pilihan Bahasa" : "Language Preference"}
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {lang === "id" ? "Ubah bahasa teks aplikasi utama" : "Change the main application text language"}
+                {lang === "id"
+                  ? "Ubah bahasa teks aplikasi utama"
+                  : "Change the main application text language"}
               </p>
             </div>
             <div className="flex bg-zinc-100 dark:bg-zinc-800/50 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700/50">
               <button
                 onClick={() => setLanguage("en")}
-                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all active:scale-95 ${lang === "en"
-                  ? "bg-background text-foreground shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700"
-                  : "text-muted-foreground hover:text-foreground"
-                  }`}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all active:scale-95 ${
+                  lang === "en"
+                    ? "bg-background text-foreground shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
                 English
               </button>
               <button
                 onClick={() => setLanguage("id")}
-                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all active:scale-95 ${lang === "id"
-                  ? "bg-background text-foreground shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700"
-                  : "text-muted-foreground hover:text-foreground"
-                  }`}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-all active:scale-95 ${
+                  lang === "id"
+                    ? "bg-background text-foreground shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
                 Indonesia
               </button>
@@ -533,12 +556,16 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* ── Notifikasi ── */}
+        {/* â”€â”€ Notifikasi â”€â”€ */}
         <div className="bg-background border rounded-[2rem] overflow-hidden shadow-sm">
           <div className="px-6 py-5 border-b bg-muted/10">
-            <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground/80">{lang === "id" ? "NOTIFIKASI" : "NOTIFICATIONS"}</h2>
-            <p className="text-[11px] font-medium text-muted-foreground/60 mt-1 uppercase tracking-tight">
-              {lang === "id" ? "Media update & pengingat" : "Media updates & reminders"}
+            <h2 className="text-sm font-semibold text-muted-foreground/85">
+              {lang === "id" ? "Notifikasi" : "Notifications"}
+            </h2>
+            <p className="text-xs font-medium text-muted-foreground/65 mt-1">
+              {lang === "id"
+                ? "Media update & pengingat"
+                : "Media updates & reminders"}
             </p>
           </div>
 
@@ -547,10 +574,11 @@ export default function ProfilePage() {
             <div className="py-5">
               <div className="flex items-start gap-4">
                 <div
-                  className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${notif.notif_push
-                    ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
-                    : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600"
-                    }`}
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                    notif.notif_push
+                      ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400"
+                      : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600"
+                  }`}
                 >
                   {pushLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -562,9 +590,11 @@ export default function ProfilePage() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold tracking-tight">Push Notification</p>
+                        <p className="text-sm font-semibold">
+                          Push Notification
+                        </p>
                         {!pushSupport.supported && (
-                          <span className="text-[9px] font-black uppercase tracking-widest bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded-md">
+                          <span className="text-[10px] font-semibold uppercase bg-zinc-100 text-zinc-500 px-1.5 py-0.5 rounded-md">
                             {lang === "id" ? "Offline" : "N/A"}
                           </span>
                         )}
@@ -585,10 +615,13 @@ export default function ProfilePage() {
                     />
                   </div>
                   {pushMsg && (
-                    <p className={`text-[10px] mt-2 font-bold px-2 py-1 rounded-lg w-fit ${pushMsg.startsWith("✅")
-                      ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400"
-                      : "bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400"
-                      }`}>
+                    <p
+                      className={`text-xs mt-2 font-bold px-2 py-1 rounded-lg w-fit ${
+                        pushMsg.startsWith("✅")
+                          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400"
+                          : "bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400"
+                      }`}
+                    >
                       {pushMsg}
                     </p>
                   )}
@@ -600,10 +633,11 @@ export default function ProfilePage() {
             <div className="py-5">
               <div className="flex items-start gap-4">
                 <div
-                  className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${notif.notif_telegram
-                    ? "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400"
-                    : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600"
-                    }`}
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                    notif.notif_telegram
+                      ? "bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400"
+                      : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600"
+                  }`}
                 >
                   <MessageCircle className="w-5 h-5" />
                 </div>
@@ -611,19 +645,25 @@ export default function ProfilePage() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold tracking-tight">Telegram</p>
+                        <p className="text-sm font-semibold">Telegram</p>
                         {!form.telegram_chat_id && notif.notif_telegram && (
-                          <span className="text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-md animate-pulse">
-                            {lang === "id" ? "MISSING ID" : "MISSING ID"}
+                          <span className="text-[10px] font-semibold uppercase bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-md animate-pulse">
+                            {lang === "id" ? "ID BELUM ADA" : "MISSING ID"}
                           </span>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed">
                         {notif.notif_telegram
                           ? form.telegram_chat_id
-                            ? lang === "id" ? `Aktif: ID ${form.telegram_chat_id}` : `Active: ID ${form.telegram_chat_id}`
-                            : lang === "id" ? "Masukkan Chat ID di bawah." : "Enter Chat ID below."
-                          : lang === "id" ? "Notifikasi Telegram nonaktif." : "Telegram disabled."}
+                            ? lang === "id"
+                              ? `Aktif: ID ${form.telegram_chat_id}`
+                              : `Active: ID ${form.telegram_chat_id}`
+                            : lang === "id"
+                              ? "Masukkan Chat ID di bawah."
+                              : "Enter Chat ID below."
+                          : lang === "id"
+                            ? "Notifikasi Telegram nonaktif."
+                            : "Telegram disabled."}
                       </p>
                     </div>
                     <Toggle
@@ -632,7 +672,7 @@ export default function ProfilePage() {
                     />
                   </div>
 
-                  {/* Telegram Chat ID input — show when toggle is on */}
+                  {/* Telegram Chat ID input - show when toggle is on */}
                   {notif.notif_telegram && (
                     <div className="mt-4 space-y-2">
                       <input
@@ -641,22 +681,26 @@ export default function ProfilePage() {
                         onChange={(e) =>
                           setForm({ ...form, telegram_chat_id: e.target.value })
                         }
-                        placeholder={lang === "id" ? "Contoh: 123456789" : "Example: 123456789"}
+                        placeholder={
+                          lang === "id"
+                            ? "Contoh: 123456789"
+                            : "Example: 123456789"
+                        }
                         className="w-full px-4 py-2.5 border border-border rounded-xl bg-background text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
                       />
                       <div className="flex items-center gap-1.5 px-1">
-                        <span className="text-[10px] text-muted-foreground font-medium">
+                        <span className="text-xs text-muted-foreground font-medium">
                           {lang === "id" ? "Gunakan" : "Use"}
                         </span>
                         <a
                           href="https://t.me/userinfobot"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[10px] bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 rounded font-bold hover:underline"
+                          className="text-xs bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400 px-1.5 py-0.5 rounded font-bold hover:underline"
                         >
                           @userinfobot
                         </a>
-                        <span className="text-[10px] text-muted-foreground font-medium">
+                        <span className="text-xs text-muted-foreground font-medium">
                           {lang === "id" ? "lalu simpan." : "then save."}
                         </span>
                       </div>
@@ -670,21 +714,26 @@ export default function ProfilePage() {
             <div className="py-5">
               <div className="flex items-start gap-4">
                 <div
-                  className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${notif.notif_email
-                    ? "bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400"
-                    : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600"
-                    }`}
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                    notif.notif_email
+                      ? "bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-400"
+                      : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-600"
+                  }`}
                 >
                   <Mail className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-3">
                     <div className="space-y-0.5">
-                      <p className="text-sm font-bold tracking-tight">Email</p>
+                      <p className="text-sm font-semibold">Email</p>
                       <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1">
                         {notif.notif_email
-                          ? (lang === "id" ? `Kirim ke ${session?.user?.email}` : `Send to ${session?.user?.email}`)
-                          : (lang === "id" ? "Notifikasi email nonaktif." : "Email disabled.")}
+                          ? lang === "id"
+                            ? `Kirim ke ${session?.user?.email}`
+                            : `Send to ${session?.user?.email}`
+                          : lang === "id"
+                            ? "Notifikasi email nonaktif."
+                            : "Email disabled."}
                       </p>
                     </div>
                     <Toggle
@@ -701,17 +750,26 @@ export default function ProfilePage() {
           <div className="m-6 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-700/50 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-1 h-3 bg-zinc-300 dark:bg-zinc-600 rounded-full" />
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+              <p className="text-xs font-semibold tracking-wide text-muted-foreground">
                 {lang === "id" ? "Ketentuan" : "Information"}
               </p>
             </div>
             <ul className="space-y-1.5">
               {[
-                lang === "id" ? "Notifikasi dikirim otomatis saat jadwal berubah." : "Auto-notifications on task updates.",
-                lang === "id" ? "Daily reminder dikirim setiap pukul 08.00 WIB." : "Daily reminders sent at 08:00 AM.",
-                lang === "id" ? "Penting: Tambahkan ke Home Screen untuk iOS." : "iOS: Must Add to Home Screen for Push."
+                lang === "id"
+                  ? "Notifikasi dikirim otomatis saat jadwal berubah."
+                  : "Auto-notifications on task updates.",
+                lang === "id"
+                  ? "Daily reminder mengikuti jadwal yang diatur admin."
+                  : "Daily reminders follow the admin schedule.",
+                lang === "id"
+                  ? "Penting: Tambahkan ke Home Screen untuk iOS."
+                  : "iOS: Must Add to Home Screen for Push.",
               ].map((text, i) => (
-                <li key={i} className="flex items-start gap-2 text-[11px] text-muted-foreground leading-snug">
+                <li
+                  key={i}
+                  className="flex items-start gap-2 text-[11px] text-muted-foreground leading-snug"
+                >
                   <span className="mt-1.5 w-1 h-1 rounded-full bg-zinc-300 dark:bg-zinc-600 flex-shrink-0" />
                   {text}
                 </li>
@@ -720,16 +778,22 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* ── Ganti Password ── */}
+        {/* â”€â”€ Ganti Password â”€â”€ */}
         <div className="bg-background border rounded-[2rem] overflow-hidden shadow-sm">
           <div className="px-6 py-5 border-b bg-muted/10">
-            <h2 className="font-bold text-xs uppercase tracking-widest text-muted-foreground/80">{lang === "id" ? "GANTI PASSWORD" : "CHANGE PASSWORD"}</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground/85">
+              {lang === "id" ? "Ganti Password" : "Change Password"}
+            </h2>
           </div>
           <div className="p-6 space-y-4">
             <div className="space-y-3">
               <input
                 type="password"
-                placeholder={lang === "id" ? "Password baru (min. 6 karakter)" : "New password (min. 6 chars)"}
+                placeholder={
+                  lang === "id"
+                    ? "Password baru (min. 6 karakter)"
+                    : "New password (min. 6 chars)"
+                }
                 value={passwords.new}
                 onChange={(e) =>
                   setPasswords({ ...passwords, new: e.target.value })
@@ -738,7 +802,11 @@ export default function ProfilePage() {
               />
               <input
                 type="password"
-                placeholder={lang === "id" ? "Konfirmasi password baru" : "Confirm new password"}
+                placeholder={
+                  lang === "id"
+                    ? "Konfirmasi password baru"
+                    : "Confirm new password"
+                }
                 value={passwords.confirm}
                 onChange={(e) =>
                   setPasswords({ ...passwords, confirm: e.target.value })
@@ -749,10 +817,11 @@ export default function ProfilePage() {
 
             {pwMsg && (
               <p
-                className={`text-[10px] font-bold px-3 py-2 rounded-xl ${pwMsg.startsWith("✅")
-                  ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30"
-                  : "bg-red-50 text-red-600 dark:bg-red-950/30"
-                  }`}
+                className={`text-xs font-bold px-3 py-2 rounded-xl ${
+                  pwMsg.startsWith("✅")
+                    ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30"
+                    : "bg-red-50 text-red-600 dark:bg-red-950/30"
+                }`}
               >
                 {pwMsg}
               </p>
@@ -761,9 +830,15 @@ export default function ProfilePage() {
             <button
               onClick={changePassword}
               disabled={savingPw || !passwords.new}
-              className="w-full py-3.5 border border-border rounded-2xl text-sm font-bold tracking-tight hover:bg-muted active:scale-[0.98] transition-all disabled:opacity-30"
+              className="w-full py-3.5 border border-border rounded-2xl text-sm font-semibold hover:bg-muted active:scale-[0.98] transition-all disabled:opacity-30"
             >
-              {savingPw ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : (lang === "id" ? "UBAH PASSWORD SEKARANG" : "CHANGE PASSWORD NOW")}
+              {savingPw ? (
+                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+              ) : lang === "id" ? (
+                "Ubah password sekarang"
+              ) : (
+                "Change password now"
+              )}
             </button>
           </div>
         </div>

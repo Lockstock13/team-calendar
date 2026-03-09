@@ -294,8 +294,7 @@ export default function NotesView({ session, userProfile }) {
       {/* Mobile FAB — outside animated container so fixed positioning works correctly */}
       <button
         onClick={() => setShowForm(true)}
-        className="sm:hidden fixed bottom-6 right-5 z-50 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-2xl shadow-primary/40 flex items-center justify-center active:scale-90 transition-transform animate-pulse"
-        style={{ animationDuration: "2s" }}
+        className="sm:hidden fixed bottom-[76px] right-4 z-50 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-2xl shadow-primary/40 flex items-center justify-center active:scale-95 transition-transform"
         aria-label={lang === "id" ? "Buat Catatan" : "Create Note"}
       >
         <Plus className="w-6 h-6" />

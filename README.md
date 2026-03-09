@@ -37,7 +37,7 @@
 
 ### 🔔 Sistem Notifikasi Lengkap
 - **PWA Push Notification**: Anggota akan menerima notif web di HP/Laptop tiap ada pesan atau jadwal baru.
-- **Daily Reminder**: Otomatis jalan jam 06:00 pagi merangkum jadwal hari itu.
+- **Daily Reminder**: Jadwal bisa diatur dari panel Admin (jam & timezone), lalu dieksekusi oleh cron.
 - Mendukung integrasi opsional via **Telegram Bot** & **Email (SMTP)**.
 
 ### 👑 Keamanan & Admin Panel
@@ -77,6 +77,9 @@ VAPID_EMAIL=mailto:admin@email.com
 # Telegram (opsional)
 TELEGRAM_BOT_TOKEN=...
 TELEGRAM_CHAT_ID=...
+
+# Cron security (WAJIB di production)
+CRON_SECRET=isi_secret_unik_yang_panjang
 ```
 
 ### 3. Setup Database Supabase

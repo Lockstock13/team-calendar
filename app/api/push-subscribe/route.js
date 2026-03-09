@@ -9,15 +9,28 @@ function getSupabase() {
   );
 }
 
+function getBearerToken(request) {
+  const authHeader = request.headers.get("authorization");
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.slice(7);
+  }
+  return null;
+}
+
+async function getRequesterOrNull(supabase, request) {
+  const token = getBearerToken(request);
+  if (!token) return null;
+
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data?.user) return null;
+  return data.user;
+}
+
 // ── POST /api/push-subscribe — save subscription ─────────────────────────────
 
 export async function POST(request) {
   try {
-    const { userId, subscription } = await request.json();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Missing userId" }, { status: 400 });
-    }
+    const { subscription } = await request.json();
     if (!subscription?.endpoint) {
       return NextResponse.json(
         { error: "Invalid subscription object" },
@@ -26,6 +39,10 @@ export async function POST(request) {
     }
 
     const supabase = getSupabase();
+    const requester = await getRequesterOrNull(supabase, request);
+    if (!requester) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const { error } = await supabase
       .from("profiles")
@@ -33,7 +50,7 @@ export async function POST(request) {
         push_subscription: subscription,
         notif_push: true,
       })
-      .eq("id", userId);
+      .eq("id", requester.id);
 
     if (error) {
       console.error("[push-subscribe] save error:", error.message);
@@ -51,13 +68,11 @@ export async function POST(request) {
 
 export async function DELETE(request) {
   try {
-    const { userId } = await request.json();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Missing userId" }, { status: 400 });
-    }
-
     const supabase = getSupabase();
+    const requester = await getRequesterOrNull(supabase, request);
+    if (!requester) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const { error } = await supabase
       .from("profiles")
@@ -65,7 +80,7 @@ export async function DELETE(request) {
         push_subscription: null,
         notif_push: false,
       })
-      .eq("id", userId);
+      .eq("id", requester.id);
 
     if (error) {
       console.error("[push-subscribe] remove error:", error.message);
