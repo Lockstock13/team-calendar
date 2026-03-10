@@ -396,13 +396,13 @@ export default function DashboardView({ tasks, users, currentUserId }) {
         </div>
       </div>
 
-      {/* Task Preview Modal */}
       {previewTask && (
         <TaskDetailModal
           task={previewTask}
           users={users}
           lang={lang}
           onClose={() => setPreviewTask(null)}
+          currentUserId={currentUserId}
         />
       )}
     </div>

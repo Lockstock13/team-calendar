@@ -14,6 +14,7 @@ import {
   Aperture,
   Moon,
   Sun,
+  Camera,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -75,6 +76,12 @@ export default function Header({
       icon: BarChart2,
     },
     {
+      id: "equipment",
+      path: "/equipment",
+      label: lang === "id" ? "Alat" : "Equip",
+      icon: Camera,
+    },
+    {
       id: "chat",
       path: "/chat",
       label: lang === "id" ? "Obrolan" : "Chat",
@@ -87,6 +94,7 @@ export default function Header({
     if (item.id === "chat") return appSettings?.enable_chat !== false;
     if (item.id === "notes") return appSettings?.enable_notes !== false;
     if (item.id === "report") return appSettings?.enable_report !== false;
+    if (item.id === "equipment") return appSettings?.enable_equipment !== false;
     return true;
   });
 
@@ -125,8 +133,8 @@ export default function Header({
                     key={id}
                     href={path}
                     className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                       }`}
                   >
                     <Icon className="w-4 h-4" />

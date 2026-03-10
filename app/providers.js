@@ -237,6 +237,11 @@ export default function Providers({ children }) {
         { event: "*", schema: "public", table: "profiles" },
         () => fetchUsers(),
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "task_equipment" },
+        () => fetchTasks(), // Refresh tasks to get latest equipment mappings
+      )
       .subscribe();
 
     return () => {
@@ -279,12 +284,32 @@ export default function Providers({ children }) {
   };
 
   const fetchTasks = async () => {
-    const { data, error } = await supabase
+    // 1. Fetch tasks
+    const { data: tasksData, error: tasksError } = await supabase
       .from("tasks")
       .select("*")
       .order("start_date", { ascending: true });
 
-    if (!error) setTasks(data || []);
+    // 2. Fetch equipment mappings
+    const { data: eqData, error: eqError } = await supabase
+      .from("task_equipment")
+      .select("*");
+
+    if (!tasksError) {
+      const mergedTasks = (tasksData || []).map(task => {
+        // Build equipment_mapping: { userId: [eqId1, eqId2] }
+        const mapping = {};
+        if (eqData) {
+          const taskEqs = eqData.filter(eq => eq.task_id === task.id);
+          taskEqs.forEach(eq => {
+            if (!mapping[eq.user_id]) mapping[eq.user_id] = [];
+            mapping[eq.user_id].push(eq.equipment_id);
+          });
+        }
+        return { ...task, equipment_mapping: mapping };
+      });
+      setTasks(mergedTasks);
+    }
   };
 
   // ── Task CRUD (extracted to hook) ──────────────────────────────────────────

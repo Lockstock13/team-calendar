@@ -163,6 +163,9 @@ export default function AdminPage() {
   const [enableReportInput, setEnableReportInput] = useState(
     appSettings?.enable_report !== false,
   );
+  const [enableEquipmentInput, setEnableEquipmentInput] = useState(
+    appSettings?.enable_equipment !== false,
+  );
   const [savingSettings, setSavingSettings] = useState(false);
 
   useEffect(() => {
@@ -179,6 +182,7 @@ export default function AdminPage() {
       setEnableChatInput(appSettings.enable_chat !== false);
       setEnableNotesInput(appSettings.enable_notes !== false);
       setEnableReportInput(appSettings.enable_report !== false);
+      setEnableEquipmentInput(appSettings.enable_equipment !== false);
     }
   }, [appSettings]);
 
@@ -363,6 +367,7 @@ export default function AdminPage() {
           enable_chat: enableChatInput,
           enable_notes: enableNotesInput,
           enable_report: enableReportInput,
+          enable_equipment: enableEquipmentInput,
           updated_by: currentUser.id,
         })
         .eq("id", appSettings.id);
@@ -518,8 +523,8 @@ export default function AdminPage() {
                   }
                   disabled={busy}
                   className={`p-2 rounded-xl transition-all active:scale-90 ${isAdmin
-                      ? "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                      : "text-zinc-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                    ? "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    : "text-zinc-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/30"
                     }`}
                   title={
                     isAdmin
@@ -804,6 +809,19 @@ export default function AdminPage() {
                         type="checkbox"
                         checked={enableReportInput}
                         onChange={(e) => setEnableReportInput(e.target.checked)}
+                        className="w-4 h-4"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between gap-3 pt-2 border-t border-border/50">
+                      <span className="text-xs font-medium">
+                        {lang === "id"
+                          ? "Aktifkan Info Alat (Equipment)"
+                          : "Enable Equipment"}
+                      </span>
+                      <input
+                        type="checkbox"
+                        checked={enableEquipmentInput}
+                        onChange={(e) => setEnableEquipmentInput(e.target.checked)}
                         className="w-4 h-4"
                       />
                     </label>

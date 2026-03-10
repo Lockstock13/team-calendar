@@ -68,6 +68,8 @@ export function useTaskActions({
     try {
       let error;
       let savedTask = null;
+      let tasksToInsert = null;
+      let insertedTasksData = null;
       if (editingTask) {
         const { data, error: updateError } = await supabase
           .from("tasks")
@@ -111,6 +113,7 @@ export function useTaskActions({
           .insert(tasksToInsert)
           .select("id");
         error = insertError;
+        insertedTasksData = data; // store all created tasks
         savedTask = data?.[0] || null;
       } else {
         const { data, error: insertError } = await supabase
@@ -149,12 +152,12 @@ export function useTaskActions({
             taskId: savedTask.id,
             action: editingTask ? "updated" : "created",
           }),
-        }).catch(() => {});
+        }).catch(() => { });
       }
     } catch (err) {
       addToast(
         (lang === "id" ? "Gagal menyimpan: " : "Failed to save: ") +
-          err.message,
+        err.message,
         "error",
       );
     } finally {
@@ -224,7 +227,7 @@ export function useTaskActions({
     if (error) {
       addToast(
         (lang === "id" ? "Gagal menghapus: " : "Failed to delete: ") +
-          error.message,
+        error.message,
         "error",
       );
     } else {

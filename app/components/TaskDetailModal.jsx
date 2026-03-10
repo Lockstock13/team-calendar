@@ -1,8 +1,11 @@
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { id, enUS } from "date-fns/locale";
-import { Calendar, X } from "lucide-react";
+import { Calendar, X, Camera, Wrench } from "lucide-react";
 import TypeBadge from "@/app/components/TypeBadge";
 import Avatar from "@/app/components/Avatar";
+import { supabase } from "@/lib/supabase";
+import EquipmentAssignmentModal from "./EquipmentAssignmentModal";
 
 export default function TaskDetailModal({
     task,
@@ -11,12 +14,39 @@ export default function TaskDetailModal({
     lang,
     onEdit = null,
     onDelete = null,
+    currentUserId = null,
 }) {
-    if (!task) return null;
+    const [equipmentList, setEquipmentList] = useState([]);
+    const [showEqModal, setShowEqModal] = useState(false);
+    const [localTask, setLocalTask] = useState(task);
 
-    const assignees = (task.assignee_ids || [])
+    useEffect(() => {
+        const fetchEq = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from("equipment")
+                    .select("*");
+                if (!error && data) {
+                    setEquipmentList(data);
+                }
+            } catch (error) {
+                console.error("Failed to load equipment", error);
+            }
+        };
+        fetchEq();
+    }, []);
+
+    if (!localTask) return null;
+
+    const assignees = (localTask.assignee_ids || [])
         .map((uid) => users.find((u) => u.id === uid))
         .filter(Boolean);
+
+    // Can manage equipment if they are an admin or an assignee
+    const canManageEq = currentUserId && (
+        users.find(u => u.id === currentUserId)?.role === "admin" ||
+        (localTask.assignee_ids || []).includes(currentUserId)
+    );
 
     const statusLabel = {
         todo: lang === "id" ? "Belum Mulai" : "Not Started",
@@ -73,13 +103,13 @@ export default function TaskDetailModal({
                                 )}
                             </div>
                             <h3
-                                className={`text-lg font-bold mt-2 leading-tight ${task.status === "done" ? "text-muted-foreground line-through decoration-muted-foreground/30" : "text-foreground dark:text-zinc-100"}`}
+                                className={`text-lg font-bold mt-2 leading-tight ${localTask.status === "done" ? "text-muted-foreground line-through decoration-muted-foreground/30" : "text-foreground dark:text-zinc-100"}`}
                             >
-                                {task.title}
+                                {localTask.title}
                             </h3>
                             <p className="text-[13px] text-muted-foreground mt-1.5 flex items-center gap-1.5">
                                 <Calendar className="w-3.5 h-3.5" />
-                                {task.start_date
+                                {localTask.start_date
                                     ? format(
                                         new Date(task.start_date + "T00:00:00"),
                                         "EEEE, d MMMM yyyy",
@@ -96,36 +126,63 @@ export default function TaskDetailModal({
                             </p>
                         </div>
 
-                        {task.description && (
+                        {localTask.description && (
                             <div className="pt-2">
                                 <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
                                     {lang === "id" ? "Catatan" : "Notes"}
                                 </p>
                                 <div className="bg-zinc-50 dark:bg-zinc-800/50 p-3 rounded-lg border border-border shadow-inner">
                                     <p className="text-[13px] text-foreground/90 leading-relaxed break-words whitespace-pre-wrap">
-                                        {task.description}
+                                        {localTask.description}
                                     </p>
                                 </div>
                             </div>
                         )}
 
                         <div className="pt-2">
-                            <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest mb-1.5">
-                                {lang === "id" ? "Tim Penugasan" : "Assigned Team"}
-                            </p>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <p className="text-[12px] font-semibold text-muted-foreground/80 uppercase tracking-widest">
+                                    {lang === "id" ? "Tim Penugasan & Alat" : "Assigned Team & Equipment"}
+                                </p>
+                                {canManageEq && assignees.length > 0 && (
+                                    <button
+                                        onClick={() => setShowEqModal(true)}
+                                        className="text-[11px] font-medium text-primary bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded flex items-center gap-1 transition-colors"
+                                    >
+                                        <Wrench className="w-3 h-3" />
+                                        {lang === "id" ? "Kelola Alat" : "Manage Equipment"}
+                                    </button>
+                                )}
+                            </div>
                             <div className="flex flex-wrap gap-2 mt-2">
                                 {assignees.length > 0 ? (
-                                    assignees.map((u) => (
-                                        <div
-                                            key={u.id}
-                                            className="flex items-center gap-2 bg-background border border-border pl-1 pr-3 py-1 rounded-full shadow-sm"
-                                        >
-                                            <Avatar user={u} size="sm" />
-                                            <span className="text-[12px] font-medium text-foreground/90">
-                                                {u.full_name || u.email.split("@")[0]}
-                                            </span>
-                                        </div>
-                                    ))
+                                    assignees.map((u) => {
+                                        const userEqIds = (localTask.equipment_mapping || {})[u.id] || [];
+                                        const userEquipments = userEqIds.map(eqId =>
+                                            equipmentList.find(e => e.id === eqId)
+                                        ).filter(Boolean);
+
+                                        return (
+                                            <div key={u.id} className="flex flex-col gap-1.5 p-2 bg-background border border-border rounded-xl shadow-sm min-w-[140px] flex-1 sm:flex-none">
+                                                <div className="flex items-center gap-2">
+                                                    <Avatar user={u} size="sm" />
+                                                    <span className="text-[13px] font-semibold text-foreground/90 truncate">
+                                                        {u.full_name || u.email.split("@")[0]}
+                                                    </span>
+                                                </div>
+                                                {userEquipments.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1 mt-1 pl-1">
+                                                        {userEquipments.map(eq => (
+                                                            <span key={eq.id} className="inline-flex items-center gap-1 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20 whitespace-nowrap">
+                                                                <Camera className="w-2.5 h-2.5" />
+                                                                {eq.name} {eq.serial_number ? `(SN: ${eq.serial_number})` : ""}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })
                                 ) : (
                                     <span className="text-[12px] text-muted-foreground/60 italic">
                                         {lang === "id" ? "Tidak ada tim." : "No assignees."}
@@ -141,7 +198,7 @@ export default function TaskDetailModal({
                                     <button
                                         onClick={() => {
                                             onClose();
-                                            onEdit(task);
+                                            onEdit(localTask);
                                         }}
                                         className="flex-1 py-2.5 bg-primary/10 text-primary rounded-xl text-sm font-semibold hover:bg-primary hover:text-primary-foreground transition-colors"
                                     >
@@ -152,7 +209,7 @@ export default function TaskDetailModal({
                                     <button
                                         onClick={() => {
                                             onClose();
-                                            onDelete(task.id);
+                                            onDelete(localTask.id);
                                         }}
                                         className="flex-1 py-2.5 bg-red-100 dark:bg-red-950/30 text-red-600 rounded-xl text-sm font-semibold hover:bg-red-600 hover:text-white transition-colors"
                                     >
@@ -164,6 +221,19 @@ export default function TaskDetailModal({
                     </div>
                 </div>
             </div>
+
+            {showEqModal && (
+                <EquipmentAssignmentModal
+                    task={localTask}
+                    users={users}
+                    lang={lang}
+                    onClose={() => setShowEqModal(false)}
+                    onSave={(newMapping) => {
+                        setLocalTask(prev => ({ ...prev, equipment_mapping: newMapping }));
+                        setShowEqModal(false);
+                    }}
+                />
+            )}
         </div>
     );
 }

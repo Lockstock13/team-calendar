@@ -1,10 +1,11 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Check } from "lucide-react";
 import { useToast } from "@/app/components/ToastProvider";
 import { useGlobalContext } from "@/app/providers";
 import Avatar from "@/app/components/Avatar";
+import { supabase } from "@/lib/supabase";
 
 const getTaskTypes = (lang) => [
   {
@@ -56,12 +57,17 @@ export default function TaskForm({
   });
 
   const toggleAssignee = (userId) => {
-    setData((prev) => ({
-      ...prev,
-      assignee_ids: prev.assignee_ids.includes(userId)
+    setData((prev) => {
+      const isSelected = prev.assignee_ids.includes(userId);
+      const newAssigneeIds = isSelected
         ? prev.assignee_ids.filter((id) => id !== userId)
-        : [...prev.assignee_ids, userId],
-    }));
+        : [...prev.assignee_ids, userId];
+
+      return {
+        ...prev,
+        assignee_ids: newAssigneeIds,
+      };
+    });
   };
 
   const handleTypeChange = (typeId) => {
@@ -146,11 +152,10 @@ export default function TaskForm({
                   key={type.id}
                   type="button"
                   onClick={() => handleTypeChange(type.id)}
-                  className={`p-3 border-2 rounded-xl text-left transition-all ${
-                    data.task_type === type.id
-                      ? `${type.border} ring-2 ${type.active} ring-offset-1`
-                      : "border-border hover:bg-muted"
-                  }`}
+                  className={`p-3 border-2 rounded-xl text-left transition-all ${data.task_type === type.id
+                    ? `${type.border} ring-2 ${type.active} ring-offset-1`
+                    : "border-border hover:bg-muted"
+                    }`}
                 >
                   <div className="text-sm font-semibold leading-snug">
                     {type.label}
@@ -321,32 +326,31 @@ export default function TaskForm({
               {users.map((user) => {
                 const selected = data.assignee_ids.includes(user.id);
                 return (
-                  <div
-                    key={user.id}
-                    onClick={() => toggleAssignee(user.id)}
-                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
-                      selected ? "bg-primary/5" : "hover:bg-muted/50"
-                    }`}
-                  >
-                    <Avatar user={user} selected={selected} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {user.full_name || user.email}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {user.email}
-                      </p>
-                    </div>
+                  <div key={user.id} className="divide-y divide-border/50">
                     <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                        selected
+                      onClick={() => toggleAssignee(user.id)}
+                      className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${selected ? "bg-primary/5" : "hover:bg-muted/50"
+                        }`}
+                    >
+                      <Avatar user={user} selected={selected} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {user.full_name || user.email}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${selected
                           ? "bg-primary border-primary"
                           : "border-muted-foreground/30"
-                      }`}
-                    >
-                      {selected && (
-                        <Check className="w-3 h-3 text-primary-foreground" />
-                      )}
+                          }`}
+                      >
+                        {selected && (
+                          <Check className="w-3 h-3 text-primary-foreground" />
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -388,7 +392,7 @@ export default function TaskForm({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

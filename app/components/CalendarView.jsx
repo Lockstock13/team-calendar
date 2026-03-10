@@ -123,7 +123,7 @@ async function fetchHolidays(year) {
 
 // ─── Main CalendarView ─────────────────────────────────────────────────────────
 
-export default function CalendarView({ tasks, users, onEdit, onDelete }) {
+export default function CalendarView({ tasks, users, onEdit, onDelete, currentUserId }) {
   const { language } = useGlobalContext();
   const { addToast } = useToast();
   const lang = language || "en";
@@ -411,6 +411,7 @@ export default function CalendarView({ tasks, users, onEdit, onDelete }) {
           onClose={() => setSelectedTask(null)}
           onEdit={onEdit}
           onDelete={onDelete}
+          currentUserId={currentUserId}
         />
       )}
 

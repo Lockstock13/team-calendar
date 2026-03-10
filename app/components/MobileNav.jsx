@@ -10,6 +10,7 @@ import {
   FileText,
   BarChart2,
   MessageCircle,
+  Camera,
 } from "lucide-react";
 import { useGlobalContext } from "@/app/providers";
 
@@ -57,6 +58,12 @@ export default function MobileNav({ unreadChat = 0 }) {
       icon: BarChart2,
     },
     {
+      id: "equipment",
+      path: "/equipment",
+      label: lang === "id" ? "Alat" : "Equip",
+      icon: Camera,
+    },
+    {
       id: "chat",
       path: "/chat",
       label: lang === "id" ? "Obrolan" : "Chat",
@@ -69,6 +76,7 @@ export default function MobileNav({ unreadChat = 0 }) {
     if (item.id === "chat") return appSettings?.enable_chat !== false;
     if (item.id === "notes") return appSettings?.enable_notes !== false;
     if (item.id === "report") return appSettings?.enable_report !== false;
+    if (item.id === "equipment") return appSettings?.enable_equipment !== false;
     return true;
   });
 
