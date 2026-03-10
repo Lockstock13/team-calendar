@@ -199,7 +199,7 @@ export default function EquipmentAssignmentModal({
                                         </span>
                                     </div>
                                     {count > 0 && (
-                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isSelected ? "bg-white/20 text-white" : "bg-primary/10 text-primary"
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${isSelected ? "bg-primary-foreground/20 text-primary-foreground" : "bg-primary/10 text-primary"
                                             }`}>
                                             {count}
                                         </span>
@@ -258,7 +258,7 @@ export default function EquipmentAssignmentModal({
                                                                     ? "bg-muted border-muted-foreground/20"
                                                                     : "border-2 border-muted-foreground/30"
                                                                 }`}>
-                                                                {isChecked && <Check className="w-3.5 h-3.5 text-white" />}
+                                                                {isChecked && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
                                                                 {takenByUser && <X className="w-3 h-3 text-muted-foreground" />}
                                                             </div>
                                                             <div className="flex-1 min-w-0">

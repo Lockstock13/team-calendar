@@ -274,7 +274,7 @@ export default function TaskForm({
                     className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${data.is_recurring ? "bg-primary border-primary" : "border-muted-foreground/30 group-hover:border-primary"}`}
                   >
                     {data.is_recurring && (
-                      <Check className="w-3 h-3 text-white" />
+                      <Check className="w-3 h-3 text-primary-foreground" />
                     )}
                   </div>
                   <span className="text-sm font-medium">

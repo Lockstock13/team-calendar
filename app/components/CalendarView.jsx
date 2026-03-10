@@ -21,25 +21,25 @@ function HolidayModal({ holiday, onClose, lang }) {
   if (!holiday) return null;
   return (
     <div
-      className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
         className="bg-background rounded-2xl shadow-2xl w-full max-w-sm relative overflow-hidden animate-in zoom-in-95 duration-200 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="h-1.5 bg-red-400" />
+        <div className="h-1.5 bg-red-500 dark:bg-red-600" />
         <div className="p-6">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 text-muted-foreground/80 hover:bg-zinc-100 hover:text-zinc-600 rounded-full transition-colors"
+            className="absolute top-4 right-4 p-1.5 text-muted-foreground/80 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-foreground rounded-full transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
 
           <div className="space-y-4 pt-1">
             <div className="mb-2">
-              <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-sm font-medium border border-red-100/50">
+              <span className="text-[10px] bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 dark:border-red-900/50 px-2 py-0.5 rounded-sm font-medium border border-red-100/50">
                 🇮🇩 {lang === "id" ? "Libur Nasional" : "Public Holiday"}
               </span>
               <h3 className="text-lg font-bold text-foreground leading-tight mt-3">
@@ -184,10 +184,15 @@ export default function CalendarView({ tasks, users, onEdit, onDelete, currentUs
 
       // Base colors for the single compact mobile block event (we also use this as fallback)
       // comday = pink pastel, weekend = purple, regular = neutral
-      let defaultBgColor = isComday ? "#fce7f3" : isWeekend ? "#a855f7" : "#f1f5f9";
-      let defaultBorderColor = isComday ? "#f9a8d4" : isWeekend ? "#a855f7" : "#cbd5e1";
-      let defaultTextColor = isComday ? "#be185d" : isWeekend ? "#ffffff" : "#334155";
-      const defaultClassNames = (isComday || isWeekend) ? [] : ["!bg-zinc-100", "dark:!bg-zinc-800", "!border-zinc-200", "dark:!border-zinc-700", "!text-zinc-800", "dark:!text-zinc-200"];
+      let defaultBgColor = isComday ? "transparent" : isWeekend ? "#a855f7" : "transparent";
+      let defaultBorderColor = isComday ? "transparent" : isWeekend ? "#a855f7" : "transparent";
+      let defaultTextColor = isComday ? "transparent" : isWeekend ? "#ffffff" : "transparent";
+
+      const defaultClassNames = isComday
+        ? ["!bg-pink-50", "dark:!bg-pink-950/40", "!border-pink-200", "dark:!border-pink-900/50", "!text-pink-600", "dark:!text-pink-400"]
+        : isWeekend
+          ? []
+          : ["!bg-zinc-100", "dark:!bg-zinc-800", "!border-zinc-200", "dark:!border-zinc-700", "!text-zinc-800", "dark:!text-zinc-200"];
 
       // If there are no assignees or if we are rendering for MOBILE, emit only one block
       if (assigneeIds.length === 0 || isMobile) {
@@ -237,9 +242,10 @@ export default function CalendarView({ tasks, users, onEdit, onDelete, currentUs
       start: h.date,
       end: h.date,
       allDay: true,
-      backgroundColor: "#fee2e2",
-      borderColor: "#fca5a5",
-      textColor: "#dc2626",
+      backgroundColor: "transparent",
+      borderColor: "transparent",
+      textColor: "transparent",
+      classNames: ["!bg-red-50", "dark:!bg-red-950/30", "!border-red-200", "dark:!border-red-900/50", "!text-red-600", "dark:!text-red-400"],
       extendedProps: { type: "holiday", holiday: h },
       display: "block",
     }));

@@ -92,12 +92,12 @@ export default function TaskDetailModal({
                             <div className="flex gap-2 items-center flex-wrap mb-2.5">
                                 <TypeBadge task={task} lang={lang} />
                                 {task.priority && (
-                                    <span className="text-[10px] bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-sm font-medium border border-border">
+                                    <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 px-2 py-0.5 rounded-sm font-medium border border-border">
                                         {priorityLabel[task.priority] || task.priority}
                                     </span>
                                 )}
                                 {task.status !== "done" && (
-                                    <span className="text-[10px] bg-zinc-100/50 text-zinc-500 px-2 py-0.5 rounded-sm font-medium border border-border/50">
+                                    <span className="text-[10px] bg-zinc-100/50 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 px-2 py-0.5 rounded-sm font-medium border border-border/50">
                                         {statusLabel[task.status] || task.status}
                                     </span>
                                 )}
@@ -147,7 +147,7 @@ export default function TaskDetailModal({
                                 {canManageEq && assignees.length > 0 && (
                                     <button
                                         onClick={() => setShowEqModal(true)}
-                                        className="text-[11px] font-medium text-primary bg-primary/10 hover:bg-primary/20 px-2 py-1 rounded flex items-center gap-1 transition-colors"
+                                        className="text-[11px] font-medium text-primary dark:text-zinc-300 bg-primary/10 dark:bg-zinc-800/50 hover:bg-primary/20 dark:hover:bg-zinc-800 px-2 py-1 rounded flex items-center gap-1 transition-colors border border-transparent dark:border-border/50"
                                     >
                                         <Wrench className="w-3 h-3" />
                                         {lang === "id" ? "Kelola Alat" : "Manage Equipment"}
@@ -173,7 +173,7 @@ export default function TaskDetailModal({
                                                 {userEquipments.length > 0 && (
                                                     <div className="flex flex-wrap gap-1 mt-1 pl-1">
                                                         {userEquipments.map(eq => (
-                                                            <span key={eq.id} className="inline-flex items-center gap-1 text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded border border-primary/20 whitespace-nowrap">
+                                                            <span key={eq.id} className="inline-flex items-center gap-1 text-[10px] bg-primary/10 dark:bg-zinc-800 text-primary dark:text-zinc-300 px-1.5 py-0.5 rounded border border-primary/20 dark:border-border/50 whitespace-nowrap">
                                                                 <Camera className="w-2.5 h-2.5" />
                                                                 {eq.name} {eq.serial_number ? `(SN: ${eq.serial_number})` : ""}
                                                             </span>
@@ -200,7 +200,7 @@ export default function TaskDetailModal({
                                             onClose();
                                             onEdit(localTask);
                                         }}
-                                        className="flex-1 py-2.5 bg-primary/10 text-primary rounded-xl text-sm font-semibold hover:bg-primary hover:text-primary-foreground transition-colors"
+                                        className="flex-1 py-2.5 bg-primary/10 dark:bg-zinc-800/50 text-primary dark:text-zinc-300 border border-transparent dark:border-border/50 rounded-xl text-sm font-semibold hover:bg-primary hover:text-primary-foreground dark:hover:bg-zinc-800 transition-colors"
                                     >
                                         {lang === "id" ? "Edit" : "Edit"}
                                     </button>
